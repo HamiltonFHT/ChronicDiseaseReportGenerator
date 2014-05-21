@@ -84,7 +84,7 @@ var DEFAULT_VALUE_DIABETIC_ASSESSMENT = 12,		// months
 	DEFAULT_VALUE_LDL_COMPARED = 2,				// less than or equal to
 	DEFAULT_VALUE_ACR_MEASURED = 12,			// months
 	DEFAULT_VALUE_ACR_MALE_COMPARED = 2.0,		// less than
-	DEFAULT_VALUE_ACR_FEMALE_COMPARED = 2.8		// less than
+	DEFAULT_VALUE_ACR_FEMALE_COMPARED = 2.8,	// less than
 	DEFAULT_VALUE_EGFR_MEASURED = 12,			// months
 	DEFAULT_VALUE_EGFR_COMPARED = 60;			// greater than
 		
@@ -108,99 +108,13 @@ var arrayLastModifiedDate;
 
 
 // Snapshot or Tracking mode : String
-var currentMode;
+//var currentMode;
 
 
 // Global variable for the canvas for visualization
-var canvas;
+//var canvas;
+//var canvas_extra;
 
-
-function initializeReportGenerator(mode) {
-	
-	currentMode = mode;
-		
-	switch(mode) {
-	
-		// Clicked on Snapshot mode
-		case "snapshot":
-		
-			// Only if not already selected
-			if (document.getElementById("buttonSnapshot").className.indexOf("buttonNotSelected") != -1) {
-			
-				// If Tracking was selected, unselect it and remove elements
-				if (document.getElementById("buttonTracking").className.indexOf("buttonSelected") != -1) {
-					
-					document.getElementById("buttonTracking").className = document.getElementById("buttonTracking").className.replace("buttonSelected", "buttonNotSelected");
-					
-					// remove existing elements
-					document.getElementById("sectionImport").innerHTML = "";
-					
-					if (document.getElementById("physicianSection")) document.getElementById("physicianSection").parentNode.removeChild(document.getElementById("physicianSection"));
-					if (document.getElementById("measuresSection")) document.getElementById("measuresSection").parentNode.removeChild(document.getElementById("measuresSection"));
-					if (document.getElementById("settingsSection")) document.getElementById("settingsSection").parentNode.removeChild(document.getElementById("settingsSection"));
-					
-					if (document.getElementById("canvasSVG")) document.getElementById("canvasSVG").parentNode.removeChild(document.getElementById("canvasSVG"));
-				}
-				
-				// Select button and add elements
-				document.getElementById("buttonSnapshot").className = document.getElementById("buttonSnapshot").className.replace("buttonNotSelected", "buttonSelected");
-				
-				// Add elements - Single FileReader
-				document.getElementById("sectionImport").innerHTML += "<b>Import file:</b><br><input type='file' id='fileImport' onchange='readFiles(this.files)' />";
-			
-			}
-		
-		break;
-		
-		// Clicked on Tracking mode
-		case "tracking":
-		
-			// Only if not already selected
-			if (document.getElementById("buttonTracking").className.indexOf("buttonNotSelected") != -1) {
-			
-				// If Snapshot was selected, unselect it and remove elements
-				if (document.getElementById("buttonSnapshot").className.indexOf("buttonSelected") != -1) {
-				
-					document.getElementById("buttonSnapshot").className = document.getElementById("buttonSnapshot").className.replace("buttonSelected", "buttonNotSelected");
-					
-					// remove existing elements
-					document.getElementById("sectionImport").innerHTML = "";
-					
-					if (document.getElementById("physicianSection")) document.getElementById("physicianSection").parentNode.removeChild(document.getElementById("physicianSection"));
-					if (document.getElementById("measuresSection")) document.getElementById("measuresSection").parentNode.removeChild(document.getElementById("measuresSection"));
-					if (document.getElementById("settingsSection")) document.getElementById("settingsSection").parentNode.removeChild(document.getElementById("settingsSection"));
-					
-					if (document.getElementById("canvasSVG")) document.getElementById("canvasSVG").parentNode.removeChild(document.getElementById("canvasSVG"));
-				}
-				
-				// Select button and add elements
-				document.getElementById("buttonTracking").className = document.getElementById("buttonTracking").className.replace("buttonNotSelected", "buttonSelected");
-				
-				// Add elements - multiple FileReader
-				document.getElementById("sectionImport").innerHTML += "<b>Import files:</b><br><input type='file' id='fileImport' onchange='readFiles(this.files)' multiple='multiple' />";
-				
-			}
-		
-		break;
-	}
-	
-	// Set size of container
-	// document.getElementById("canvasContainer").width = DEFAULT_CANVAS_WIDTH;
-	// document.getElementById("canvasContainer").height = DEFAULT_CANVAS_HEIGHT;
-	
-	// Initialize and create the SVG canvas inside the div #canvasContainer, if it doesn't already exist
-	if (document.getElementById("canvasSVG") == null) {
-		canvas = d3.select("#canvasContainer").append("svg")
-			.attr("id", "canvasSVG")
-
-			// Set the width and height of the canvas
-			.attr("width", DEFAULT_CANVAS_WIDTH)
-			.attr("height", DEFAULT_CANVAS_HEIGHT)
-			.style("border", "1px solid lightgray")
-	}
-
-}
-		
 
 /*
 * readFiles:
@@ -209,6 +123,7 @@ function initializeReportGenerator(mode) {
 * @param files A FileList object containing the files that are selected for import
 */ 
 function readFiles(files) {
+	
 	
 	// Reset all data
 	arrayParsedData = [];
@@ -219,6 +134,12 @@ function readFiles(files) {
 	if (files.length > 0) {
 		
 		console.log("Reading " + files.length + " files...");
+		
+		var currentMode = (files.length == 1) ? "snapshot" : "tracking";
+		
+		console.log("Current mode: " + currentMode);
+		
+		canvas = d3.select("#canvasContainer");
 		
 		// Read the first file in the FileList
 		readSingleFile(0, currentMode);
@@ -240,8 +161,10 @@ function readFiles(files) {
 			
 			console.log("Finished reading " + files.length + " files.");
 			
+			console.log("Current mode: " + mode);
+			
 			cleanParsedData();
-			addSidePanels();
+			addSidePanels(mode);
 			filterData();
 			
 			// different data manipulation and visualization functions depending on the mode selected
@@ -250,16 +173,16 @@ function readFiles(files) {
 				case "snapshot":
 					
 					calculateDataSnapshotMode();
-					clearCanvas();
-					generateVisualizationSnapshotMode();
+					clearCanvas("canvasContainer", mode);
+					generateVisualizationSnapshotMode("canvasContainer");
 					
 				break;
 				
 				case "tracking":
 				
 					calculateDataTrackingMode();
-					clearCanvas();
-					generateVisualizationTrackingMode();
+					clearCanvas("canvasContainer", mode);
+					generateVisualizationTrackingMode("canvasContainer");
 					
 				break;
 			
@@ -293,7 +216,7 @@ function readFiles(files) {
 				// Increment the index counter and read the next file
 				index++;
 				readSingleFile(index, mode);
-			}	
+			};
 		})(f);
 		
 		// Read the current file as text format

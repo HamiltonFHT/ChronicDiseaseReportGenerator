@@ -35,6 +35,7 @@ var DEFAULT_INDEX_DIABETIC_ASSESSMENT = 0,
 // arrayFilteredData: 
 // arrayCalculatedData: Stores the data from 'arrayParsedData' that match the selected filters and select options from the drop down menus
 // arrayDates: 
+// TODO: Make these not global!
 var arrayFilteredData,
 	arrayCalculatedData,
 	arrayDates;
@@ -371,23 +372,6 @@ function calculateCountDiabeticMeasure(fileIndex, measureIndex) {
 	return count;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*

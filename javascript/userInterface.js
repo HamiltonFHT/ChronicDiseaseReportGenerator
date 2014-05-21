@@ -21,14 +21,12 @@
 var arrayUniquePhysicians,
 	arraySelectedPhysicians;
 	
-
-	
 /*
 * addSidePanel:
 * - Add user interface elements to the #sidePanel div declared in 'index.html'
 * 
 */
-function addSidePanels() {
+function addSidePanels(currentMode) {
 
 	arrayUniquePhysicians = [];
 	arraySelectedPhysicians = [];
@@ -55,16 +53,16 @@ function addSidePanels() {
 	// Adding a panel section for selecting physicians
 	d3.select("#sidePanel").append("div")
 		.attr("class", "sidePanelSection")
-		.attr("id", "physicianSection")
+		.attr("id", "physicianSection");
 	
 	// Adding a div within 'physicianSection' for the legend
 	d3.select("#physicianSection").append("div")
-		.attr("id", "physicianLegend")
+		.attr("id", "physicianLegend");
 		
 	// Adding an unordered list within 'physicianLegend'. This unordered list will contain one list item for each option in the filter.
 	// One for each unique physician through all imported files, and one for selecting all physicians
 	d3.select("#physicianLegend").append("ul")
-		.attr("id", "physicianLegendList")
+		.attr("id", "physicianLegendList");
 	
 	// Loop through each imported file to retrieve unique instances of Doctor Number
 	for (var i = 0; i < arrayParsedData.length; i++) {
@@ -89,7 +87,7 @@ function addSidePanels() {
 		// Selected by default
 		d3.select("#physicianLegendList").append("li")
 			.attr("class", "legendListItem physicianListItem selected")
-			.on("click", toggleSelected)
+			.on("click", toggleSelected);
 	}
 	
 	// Retrieve an array of all physician list items
@@ -117,49 +115,49 @@ function addSidePanels() {
 	
 		d3.select("#sidePanel").append("div")
 			.attr("class", "sidePanelSection")
-			.attr("id", "measuresSection")
+			.attr("id", "measuresSection");
 			
 		console.log("Populating diabetic measures...");
 		
 		// Add a drop down menu for the diabetic measures	
 		d3.select("#measuresSection").append("select")
 			.attr("id", "dropdownDiabeticMeasures")
-			.on("change", calculateAndGenerate)
+			.on("change", calculateAndGenerate);
 				
 		// Add the options for the different diabetic measures in the drop down menu
 		// Created dynamically based on default values
 		// To do: variables to store user input values
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("Diabetic Assessment in past " + DEFAULT_VALUE_DIABETIC_ASSESSMENT + " months")
-			.attr("id", "optionDiabeticAssessment")
+			.attr("id", "optionDiabeticAssessment");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("A1C measured in past " + DEFAULT_VALUE_A1C_MEASURED + " months")
-			.attr("id", "optionA1CMeasured")
+			.attr("id", "optionA1CMeasured");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("A1C \u2264 " + DEFAULT_VALUE_A1C_COMPARED + " in past " + DEFAULT_VALUE_A1C_MEASURED + " months")
-			.attr("id", "optionA1CCompared")
+			.attr("id", "optionA1CCompared");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("BP measured in past " + DEFAULT_VALUE_BP_MEASURED + " months")
-			.attr("id", "optionBPMeasured")
+			.attr("id", "optionBPMeasured");
 			
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("BP < " + DEFAULT_VALUE_BP_SYS_COMPARED + "/" + DEFAULT_VALUE_BP_DIAS_COMPARED + " in past " + DEFAULT_VALUE_BP_MEASURED + " months")
-			.attr("id", "optionBPCompared")
+			.attr("id", "optionBPCompared");
 			
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("LDL measured in past " + DEFAULT_VALUE_LDL_MEASURED + " months")
-			.attr("id", "optionLDLMeasured")
+			.attr("id", "optionLDLMeasured");
 			
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("LDL \u2264 " + DEFAULT_VALUE_LDL_COMPARED + " in past " + DEFAULT_VALUE_LDL_MEASURED + " months")
-			.attr("id", "optionLDLCompared")
+			.attr("id", "optionLDLCompared");
 			
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("ACR measured in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
-			.attr("id", "optionACRMeasured")
+			.attr("id", "optionACRMeasured");
 			
 		// d3.select("#dropdownDiabeticMeasures").append("option")
 			// .text("ACR Male < " + DEFAULT_VALUE_ACR_MALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
@@ -171,34 +169,34 @@ function addSidePanels() {
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("eGFR measured in past " + DEFAULT_VALUE_EGFR_MEASURED + " months")
-			.attr("id", "optionEGFRMeasured")
+			.attr("id", "optionEGFRMeasured");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("eGFR > " + DEFAULT_VALUE_EGFR_COMPARED + " in past " + DEFAULT_VALUE_EGFR_MEASURED + " months")
-			.attr("id", "optionEGFRCompared")
+			.attr("id", "optionEGFRCompared");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("Retinopathy")
-			.attr("id", "optionRetinopathy")
-		
+			.attr("id", "optionRetinopathy");
+			
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("Foot Checks")
-			.attr("id", "optionFootChecks")
+			.attr("id", "optionFootChecks");
 		
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("Self-Management")
-			.attr("id", "optionSelfManagement")
+			.attr("id", "optionSelfManagement");
 
 		d3.select("#dropdownDiabeticMeasures").append("option")
 			.text("Current Smokers")
-			.attr("id", "optionCurrentSmokers")
+			.attr("id", "optionCurrentSmokers");
 			
 	}
 	
 	// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
 	d3.select("#sidePanel").append("div")
 		.attr("class", "sidePanelSection")
-		.attr("id", "settingsSection")
+		.attr("id", "settingsSection");
 	
 	// Save to PNG	
 	d3.select("#settingsSection").append("input")
@@ -212,7 +210,7 @@ function addSidePanels() {
 				.attr("width", DEFAULT_CANVAS_WIDTH)
 				.attr("height", DEFAULT_CANVAS_HEIGHT)
 				.style("border", "1px solid black")
-				.style("display", "none")
+				.style("display", "none");
 				
 			// Retrieve output canvas and copy the current visualization into the canvas
 			var output = document.getElementById("outputCanvas");
@@ -227,13 +225,13 @@ function addSidePanels() {
 			document.getElementById("outputA").download = visualizationTitle;
 			document.getElementById("outputA").href = outputURL;
 			document.getElementById("outputA").click();
-		})
+		});
 	
 	// Toggle data labels
 	d3.select("#settingsSection").append("input")
 		.attr("type", "button")
 		.attr("value", "Toggle data labels")
-		.on("click", toggleDataLabels)
+		.on("click", toggleDataLabels);
 	
 }
 
@@ -247,7 +245,7 @@ function addSidePanels() {
 * 
 * @param target The list item that called this function
 */
-function toggleSelected() {
+function toggleSelected(currentMode) {
 
 	// Retrieve an array of all physician item labels
 	var physicianListItems = document.getElementsByClassName("physicianListItem");
@@ -343,25 +341,28 @@ function toggleSelected() {
 	
 	// After toggling, filter the data for calculations and graph the data
 	filterData();
-	calculateAndGenerate();
+	calculateAndGenerate(currentMode);
 }
 
 
 
-function calculateAndGenerate() {
+function calculateAndGenerate(currentMode) {
+
+
+	console.log("calculateAndGenerate Called! from userInterface");
 
 	if (currentMode == "snapshot") {
 	
 		calculateDataSnapshotMode();
-		clearCanvas();
-		generateVisualizationSnapshotMode();
+		clearCanvas("canvasContainer", currentMode);
+		generateVisualizationSnapshotMode("canvasContainer");
 	}
 	
 	else {
 	
 		calculateDataTrackingMode();
-		clearCanvas();
-		generateVisualizationTrackingMode();
+		clearCanvas("canvasContainer", currentMode);
+		generateVisualizationTrackingMode("canvasContainer");
 		
 	}
 }
@@ -425,7 +426,7 @@ Array.prototype.contains = function(obj) {
 	
 	// Checked entire array and could not find a match. Return false
 	return false;
-}
+};
 
 
 /*
@@ -447,7 +448,7 @@ Array.prototype.allEqualsBoolean = function(bool) {
 	
 	// If all elements match, return true
 	return true;
-}
+};
 
 
 /*
@@ -469,6 +470,6 @@ Array.prototype.getArrayIndex = function(ele) {
 	
 	// Return -1 if cannot find a match
 	return -1;
-}	
+};
 
 

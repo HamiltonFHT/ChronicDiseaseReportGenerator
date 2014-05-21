@@ -9,6 +9,10 @@
 //
 // **************************************************************************************************************************************************
 
+var DEFAULT_CANVAS_WIDTH = 960,					// pixels
+	DEFAULT_CANVAS_HEIGHT = 480;				// pixels
+
+
 var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300,
 	DEFAULT_PADDING_TOP_SNAPSHOT_MODE = 50,
 
@@ -21,66 +25,78 @@ var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300,
 	DEFAULT_GRAPH_WIDTH_TRACKING_MODE = DEFAULT_CANVAS_WIDTH - 2 * DEFAULT_PADDING_LEFT_TRACKING_MODE,
 	DEFAULT_GRAPH_HEIGHT_TRACKING_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_TRACKING_MODE;
 	
+
+//var showDataLabels = true;
+
+function clearCanvas(canvas_choice, currentMode) {
+
+	//canvasSVG not always in existance
+	
+	canvas_element = document.getElementById(canvas_choice);
+	
+	try {
+		canvas_element.removeChild(document.getElementById("canvasSVG"));
+	} catch (err) {
+		console.log(err);
+	}
 	
 	
-var xScale,
-	yScale;
-
-var showDataLabels = true;
-
-var visualizationTitle = "";
-
-
-function clearCanvas() {
-
-	document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
 	
-	canvas = d3.select("#canvasContainer").append("svg")
-		.attr("id", "canvasSVG")
+	console.log("Canvas: ", canvas_choice);
+	
+	//console.log("Number of children: " + canvas_element.childElementCount);
+	
+	if (canvas_element.childElementCount == 0) {
 
-		// Set the width and height of the canvas
-		.attr("width", DEFAULT_CANVAS_WIDTH)
-		.attr("height", DEFAULT_CANVAS_HEIGHT)
-		.style("border", "1px solid lightgray")
+		d3.select("#".concat(canvas_choice)).append("svg")
+			.attr("id", "canvasSVG")
+	
+			// Set the width and height of the canvas
+			.attr("width", DEFAULT_CANVAS_WIDTH)
+			.attr("height", DEFAULT_CANVAS_HEIGHT)
+			.style("border", "1px solid lightgray")
 			.append("g")
-				.attr("transform", function() {
-				
-					switch (currentMode) {
+			.attr("transform", function() {
+				switch (currentMode) {
 					
-						case "snapshot":
-							return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
-						break;
-						
-						case "tracking":
-							return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
-						break;
-					}
-				})
+				case "snapshot":
+					return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
+				break;
+					
+				case "tracking":
+					return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
+				break;
+				}	
+			});
+	}
 }
 
 
-function generateVisualizationSnapshotMode() {
+function generateVisualizationSnapshotMode(canvas_choice) {
 	
 	console.log("Generating visualization for Snapshot Mode...");
+
+	var cSVG = d3.select("#".concat(canvas_choice)).select("#canvasSVG");
+
 	
-	xScale = d3.scale.linear()
+	var xScale = d3.scale.linear()
 		.domain([0, 100])
-		.range([0, DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE])
+		.range([0, DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE]);
 		
 	var xAxis = d3.svg.axis()
 		.scale(xScale)
 		.orient("bottom")
-		.tickFormat(function(d) { return d + "%"; })
+		.tickFormat(function(d) { return d + "%"; });
 		
-	yScale = d3.scale.ordinal()
+	var yScale = d3.scale.ordinal()
 		.domain(arrayCalculatedData[0])
-		.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE], 0.1)
+		.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE], 0.1);
 		
 	var yAxis = d3.svg.axis()
 		.scale(yScale)
-		.orient("left")
+		.orient("left");
 		
-	canvas.selectAll(".tickline")
+	cSVG.selectAll(".tickline")
 		.data(xScale.ticks(10))
 		.enter().append("line")
 			.attr("x1", xScale)
@@ -89,10 +105,10 @@ function generateVisualizationSnapshotMode() {
 			.attr("y2", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE)
 			.style("stroke", "#ccc")
 			.style("stroke-width", 1)
-			.style("opacity", 0.7)
+			.style("opacity", 0.7);
 		
 	// Add rectangles for percentage of patients within criteria
-	canvas.selectAll("onTargetBar")
+	cSVG.selectAll("onTargetBar")
 		.data(arrayCalculatedData[1])
 		.enter().append("rect")
 			.attr("class", "onTargetBar")
@@ -102,10 +118,10 @@ function generateVisualizationSnapshotMode() {
 			.attr("fill", DEFAULT_COLOURS[0])
 			.style("stroke", "black")
 			.style("stroke-width", "1px")
-			.attr("shape-rendering", "crispEdges")
+			.attr("shape-rendering", "crispEdges");
 			
 	// Add bars for patients not within criteria
-	canvas.selectAll("offTargetBar")
+	cSVG.selectAll("offTargetBar")
 		.data(arrayCalculatedData[1])
 		.enter().append("rect")
 			.attr("class", "offTargetBar")
@@ -116,18 +132,18 @@ function generateVisualizationSnapshotMode() {
 			.attr("fill", "white")
 			.style("stroke", "black")
 			.style("stroke-width", "1px")
-			.attr("shape-rendering", "crispEdges")
+			.attr("shape-rendering", "crispEdges");
 	
-	canvas.append("g")
+	cSVG.append("g")
 		.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + ")")
 		.style("font-family", "Arial")
 		.style("font-size", "14px")
-		.call(xAxis)
+		.call(xAxis);
 		
-	canvas.append("g")
+	cSVG.append("g")
 		.style("font-family", "Arial")
 		.style("font-size", "14px")
-		.call(yAxis)
+		.call(yAxis);
 	
 	// Add styling and attributes for major ticks in axes
 	var majorTicks = document.getElementsByClassName("tick major");
@@ -144,7 +160,7 @@ function generateVisualizationSnapshotMode() {
 		paths[i].setAttribute("shape-rendering", "crispEdges");
 	}
 	
-	canvas.selectAll("onTargetLabel")
+	cSVG.selectAll("onTargetLabel")
 		.data(arrayCalculatedData[1])
 		.enter().append("text")
 			.attr("class", "dataLabel")
@@ -155,9 +171,9 @@ function generateVisualizationSnapshotMode() {
 			.style("font-size", "13px")
 			.attr("dy", ".35em")
 			.style("fill", "white")
-			.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; })
+			.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 	
-	canvas.selectAll("offTargetLabel")
+	cSVG.selectAll("offTargetLabel")
 		.data(arrayCalculatedData[1])
 		.enter().append("text")
 			.attr("class", "dataLabel")
@@ -170,10 +186,10 @@ function generateVisualizationSnapshotMode() {
 			.style("font-size", "13px")
 			.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
 			// don't display off target labels
-			.attr("display", "none")
+			.attr("display", "none");
 	
 	// Graph title text
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "graphTitle")
 		.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
 		.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
@@ -181,30 +197,29 @@ function generateVisualizationSnapshotMode() {
 		.style("font-size", "14px")
 		.style("font-weight", "bold")
 		.text(function() {
-			var text = "Diabetes Report for Doctor";
+			var title = "Diabetes Report for Doctor";
 			var arraySelectedOnly = [];
 			for (var i = 0; i < arraySelectedPhysicians.length; i++) {
 				if (arraySelectedPhysicians[i]) {
 					 arraySelectedOnly.push(arrayUniquePhysicians[i]);
 				}
 			}
-			if (arraySelectedOnly.length > 1) text += "s ";
-			else text += " ";
+			if (arraySelectedOnly.length > 1) title += "s ";
+			else title += " ";
 			for (var i = 0; i < arraySelectedOnly.length; i++) {
 				if (i == arraySelectedOnly.length - 2)
-					text += arraySelectedOnly[i] + " and ";
+					title += arraySelectedOnly[i] + " and ";
 				else if (i == arraySelectedOnly.length - 1)	
-					text += arraySelectedOnly[i];
-				else text += arraySelectedOnly[i] + ", ";
+					title += arraySelectedOnly[i];
+				else title += arraySelectedOnly[i] + ", ";
 			}
-			text += " as of " + arrayFilteredData[0][1][DEFAULT_COLUMN_CURRENT_DATE];
-			text += " (n = " + (arrayFilteredData[0].length - 1) + ")";
-			visualizationTitle = text;
-			return text;
-		})
+			title += " as of " + arrayFilteredData[0][1][DEFAULT_COLUMN_CURRENT_DATE];
+			title += " (n = " + (arrayFilteredData[0].length - 1) + ")";
+			return title;
+		});
 		
 	// Add x axis label
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "xAxisLabel")
 		.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
 		.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
@@ -212,10 +227,10 @@ function generateVisualizationSnapshotMode() {
 		.style("font-weight", "bold")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.text("% of Patients")
+		.text("% of Patients");
 		
 	// Add y axis label
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "yAxisLabel")
 		.attr("transform", "rotate(-90)")
 		.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
@@ -224,42 +239,45 @@ function generateVisualizationSnapshotMode() {
 		.style("font-weight", "bold")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.text("Diabetic Measure")	
+		.text("Diabetic Measure");
 
 }
 
 
 
-function generateVisualizationTrackingMode() {
+function generateVisualizationTrackingMode(canvas_choice) {
 
 	console.log("Generating visualization for Tracking Mode...");
+
+
+	var cSVG = d3.select("#".concat(canvas_choice)).select("#canvasSVG");
 	
 	// Create min and max dates for the time scale - 1 week before and after
 	var minDate = new Date(arrayDates[0].getFullYear(), arrayDates[0].getMonth(), arrayDates[0].getDate() - 7);
 	var maxDate = new Date(arrayDates[arrayDates.length - 1].getFullYear(), arrayDates[arrayDates.length - 1].getMonth(), arrayDates[arrayDates.length - 1].getDate() + 7);
 	
 	// Creat the scale for the X axis
-	xScale = d3.time.scale()
+	var xScale = d3.time.scale()
 		.domain([minDate, maxDate])
-		.range([0, DEFAULT_GRAPH_WIDTH_TRACKING_MODE])
+		.range([0, DEFAULT_GRAPH_WIDTH_TRACKING_MODE]);
 		
 	// To do: better date format
 	var xAxis = d3.svg.axis()
 		.scale(xScale)
 		.orient("bottom")
-		.tickFormat(d3.time.format("%b %d"))
+		.tickFormat(d3.time.format("%b %d"));
 
 	// Create Y Axis scale
-	yScale = d3.scale.linear()
+	var yScale = d3.scale.linear()
 		.domain([0, 100])
-		.range([DEFAULT_GRAPH_HEIGHT_TRACKING_MODE, 0])
+		.range([DEFAULT_GRAPH_HEIGHT_TRACKING_MODE, 0]);
 		
 	var yAxis = d3.svg.axis()
 		.scale(yScale)
-		.orient("left")
+		.orient("left");
 		
 	// Create and append ticklines for the xAxis
-	canvas.selectAll(".xTickLine")
+	cSVG.selectAll(".xTickLine")
 		.data(arrayCalculatedData)
 		.enter().append("line")
 			.attr("class", "tickLine xTickLine")
@@ -269,10 +287,10 @@ function generateVisualizationTrackingMode() {
 			.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE)
 			.style("opacity", 0.7)
 			.style("stroke", "#cccccc")
-			.style("stroke-width", "1px")
+			.style("stroke-width", "1px");
 
 	// Create and append ticklines for the yAxis
-	canvas.selectAll(".yTickLine")
+	cSVG.selectAll(".yTickLine")
 		.data(yScale.ticks(10))
 		.enter().append("line")
 			.attr("class", "tickLine yTickLine")
@@ -282,22 +300,22 @@ function generateVisualizationTrackingMode() {
 			.attr("y2", yScale)
 			.style("opacity", 0.7)
 			.style("stroke", "#cccccc")
-			.style("stroke-width", "1px")
+			.style("stroke-width", "1px");
 	
-	// Append xAxis to the canvas
-	canvas.append("g")
+	// Append xAxis to the cSVG
+	cSVG.append("g")
 		.attr("class", "xAxis")
 		.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + ")")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.call(xAxis)
+		.call(xAxis);
 				
 	// Append yAxis to the canvas
-	canvas.append("g")
+	cSVG.append("g")
 		.attr("class", "yAxis")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.call(yAxis)
+		.call(yAxis);
 	
 	// Add styling and attributes for major ticks
 	var majorTicks = document.getElementsByClassName("tick major");
@@ -319,7 +337,7 @@ function generateVisualizationTrackingMode() {
 	}
 	
 	// Append lines between data points
-	canvas.selectAll(".dataPointConnector")
+	cSVG.selectAll(".dataPointConnector")
 		.data(new Array(arrayCalculatedData.length - 1))
 		.enter().append("line")
 			.attr("class", "dataPointConnector")
@@ -328,10 +346,10 @@ function generateVisualizationTrackingMode() {
 			.attr("y1", function (d, i) { return yScale(arrayCalculatedData[i][0] * 100); })
 			.attr("y2", function (d, i) { return yScale(arrayCalculatedData[i + 1][0] * 100); })
 			.attr("stroke", DEFAULT_COLOURS[0])
-			.attr("stroke-width", 2)
+			.attr("stroke-width", 2);
 	
 	// Append data points
-	canvas.selectAll(".dataPoint")
+	cSVG.selectAll(".dataPoint")
 		.data(arrayCalculatedData)
 		.enter().append("circle")
 			.attr("class", "dataPoint")
@@ -342,21 +360,26 @@ function generateVisualizationTrackingMode() {
 			.on("mouseover", function(d) {
 				d3.select(this)
 					.attr("r", 7)
-					.attr("fill", "lightcoral")
+					.attr("fill", "lightcoral");
 			})
 			.on("mouseout", function(d) {
 				d3.select(this)
 					.attr("r", 5)
-					.attr("fill", DEFAULT_COLOURS[0])
+					.attr("fill", DEFAULT_COLOURS[0]);
 			})
 			.on("click", function(d, i) {
 				// To do: generate graph underneath for the date clicked
+				//document.getElementById("cSVGContainer_extra").removeChild(document.getElementById("canvasSVG"));
+	
+	
+				clearCanvas("canvasContainer_extra");
+				generateVisualizationSnapshotMode("canvasContainer_extra");
+					
 				
-				
-			})
+			});
 			
 	// Add x axis label
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "xAxisLabel")
 		.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 		.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + 40)
@@ -364,10 +387,10 @@ function generateVisualizationTrackingMode() {
 		.style("font-weight", "bold")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.text("Date")
+		.text("Date");
 	
 	// Add y axis label
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "yAxisLabel")
 		.attr("transform", "rotate(-90)")
 		.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING_MODE / 2)
@@ -376,10 +399,10 @@ function generateVisualizationTrackingMode() {
 		.style("font-weight", "bold")
 		.style("font-size", "14px")
 		.style("font-family", "Arial")
-		.text("% of patients")
+		.text("% of patients");
 		
 	// Add graph title
-	canvas.append("text")
+	cSVG.append("text")
 		.attr("class", "graphTitle")
 		.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 		.attr("y", -DEFAULT_PADDING_TOP_TRACKING_MODE / 2)
@@ -389,7 +412,7 @@ function generateVisualizationTrackingMode() {
 		.style("font-weight", "bold")
 		.text(function() {
 			var d = document.getElementById("dropdownDiabeticMeasures");
-			var text = d.options[d.selectedIndex].value + " for Doctor";
+			var title = d.options[d.selectedIndex].value + " for Doctor";
 			var arraySelectedOnly = [];
 			
 			for (var i = 0; i < arraySelectedPhysicians.length; i++) {
@@ -397,22 +420,20 @@ function generateVisualizationTrackingMode() {
 					arraySelectedOnly.push(arrayUniquePhysicians[i]);
 				}
 			}
-			if (arraySelectedOnly.length > 1) text += "s ";
-			else text += " ";
+			if (arraySelectedOnly.length > 1) title += "s ";
+			else title += " ";
 			for (var i = 0; i < arraySelectedOnly.length; i++) {
 				if (i == arraySelectedOnly.length - 2)
-					text += arraySelectedOnly[i] + " and ";
+					title += arraySelectedOnly[i] + " and ";
 				else if (i == arraySelectedOnly.length - 1)
-					text += arraySelectedOnly[i];
-				else text += arraySelectedOnly[i] + ", ";	
+					title += arraySelectedOnly[i];
+				else title += arraySelectedOnly[i] + ", ";	
 			}
-			
-			visualizationTitle = text;
-			return text;
-		})
+			return title;
+		});
 	
 	// Add labels for data points
-	canvas.selectAll(".dataLabel")
+	cSVG.selectAll(".dataLabel")
 		.data(arrayCalculatedData)
 		.enter().append("text")
 			.attr("class", "dataLabel")
@@ -458,8 +479,7 @@ function generateVisualizationTrackingMode() {
 					return (arrayCalculatedData[i][0] * 100).toFixed(0) + "%";
 				else 
 				return (arrayCalculatedData[i][0] * 100).toFixed(1) + "%";
-			})
-	
+			});
 	
 }
 
@@ -487,7 +507,7 @@ function toggleDataLabels() {
 					.style("font-size", "13px")
 					.attr("dy", ".35em")
 					.style("fill", "white")
-					.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; })
+					.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 			
 			canvas.selectAll("offTargetLabel")
 				.data(arrayCalculatedData[1])
@@ -501,7 +521,7 @@ function toggleDataLabels() {
 					.style("font-family", "Arial")
 					.style("font-size", "13px")
 					.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
-					.attr("display", "none")
+					.attr("display", "none");
 		}
 	
 		else {
@@ -521,7 +541,7 @@ function toggleDataLabels() {
 							return (arrayCalculatedData[i][0] * 100).toFixed(0) + "%";
 						else 
 						return (arrayCalculatedData[i][0] * 100).toFixed(1) + "%";
-					})
+					});
 		
 		}
 	}
