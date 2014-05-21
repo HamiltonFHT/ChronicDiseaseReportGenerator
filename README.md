@@ -1,4 +1,4 @@
 ChronicDiseaseReportGenerator
 =============================
 
-Web dashboard for visualizing date associated with the Minimum Dataset Project
+Web dashboard for visualizing data associated with the Minimum Dataset Project.
