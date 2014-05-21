@@ -1,0 +1,110 @@
+#wrap {
+	width: 990px;
+	/* margin-left: 20px; */
+	margin: 0 auto;
+	font-size: 16px;
+	font-family: Arial;
+}
+
+#header {
+	width: 1000px;
+	text-align: justify;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+#navButtons {
+	width: 610px;
+	height: 100px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#buttonSnapshot {
+	float: left;
+}
+
+#buttonTracking {
+	float: right;
+}
+
+#sidePanel {
+	font-size: 16px;
+	font-family: Arial;
+	width: 1000px;	
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+#measuresSection {
+	display: inline-block;
+}
+
+#settingsSection {
+	display: inline-block;
+}
+
+
+#canvasSVG {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	
+}
+
+
+#physicianLegendList {
+	list-style-type: none;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	padding-left: 0;
+}
+
+.buttonNav {
+	width: 300px;
+	height: 100px;
+	font: 21px Arial;
+	font-weight: bold;
+	display: inline;
+	background-color: gainsboro;
+}
+
+.buttonSelected {
+	border-style: inset;
+	background-color: darkgray;
+}
+
+.buttonNotSelected {
+	border-style: outset;
+	background-color: gainsboro;
+}
+
+.legendListItem {
+	display: inline-block;
+	min-width: 200px;
+	max-width: 200px;
+}
+
+.legendListItem:hover {
+	background-color: gainsboro;
+}
+
+.selected {
+	opacity: 1.0;
+}
+
+.notSelected {
+	opacity: 0.3;
+}
+
+.onTargetBar:hover {
+	fill: lightcoral;
+}
+
+.offTargetBar:hover {
+	fill: white;
+}
+
