@@ -28,7 +28,7 @@ var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300,
 
 //var showDataLabels = true;
 
-function clearCanvas(canvas_choice, currentMode) {
+function clearCanvas(canvas_choice, mode) {
 
 	//canvasSVG not always in existance
 	
@@ -57,7 +57,7 @@ function clearCanvas(canvas_choice, currentMode) {
 			.style("border", "1px solid lightgray")
 			.append("g")
 			.attr("transform", function() {
-				switch (currentMode) {
+				switch (mode) {
 					
 				case "snapshot":
 					return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
@@ -70,6 +70,18 @@ function clearCanvas(canvas_choice, currentMode) {
 			});
 	}
 }
+
+
+Array.prototype.allIndicesOf = function(ele) {
+	var indices = [];
+	var idx = this.indexOf(ele);
+	while (idx != -1) {
+    	indices.push(idx);
+    	idx = this.indexOf(ele, idx + 1);
+	}
+	return indices;
+};
+
 
 
 function generateVisualizationSnapshotMode(canvas_choice) {
@@ -199,11 +211,12 @@ function generateVisualizationSnapshotMode(canvas_choice) {
 		.text(function() {
 			var title = "Diabetes Report for Doctor";
 			var arraySelectedOnly = [];
-			for (var i = 0; i < arraySelectedPhysicians.length; i++) {
-				if (arraySelectedPhysicians[i]) {
-					 arraySelectedOnly.push(arrayUniquePhysicians[i]);
-				}
+			//TODO
+			var indices = arrayPhysicians[1].allIndicesOf(true);
+			for (i=0; i < indices.length; i++) {
+				arraySelectedOnly.push(arrayPhysicians[0][indices[i]]);
 			}
+			
 			if (arraySelectedOnly.length > 1) title += "s ";
 			else title += " ";
 			for (var i = 0; i < arraySelectedOnly.length; i++) {
@@ -415,11 +428,18 @@ function generateVisualizationTrackingMode(canvas_choice) {
 			var title = d.options[d.selectedIndex].value + " for Doctor";
 			var arraySelectedOnly = [];
 			
+			var indices = arrayPhysicians[1].allIndicesOf(true);
+			for (i=0; i < indices.length; i++) {
+				arraySelectedOnly.push(arrayPhysicians[0][indices[i]]);
+			}
+			
+			/*
 			for (var i = 0; i < arraySelectedPhysicians.length; i++) {
 				if (arraySelectedPhysicians[i]) {
 					arraySelectedOnly.push(arrayUniquePhysicians[i]);
 				}
 			}
+			*/
 			if (arraySelectedOnly.length > 1) title += "s ";
 			else title += " ";
 			for (var i = 0; i < arraySelectedOnly.length; i++) {
@@ -486,7 +506,7 @@ function generateVisualizationTrackingMode(canvas_choice) {
 
 
 
-function toggleDataLabels() {
+function toggleDataLabels(mode) {
 			
 	// Find data labels
 	if (d3.selectAll(".dataLabel")[0].length > 0) 
@@ -494,7 +514,7 @@ function toggleDataLabels() {
 		
 	else {
 	
-		if (currentMode == "snapshot") {
+		if (mode == "snapshot") {
 		
 			canvas.selectAll("onTargetLabel")
 				.data(arrayCalculatedData[1])

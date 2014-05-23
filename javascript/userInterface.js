@@ -18,18 +18,26 @@
 // arrayUniquePhysicians: Stores all the unique instances of "Doctor Number" for all imported files
 // 
 // arraySelectedPhysicians: Stores Boolean values of whether each physician is selected for the aggregated line
-var arrayUniquePhysicians,
-	arraySelectedPhysicians;
-	
+//TODO combine these variables into one 2D array arrayPhysicians and make non-gloval
+//var arrayUniquePhysicians,
+//	arraySelectedPhysicians;
+
+var arrayPhysicians;
+
 /*
 * addSidePanel:
 * - Add user interface elements to the #sidePanel div declared in 'index.html'
 * 
 */
-function addSidePanels(currentMode) {
+function addSidePanels(arrayParsedData, mode) {
 
-	arrayUniquePhysicians = [];
-	arraySelectedPhysicians = [];
+	//var arrayUniquePhysicians = [];
+	//var arraySelectedPhysicians = [];
+	
+	//arrayPhysicians contains 2 columns and n rows
+	//[Doctor number, boolean selected]
+	//TODO make non-global
+	arrayPhysicians = [];
 	
 	// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 	// physicianSection, measuresSection, settingsSection
@@ -65,23 +73,27 @@ function addSidePanels(currentMode) {
 		.attr("id", "physicianLegendList");
 	
 	// Loop through each imported file to retrieve unique instances of Doctor Number
+	//TODO remove inner for loop
 	for (var i = 0; i < arrayParsedData.length; i++) {
 	
 		// Loop through each row in the file. Do not look at headers, so start at row j = 1
 		for (var j = 1; j < arrayParsedData[i].length; j++) {
 		
 			// If 'arrayUniquePhysicians' does not already contain that "Doctor Number", add it to the array
-			if (!arrayUniquePhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
-				arrayUniquePhysicians.push(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
+			//if (!arrayUniquePhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
+			//	arrayUniquePhysicians.push(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
+				
+			if (!arrayPhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
+				arrayPhysicians.push([arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER], true]);	
 		}
 	}
 	
 	// Sort 'arrayUniquePhysicians' so the number displayed in ascending order
-	arrayUniquePhysicians.sort(function(a, b) { return a - b; });
+	arrayPhysicians.sort(function(a, b) { return a[0] > b[0]; });
 	
 	// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 	// panel. There will also be a filter for "All Selected Physicians"
-	for (var i = 0; i < arrayUniquePhysicians.length + 1; i++) {
+	for (var i = 0; i < arrayPhysicians[0].length + 1; i++) {
 		
 		// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
 		// Selected by default
@@ -104,14 +116,14 @@ function addSidePanels(currentMode) {
 		
 		// Every other doctor. All doctors are selected by default
 		else {
-			arraySelectedPhysicians[i - 1] = true;
-			physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + arrayUniquePhysicians[i - 1].toString() + "</span>";
+			//arraySelectedPhysicians[i - 1] = true;
+			physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + arrayPhysicians[i - 1].toString() + "</span>";
 		}
 	}
 	
 	// If tracking mode
 	// Add a section in the sidebar for the diabetic measures
-	if (currentMode == "tracking") {
+	if (mode == "tracking") {
 	
 		d3.select("#sidePanel").append("div")
 			.attr("class", "sidePanelSection")
@@ -215,13 +227,14 @@ function addSidePanels(currentMode) {
 			// Retrieve output canvas and copy the current visualization into the canvas
 			var output = document.getElementById("outputCanvas");
 			var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
-			canvg(output, svgXML, { ignoreDimensions: true })
+			canvg(output, svgXML, { ignoreDimensions: true });
 			
 			// Retrieve data string of the canvas and append to the hidden img element
 			var outputURL = output.toDataURL();
 			document.getElementById("outputImg").src = outputURL;
 			
 			// Modify attributes of hidden elements and simulate file download
+			//TODO get visualizationTitle here
 			document.getElementById("outputA").download = visualizationTitle;
 			document.getElementById("outputA").href = outputURL;
 			document.getElementById("outputA").click();
@@ -245,7 +258,7 @@ function addSidePanels(currentMode) {
 * 
 * @param target The list item that called this function
 */
-function toggleSelected(currentMode) {
+function toggleSelected(mode) {
 
 	// Retrieve an array of all physician item labels
 	var physicianListItems = document.getElementsByClassName("physicianListItem");
@@ -263,7 +276,8 @@ function toggleSelected(currentMode) {
 			for (var i = 1; i < physicianListItems.length; i++) {
 				
 				// Update each element in the array
-				arraySelectedPhysicians[i - 1] = false;
+				//TPS changed to arrayPhysicians
+				arrayPhysicians[1][i - 1] = false;
 				
 				// If doctor is 'selected', unselect it
 				if (physicianListItems[i].className.indexOf("selected") != -1)
@@ -281,7 +295,7 @@ function toggleSelected(currentMode) {
 			for (var i = 1; i < physicianListItems.length; i++) {
 			
 				// Update each element in the array
-				arraySelectedPhysicians[i - 1] = true;
+				arrayPhysicians[1][i - 1] = true;
 				
 				// If doctor is 'notSelected', select it
 				if (physicianListItems[i].className.indexOf("notSelected") != -1)
@@ -305,8 +319,9 @@ function toggleSelected(currentMode) {
 				
 				// Search innerHTML for Doctor Number, match against arrayUniquePhysicians for the array index, use index to update selected Boolean
 				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				var index = arrayUniquePhysicians.getArrayIndex(docNum);
-				arraySelectedPhysicians[index] = false;
+				//TPS come back to this, it can be cleaned up
+				var index = arrayPhysicians[0].getArrayIndex(docNum);
+				arrayPhysicians[1][index] = false;
 			}
 			
 			// "Select All" is not selected, so just unselect the clicked doctor 
@@ -318,8 +333,8 @@ function toggleSelected(currentMode) {
 				// This will need to be updated if we show actual physician names
 				this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				var index = arrayUniquePhysicians.getArrayIndex(docNum);
-				arraySelectedPhysicians[index] = false;
+				//var index = arrayPhysicians[0].getArrayIndex(docNum);
+				arrayPhysicians[1] = fillArray(false, arrayPhysicians[1].length);
 			}
 		}
 		
@@ -329,44 +344,53 @@ function toggleSelected(currentMode) {
 			// Select it and update array
 			this.className = this.className.substring(0, this.className.indexOf("notSelected")) + "selected";
 			var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-			var index = arrayUniquePhysicians.getArrayIndex(docNum);
-			arraySelectedPhysicians[index] = true;
+			
+			var index = arrayPhysicians[0].getArrayIndex(docNum);
+			arrayPhysicians[1][index] = true;
 			
 			// Loop through array to see if ALL doctors are now selected, if so, select "Select All"
-			if (arraySelectedPhysicians.allEqualsBoolean(true)) {
+			if (arrayPhysicians[1].allEqualsBoolean(true)) {
 				physicianListItems[0].className = physicianListItems[0].className.substring(0, physicianListItems[0].className.indexOf("notSelected")) + "selected";
 			}
 		}	
 	}
 	
 	// After toggling, filter the data for calculations and graph the data
-	filterData();
-	calculateAndGenerate(currentMode);
+	//TODO get arrayCleanedData into this function
+	filterData(arrayCleanedData);
+	calculateAndGenerate(mode);
 }
 
 
 
-function calculateAndGenerate(currentMode) {
+function calculateAndGenerate(mode) {
 
 
-	console.log("calculateAndGenerate Called! from userInterface");
+	console.log("calculateAndGenerate Called!");
 
-	if (currentMode == "snapshot") {
+	if (mode == "snapshot") {
 	
 		calculateDataSnapshotMode();
-		clearCanvas("canvasContainer", currentMode);
+		clearCanvas("canvasContainer", mode);
 		generateVisualizationSnapshotMode("canvasContainer");
 	}
 	
 	else {
 	
 		calculateDataTrackingMode();
-		clearCanvas("canvasContainer", currentMode);
+		clearCanvas("canvasContainer", mode);
 		generateVisualizationTrackingMode("canvasContainer");
 		
 	}
 }
 
+function fillArray(value, len) {
+  var arr = [];
+  for (var i = 0; i < len; i++) {
+    arr.push(value);
+  };
+  return arr;
+}
 
 /*
 * toggleDataLabels:
@@ -471,5 +495,3 @@ Array.prototype.getArrayIndex = function(ele) {
 	// Return -1 if cannot find a match
 	return -1;
 };
-
-

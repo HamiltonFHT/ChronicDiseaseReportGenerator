@@ -103,17 +103,9 @@ var DEFAULT_CANVAS_WIDTH = 960,					// pixels
 // 
 // arrayDateModified: Stores the modified date from each imported CSV file. The date used for tracking over time will fall back to this value if a
 //					  "Current Date" column is not found in the file.
+//TODO Make these non-global
 var	arrayParsedData;
 var arrayLastModifiedDate;
-
-
-// Snapshot or Tracking mode : String
-//var currentMode;
-
-
-// Global variable for the canvas for visualization
-//var canvas;
-//var canvas_extra;
 
 
 /*
@@ -126,8 +118,8 @@ function readFiles(files) {
 	
 	
 	// Reset all data
-	arrayParsedData = [];
-	arrayLastModifiedDate = [];
+	var arrayParsedData = [];
+	var arrayLastModifiedDate = [];
 		
 	// If there are files imported, read them, starting from index 0
 	// To do: Perform file validation to check whether they have .txt file extension
@@ -135,14 +127,12 @@ function readFiles(files) {
 		
 		console.log("Reading " + files.length + " files...");
 		
-		var currentMode = (files.length == 1) ? "snapshot" : "tracking";
+		var mode = (files.length == 1) ? "snapshot" : "tracking";
 		
-		console.log("Current mode: " + currentMode);
-		
-		canvas = d3.select("#canvasContainer");
+		console.log("Current mode: " + mode);
 		
 		// Read the first file in the FileList
-		readSingleFile(0, currentMode);
+		readSingleFile(0, mode);
 	}
 	
 	/*
@@ -163,33 +153,16 @@ function readFiles(files) {
 			
 			console.log("Current mode: " + mode);
 			
-			cleanParsedData();
-			addSidePanels(mode);
-			filterData();
+			//TODO untangle this mess
+			arrayCleanedData = cleanParsedData(arrayParsedData);
+			addSidePanels(arrayCleanedData, mode);
+			arrayParsedData = filterData(arrayCleanedData);
 			
 			// different data manipulation and visualization functions depending on the mode selected
-			switch (mode) {
-			
-				case "snapshot":
-					
-					calculateDataSnapshotMode();
-					clearCanvas("canvasContainer", mode);
-					generateVisualizationSnapshotMode("canvasContainer");
-					
-				break;
-				
-				case "tracking":
-				
-					calculateDataTrackingMode();
-					clearCanvas("canvasContainer", mode);
-					generateVisualizationTrackingMode("canvasContainer");
-					
-				break;
-			
-			}
-			
-			
-			
+			//TPS: changed code block to call this function again which was functionally equivalent
+			//TODO pass appropriate data to this function to pass along to others.
+			calculateAndGenerate(mode);
+
 		}
 		
 		// Declare and initialize a FileReader object for this file
@@ -232,7 +205,7 @@ function readFiles(files) {
 * - Inserts a "Current Date" column if it doesn't already have one, uses the date from 'arrayLastModifiedDate' to 
 * 	populate the column.
 */ 
-function cleanParsedData() {
+function cleanParsedData(arrayParsedData) {
 	
 	console.log("Cleaning parsed data...");
 	
@@ -279,6 +252,8 @@ function cleanParsedData() {
 	}
 	
 	console.log("Finished cleaning parsed data.");
+	
+	return arrayParsedData;
 }	
 		
 		

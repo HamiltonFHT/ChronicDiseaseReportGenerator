@@ -44,39 +44,43 @@ var arrayFilteredData,
 /*
 * filterData:
 * - Filters data based on the selected physicians and populates 'arrayFilteredData' with the filtered rows from each CSV file
-*
+* TODO pass in arraySelectedPhysicians and arrayUniquePhysicians
 */
-function filterData() {
+function filterData(arrayCleanedData) {
 	
 	console.log("Filtering data...");
 	
 	// Empty 'arrayFilteredData'
 	arrayFilteredData = [];
 	
+	console.log(arrayCleanedData);
+	
 	// Loop through each CSV file imported
-	for (var i = 0; i < arrayParsedData.length; i++) {
+	for (var i = 0; i < arrayCleanedData.length; i++) {
 	
 		// Push an empty array into 'arrayFilteredData' and push the header row into it
 		arrayFilteredData.push(new Array());
-		arrayFilteredData[i].push(arrayParsedData[i][0]);
+		arrayFilteredData[i].push(arrayCleanedData[i][0]);
 	
 		// Loop through each row of data in the file, start at row 1
-		for (var j = 1; j < arrayParsedData[i].length; j++) {
+		for (var j = 1; j < arrayCleanedData[i].length; j++) {
 		
 			// Get doctor number
-			var docNum = arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER];
+			var docNum = arrayCleanedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER];
 			
 			// Get index of doctor number from arrayUniquePhysicians
-			var docIndex = arrayUniquePhysicians.getArrayIndex(docNum);
+			var docIndex = arrayPhysicians[0].getArrayIndex(docNum);
 			
 			// Use index to see if doctor is selected in the side panel
-			var docSelected = arraySelectedPhysicians[docIndex];
+			var docSelected = arrayPhysicians[1][docIndex];
 			
 			// If selected, push row into 'arrayFilteredData'
 			if (docSelected)
-				arrayFilteredData[i].push(arrayParsedData[i][j]);
+				arrayFilteredData[i].push(arrayCleanedData[i][j]);
 		}
 	}
+	
+	return arrayFilteredData;
 }
 
 
@@ -217,12 +221,6 @@ function calculateDataTrackingMode() {
 
 
 
-
-
-
-
-
-
 // Functions for calculating patients counts for specific diabetic measures
 
 function calculateCountDiabeticMeasure(fileIndex, measureIndex) {
@@ -309,7 +307,7 @@ function calculateCountDiabeticMeasure(fileIndex, measureIndex) {
 					&& (arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_ACR] == "<2.0"
 					|| parseFloat(arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_ACR]) < DEFAULT_VALUE_ACR_MALE_COMPARED)) {
 					count++;
-					console.log(arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_PATIENT_NUMBER] + " " + arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_ACR])
+					console.log(arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_PATIENT_NUMBER] + " " + arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_ACR]);
 					}
 				break;
 				
@@ -403,44 +401,3 @@ function calculateMonthsDifference(date1, date2) {
 function calculateMonthsSince(date, numMonths) {
 	return new Date(date.setMonth(date.getMonth() - numMonths));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-	
