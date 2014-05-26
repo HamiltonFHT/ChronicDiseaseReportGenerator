@@ -44,9 +44,9 @@ var arrayFilteredData,
 /*
 * filterData:
 * - Filters data based on the selected physicians and populates 'arrayFilteredData' with the filtered rows from each CSV file
-* TODO pass in arraySelectedPhysicians and arrayUniquePhysicians
+*
 */
-function filterData(arrayCleanedData) {
+function filterData(arrayPhysicians, arrayCleanedData) {
 	
 	console.log("Filtering data...");
 	

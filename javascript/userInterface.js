@@ -22,22 +22,15 @@
 //var arrayUniquePhysicians,
 //	arraySelectedPhysicians;
 
-var arrayPhysicians;
-
 /*
 * addSidePanel:
 * - Add user interface elements to the #sidePanel div declared in 'index.html'
 * 
 */
-function addSidePanels(arrayParsedData, mode) {
+function addSidePanels(arrayPhysicians, mode) {
 
-	//var arrayUniquePhysicians = [];
-	//var arraySelectedPhysicians = [];
-	
 	//arrayPhysicians contains 2 columns and n rows
 	//[Doctor number, boolean selected]
-	//TODO make non-global
-	arrayPhysicians = [];
 	
 	// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 	// physicianSection, measuresSection, settingsSection
@@ -72,25 +65,6 @@ function addSidePanels(arrayParsedData, mode) {
 	d3.select("#physicianLegend").append("ul")
 		.attr("id", "physicianLegendList");
 	
-	// Loop through each imported file to retrieve unique instances of Doctor Number
-	//TODO remove inner for loop
-	for (var i = 0; i < arrayParsedData.length; i++) {
-	
-		// Loop through each row in the file. Do not look at headers, so start at row j = 1
-		for (var j = 1; j < arrayParsedData[i].length; j++) {
-		
-			// If 'arrayUniquePhysicians' does not already contain that "Doctor Number", add it to the array
-			//if (!arrayUniquePhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
-			//	arrayUniquePhysicians.push(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
-				
-			if (!arrayPhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
-				arrayPhysicians.push([arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER], true]);	
-		}
-	}
-	
-	// Sort 'arrayUniquePhysicians' so the number displayed in ascending order
-	arrayPhysicians.sort(function(a, b) { return a[0] > b[0]; });
-	
 	// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 	// panel. There will also be a filter for "All Selected Physicians"
 	for (var i = 0; i < arrayPhysicians[0].length + 1; i++) {
@@ -117,7 +91,7 @@ function addSidePanels(arrayParsedData, mode) {
 		// Every other doctor. All doctors are selected by default
 		else {
 			//arraySelectedPhysicians[i - 1] = true;
-			physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + arrayPhysicians[i - 1].toString() + "</span>";
+			physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + arrayPhysicians[0][i - 1].toString() + "</span>";
 		}
 	}
 	
@@ -257,6 +231,9 @@ function addSidePanels(arrayParsedData, mode) {
 * - If selected, toggle unselected, and vice versa
 * 
 * @param target The list item that called this function
+* 
+* TODO: Get arrayPhysicians and arrayCleanedData into this function
+* 
 */
 function toggleSelected(mode) {
 
@@ -357,7 +334,7 @@ function toggleSelected(mode) {
 	
 	// After toggling, filter the data for calculations and graph the data
 	//TODO get arrayCleanedData into this function
-	filterData(arrayCleanedData);
+	filterData(arrayPhysicians, arrayCleanedData);
 	calculateAndGenerate(mode);
 }
 

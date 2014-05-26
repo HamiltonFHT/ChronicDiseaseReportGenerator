@@ -106,7 +106,8 @@ var DEFAULT_CANVAS_WIDTH = 960,					// pixels
 //TODO Make these non-global
 var	arrayParsedData;
 var arrayLastModifiedDate;
-
+var arrayPhysicians;
+var mode;
 
 /*
 * readFiles:
@@ -127,13 +128,17 @@ function readFiles(files) {
 		
 		console.log("Reading " + files.length + " files...");
 		
-		var mode = (files.length == 1) ? "snapshot" : "tracking";
+		mode = (files.length == 1) ? "snapshot" : "tracking";
 		
 		console.log("Current mode: " + mode);
 		
 		// Read the first file in the FileList
 		readSingleFile(0, mode);
 	}
+	
+	
+	//TODO get arrayPhysicians here
+	
 	
 	/*
 	* readSingleFile: 
@@ -155,8 +160,10 @@ function readFiles(files) {
 			
 			//TODO untangle this mess
 			arrayCleanedData = cleanParsedData(arrayParsedData);
-			addSidePanels(arrayCleanedData, mode);
-			arrayParsedData = filterData(arrayCleanedData);
+			arrayPhysicians = getPhysicianList(arrayParsedData);
+			console.log(arrayPhysicians);
+			addSidePanels(arrayPhysicians, mode);
+			arrayFilteredData = filterData(arrayPhysicians, arrayCleanedData);
 			
 			// different data manipulation and visualization functions depending on the mode selected
 			//TPS: changed code block to call this function again which was functionally equivalent
@@ -256,6 +263,38 @@ function cleanParsedData(arrayParsedData) {
 	return arrayParsedData;
 }	
 		
+function getPhysicianList(arrayParsedData) {
+	
+	
+	arrayPhysicians = new Array(new Array, new Array);
+	
+	// Loop through each imported file to retrieve unique instances of Doctor Number
+	//TODO remove inner for loop
+	for (var i = 0; i < arrayParsedData.length; i++) {
+	
+		// Loop through each row in the file. Do not look at headers, so start at row j = 1
+		for (var j = 1; j < arrayParsedData[i].length; j++) {
+		
+			// If 'arrayUniquePhysicians' does not already contain that "Doctor Number", add it to the array
+			//if (!arrayUniquePhysicians.contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
+			//	arrayUniquePhysicians.push(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
+			
+			if (arrayPhysicians.length == 0) {
+				arrayPhysicians.push([arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER], true]);
+				continue;
+			}
+			
+			if (!arrayPhysicians[0].contains(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
+				arrayPhysicians[0].push(arrayParsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
+				arrayPhysicians[1].push(true);
+		}
+	}
+	
+	// Sort 'arrayUniquePhysicians' so the number displayed in ascending order
+	arrayPhysicians.sort(function(a, b) { return a[0] > b[0]; });
+	
+	return arrayPhysicians;
+}
 		
 		
 
