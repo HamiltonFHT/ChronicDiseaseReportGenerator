@@ -38,7 +38,7 @@
 		
 		<div id="sidePanel">
 			<div class="sidePanelImport" id="sectionImport">
-				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="readFiles(this.files)" multiple="multiple">
+				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="reportData.readFiles(this.files);" multiple="multiple">
 			</div>
 		</div>
 		
@@ -56,10 +56,16 @@
 			</a>
 		</div>
 		
+		<!--
 		<script type="text/javascript" src="javascript/reportGenerator.js"></script>
 		<script type="text/javascript" src="javascript/userInterface.js"></script>
 		<script type="text/javascript" src="javascript/dataManipulation.js"></script>
 		<script type="text/javascript" src="javascript/generateVisualization.js"></script>
+		-->
+		
+		<script type="text/javascript" src = "js/reportData.js"> </script>
+		<script type="text/javascript" src = "js/reportViewer.js"> </script>
+		<script type="text/javascript" src = "js/reportRules.js"> </script>
 		
 		<br />
 		<br />
