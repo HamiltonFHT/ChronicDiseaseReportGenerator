@@ -67,6 +67,8 @@ var reportViewer = (function() {
 	function genVisSnapshot(){
 		console.log("Generating visualization for Snapshot Mode...");
 
+		clearCanvas();
+
 		var calculatedData = reportData.calculatedData();
 
 		xScale = d3.scale.linear()
@@ -237,6 +239,8 @@ var reportViewer = (function() {
 	};
 	function genVisTracking() {
 		console.log("Generating visualization for Tracking Mode...");
+
+		clearCanvas();
 
 
 		var calculatedData = reportData.calculatedData();
@@ -410,7 +414,7 @@ var reportViewer = (function() {
 				//TODO -- work out selected and unique physicians
 				var indices = reportData.selectedPhysicianList.allIndicesOf(true);
 				for (i=0; i < indices.length; i++) {
-					arraySelectedOnly.push(reportData.physicanList[indices[i]]);
+					arraySelectedOnly.push(reportData.physicianList[indices[i]]);
 				}
 				
 				/*

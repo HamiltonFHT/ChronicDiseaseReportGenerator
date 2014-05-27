@@ -111,7 +111,7 @@ var reportData = (function() {
 				calculate();
 				
 
-				
+				return;
 				// different data manipulation and visualization functions depending on the mode selected
 				//TPS: changed code block to call this function again which was functionally equivalent
 				//TODO pass appropriate data to this function to pass along to others.
@@ -252,11 +252,11 @@ var reportData = (function() {
 	function calculate() {
 		if (mode == "snapshot") {
 			calcSnapshotData();
-			reportViewer.clearCanvas();
+
 			reportViewer.genVisSnapshot();
 		} else {
 			calcTrackingData();
-			reportViewer.clearCanvas();
+
 			reportViewer.genVisTracking();
 		}
 	}
