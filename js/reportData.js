@@ -1,21 +1,6 @@
-/*
- * Using Prototypes
- 
-
-var CDRG_Data = function() {
-	this.PhysicianList = new Array(new Array, new Array);
-};
-
-
-CDRG.prototype.getPhysicians = function() {
-	return this.PhysicianList;
-};
-
-
-*/
 //Single Object that holds all data variables and data manipulation functions
 var reportData = (function() {
-	var dataSource = [];
+	//var dataSource = [];
 	
 	var DEFAULT_DATE_FORMAT = d3.time.format("%b %d, %Y");
 	var DEFAULT_CURR_DATE_FORMAT = d3.time.format("%d/%m/%Y");
@@ -24,6 +9,7 @@ var reportData = (function() {
 	// NOTE: If new columns are added or columns are rearranged, these values MUST reflect those changes.
 	// TO CHANGE: Column numbers and variable for other searches for patient populations
 	// **TPS: One array for each possible chronic condition?
+	/*
 	var DEFAULT_COLUMN_PATIENT_NUMBER = 0;
 	var DEFAULT_COLUMN_PATIENT_AGE = 1;
 	var DEFAULT_COLUMN_PATIENT_SEX = 2;
@@ -49,289 +35,221 @@ var reportData = (function() {
 	var DEFAULT_COLUMN_SELF_MANAGEMENT = 22;
 	var DEFAULT_COLUMN_CURRENT_DATE = 23;
 	var DEFAULT_COLUMN_PRIVACY = 24;
+	*/
 
-	var physicianList = [];
-	var selectedPhysicianList = []
-	var rawData = [];
+	var physicianIndex = [];
+	var selectedPhysicians = null;
+	//var rawData = [];
 	var parsedData = [];
-	var filteredData = [];
-	var calculatedData = [];
+	//var filteredData = [];
+	//var calculatedData = [];
 	var arrayLastModifiedDate = [];
 	var arrayDates = [];
-	var mode = "";
-	var cleanedData = [];
+	var mode = "snapshot";
+
 	
 	function readFiles(files) {
-		
-		dataSource = files;
-		
-		// If there are files imported, read them, starting from index 0
-		// To do: Perform file validation to check whether they have .txt file extension
-		if (files.length > 0) {
-			
-			console.log("Reading " + files.length + " files...");
-			
-			mode = (files.length == 1) ? "snapshot" : "tracking";
-			
-			console.log("Current mode: " + mode);
-			
-			// Read the first file in the FileList
-			readSingleFile(0, mode);
-		}
-		
-		
-		//TODO get arrayPhysicians here
-		
-		
-		/*
-		* readSingleFile: 
-		* - Inner function that reads a single file at a time.
-		*
-		* @param index The index of the file in the FileList
-		* @param mode The current mode : "Snapshot", "Tracking"
-		*/
-		function readSingleFile(index, mode) {
-		
-			// When finished reading all files, execute the following functions, which will clean and parse the imported
-			// data, add user interface elements to the document, filter data based on user interaction, and generate the
-			// visualization based on the selected filters
-			if (index >= files.length) {
-				
-				console.log("Finished reading " + files.length + " files.");
-				
-				//TODO untangle this mess
-				//addSidePanels(arrayPhysicians, mode);
-				clean();
-				getPhysicianList();
-				filter();
-				
-				console.log("Calling addSidePanels");
-				reportViewer.addSidePanels();
-				
-				calculate();
-				
 
-				return;
-				// different data manipulation and visualization functions depending on the mode selected
-				//TPS: changed code block to call this function again which was functionally equivalent
-				//TODO pass appropriate data to this function to pass along to others.
-				//calculateAndGenerate(mode);
-	
-			}
+	   //mode = (files.length == 1) ? "snapshot" : "tracking";
+	   
+	   filesLeftToRead = files.length;
+	   
+		for (i = 0; i < files.length; i++) {
+			var f = files[i]; 
 			
-			// Declare and initialize a FileReader object for this file
-			// Get the file from the FileList based on the index value
-			var reader = new FileReader();
-			var f = files[index];
-			
-			// When the FileReader object is loaded, pass in the imported file as a parameter to this function
-			reader.onload = (function(theFile) {
-						
-				return function(e) {
-					
-					console.log("Reading file " + (index + 1) + ": " + theFile.name + "...");
-					
-					// Retrieve and parse the contents of the imported file and push it into 'arrayParsedData'
-					var unparsed = e.target.result;
-					parsedData.push(d3.csv.parseRows(unparsed));
-					
-					// Retrieve the last modified date of the imported file and push it into 'arrayLastModifiedDate' 
-					// Parse the date using the default date format
-					var d = new Date(theFile.lastModifiedDate);
-					arrayLastModifiedDate.push(DEFAULT_DATE_FORMAT(d));
-					
-					// Increment the index counter and read the next file
-					index++;
-					readSingleFile(index, mode);
-				};
-			})(f);
-			
-			// Read the current file as text format
-			reader.readAsText(f);
+			if (!f) {
+			   alert("Failed to load file");
+			} else if (!f.type.match(/^text*/)) {
+			    alert(f.name + " is not a valid text file.");
+			} else {
+			 	var r = new FileReader();
+			  	r.onload = (function(f) { 
+			  		return function(e) { 
+			    		var contents = e.target.result;
+			    		parsedData.push(parseToObject(f, contents));
+			    		//TODO replace with Promise pattern
+			    		--filesLeftToRead;
+			    		if (filesLeftToRead == 0) {
+							getPhysicianIndex();
+
+							console.log("Calling addSidePanels");
+							reportViewer.addSidePanels();
+							
+							calculate();
+			    		}
+			 		};
+			 	})(f);
+			 }
+			 r.readAsText(f);
 		}
+	}
+		
+
+	function parseToObject(f, unparsed) {
+
+		csvObject = {};
+		csvObject['fileName'] = f.name;
+		csvObject['fileLastModified'] = f.lastModifiedDate;
+	
+		arrData = CSVToArray(unparsed);
+		var count = 0;
+		
+		if (arrData[0].length == 0) {
+			arrData.shift();
+		}
+		var csvHeaders = arrData.shift();
+		
+		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
+			var rowArray = arrData[rowIndex];
+			++count;
+			for (var propIndex = 0; propIndex < rowArray.length; ++propIndex) {
+				if (csvObject[csvHeaders[propIndex]] == undefined) {
+					csvObject[csvHeaders[propIndex]] = [];
+				}
+				csvObject[csvHeaders[propIndex]].push(rowArray[propIndex]);
+
+			}
+		}
+		
+		csvObject["num_elements"] = count-1;
+				
+		//PSS include a blank column
+		if (csvObject.hasOwnProperty("")) {
+			delete csvObject[""];
+		}
+		if (!csvObject.hasOwnProperty("Current Date")) {
+			csvObject["Current Date"] = [].repeat(fileLastModified, count);
+		}
+		
+		
+
+		return csvObject;
 	}
 	
-	function clean() {
-		console.log("Cleaning parsed data...");
 		
-		// Loops through each imported file in 'this.parsedData'
-		for (var i = 0; i < parsedData.length; i++) {
-			
-			// Remove first row
-			parsedData[i] = parsedData[i].slice(1);
-			
-			// For the current file, loop through each row in the file
-			for (var j = 0; j < parsedData[i].length; j++) {
-				
-				// Last column empty, exported directly from PSS
-				// Else last column not empty, would be a manually modified csv file
-				if (parsedData[i][j][parsedData[i][j].length - 1] == "") {
-					
-					// Remove the last element
-					parsedData[i][j] = parsedData[i][j].slice(0, parsedData[i][j].length - 1);
-					
-					// If there is no "Current Date" column, retrieve value from 'arrayLastModifiedDate' and populate it
-					if (parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE] == undefined) {
-						
-						// If header row, label it "Current Date", otherwise retrieve value from 'arrayLastModifiedDate'
-						// using index of 'i'
-						if (j == 0)	parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE] = "Current Date";
-						else parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE] = arrayLastModifiedDate[i];
-					}
-					
-					// Else there IS a "Current Date" column, check for formatting
-					else {
-						
-						// Ignore header
-						if (j > 0) {
-						
-							// Convert "%d/%m/%Y" format to "%b %d, %Y"
-							if (DEFAULT_DATE_FORMAT.parse(parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE]) == null) {
-								
-								parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE] = DEFAULT_DATE_FORMAT(DEFAULT_CURR_DATE_FORMAT.parse(parsedData[i][j][DEFAULT_COLUMN_CURRENT_DATE]));
-							}
-						}
-					}
-				}
-			}
-		}
-		console.log("Finished cleaning parsed data.");
+	function CSVToArray( strData, strDelimiter ){
+	    // Check to see if the delimiter is defined. If not,
+	    // then default to comma.
+	    strDelimiter = (strDelimiter || ",");
+	
+	    // Create a regular expression to parse the CSV values.
+	    var objPattern = new RegExp(
+	        (
+	            // Delimiters.
+	            "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+	
+	            // Quoted fields.
+	            "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+	
+	            // Standard fields.
+	            "([^\"\\" + strDelimiter + "\\r\\n]*))"
+	        ),
+	        "gi"
+	        );
+	
+	
+	    // Create an array to hold our data. Give the array
+	    // a default empty first row.
+	    var arrData = [[]];
+	
+	    // Create an array to hold our individual pattern
+	    // matching groups.
+	    var arrMatches = null;
+	
+	
+	    // Keep looping over the regular expression matches
+	    // until we can no longer find a match.
+	    while (arrMatches = objPattern.exec( strData )){
+	
+	        // Get the delimiter that was found.
+	        var strMatchedDelimiter = arrMatches[ 1 ];
+	
+	        // Check to see if the given delimiter has a length
+	        // (is not the start of string) and if it matches
+	        // field delimiter. If id does not, then we know
+	        // that this delimiter is a row delimiter.
+	        if (
+	            strMatchedDelimiter.length &&
+	            (strMatchedDelimiter != strDelimiter)
+	            ){
+	
+	            // Since we have reached a new row of data,
+	            // add an empty row to our data array.
+	            arrData.push( [] );
+	
+	        }
+	
+	
+	        // Now that we have our delimiter out of the way,
+	        // let's check to see which kind of value we
+	        // captured (quoted or unquoted).
+	        if (arrMatches[ 2 ]){
+	
+	            // We found a quoted value. When we capture
+	            // this value, unescape any double quotes.
+	            var strMatchedValue = arrMatches[ 2 ].replace(
+	                new RegExp( "\"\"", "g" ),
+	                "\""
+	                );
+	
+	        } else {
+	
+	            // We found a non-quoted value.
+	            var strMatchedValue = arrMatches[ 3 ];
+	
+	        }
+	
+	
+	        // Now that we have our value string, let's add
+	        // it to the data array.
+	        arrData[ arrData.length - 1 ].push( strMatchedValue );
+	    }
+	
+	    // Return the parsed data.
+	    return( arrData );
 	}
-	function getPhysicianList() {
 		
-		for (i = 0; i < parsedData.length; i++) {
-		
-			// Loop through each row in the file. Do not look at headers, so start at row j = 1
-			for (var j = 1; j < parsedData[i].length; j++) {
-
-				// If 'arrayUniquePhysicians' does not already contain that "Doctor Number", add it to the array
-				//if (!arrayUniquePhysicians.contains(this.parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
-				//	arrayUniquePhysicians.push(this.parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
-
-				if (physicianList.length == 0) {
-					physicianList.push(parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
-					continue;
-				}
-
-				if (!physicianList.contains(parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]))
-					physicianList.push(parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER]);
-			}
-		}
-		// Sort 'arrayUniquePhysicians' so the number displayed in ascending order
-		physicianList.sort(function(a, b) { return a[0] > b[0]; });
-		selectedPhysicianList = physicianList;
-	}
-	function filter() {
-		console.log("Filtering data...");
-		
+	function getPhysicianIndex() {
 		// Loop through each CSV file imported
 		for (var i = 0; i < parsedData.length; i++) {
-		
-			// Push an empty array into 'filteredData' and push the header row into it
-			filteredData.push(new Array());
-			filteredData[i].push(parsedData[i][0]);
-		
-			// Loop through each row of data in the file, start at row 1
-			for (var j = 1; j < parsedData[i].length; j++) {
+			var uniquePhysicians = parsedData[i]["Doctor Number"].filter(uniqueDocs);
 			
-				// Get doctor number
-				var docNum = parsedData[i][j][DEFAULT_COLUMN_DOCTOR_NUMBER];
-				
-				// Get index of doctor number from arrayUniquePhysicians
-				//var docIndex = physicianList.getArrayIndex(docNum);
-				
-				// Use index to see if doctor is selected in the side panel
-				//var docSelected = selectedPhysicianList[docIndex];
-				
-				// If selected, push row into 'filteredData'
-				if (selectedPhysicianList.contains(docNum))
-					filteredData[i].push(parsedData[i][j]);
+			if (selectedPhysicians == null) {
+				selectedPhysicians = {};
+				for (var j = 0; j < uniquePhysicians.length; j++) {
+					selectedPhysicians[uniquePhysicians[j]] = true;
+				}
+				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(uniquePhysicians);
+			} else {
+				var arrSelectedPhysicians = [];
+				for (p in selectedPhysicians) {
+					if (selectedPhysicians[p] == true) {
+						arrSelectedPhysicians.push(p);
+					}
+				}
+				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(Object.keys(selectedPhysicians));
 			}
 		}
 	}
+	
+
+	function uniqueDocs(value, index, self) {
+		return self.indexOf(value) === index;
+	}
+	function selectedDocs(value) {
+		return (selectedPhysicianList.indexOf(value) != -1);
+	}
 	function calculate() {
-		if (mode == "snapshot") {
-			calcSnapshotData();
-
-			reportViewer.genVisSnapshot();
-		} else {
-			calcTrackingData();
-
-			reportViewer.genVisTracking();
-		}
+		reportViewer.genVisSnapshot(
+				reportRules.applyRules(parsedData, physicianIndex),
+			 	selectedPhysicians);
 	}
-	function calcSnapshotData() {
 
-		console.log("Calculating patient counts for Snapshot Mode...");
-		
-		// Initialize array for calculated data
-		calculatedData = [];
-		
-		// Initialize and set counts for diabetic measures
-		var countDiabeticAssessment = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_DIABETIC_ASSESSMENT),
-			countA1CMeasured = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_A1C_MEASURED),
-			countA1CCompared = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_A1C_COMPARED),
-			countBPMeasured = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_BP_MEASURED),
-			countBPCompared = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_BP_COMPARED),
-			countLDLMeasured = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_LDL_MEASURED),
-			countLDLCompared = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_LDL_COMPARED),
-			countACRMeasured = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_ACR_MEASURED),
-			countACRComparedMale = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_ACR_MALE_COMPARED),
-			countACRComparedFemale = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_ACR_FEMALE_COMPARED),
-			countEGFRMeasured = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_EGFR_MEASURED),
-			countEGFRCompared = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_EGFR_COMPARED),
-			countRetinopathy = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_NUM_RETINOPATHY),
-			//countFootChecks = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_NUM_FOOT_CHECKS),
-			countSelfManagement = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_NUM_SELF_MANAGEMENT),
-			countCurrentSmokers = reportRules.calculateCountDiabeticMeasure(0, reportRules.DEFAULT_INDEX_NUM_CURRENT_SMOKERS);
-		
-		// Denominator
-		var numFilteredPatients = filteredData[0].length - 1;
-		
-		// Push labels and values into calculated array
-		calculatedData.push([	"Diabetic Assessment in past " + reportRules.DEFAULT_VALUE_DIABETIC_ASSESSMENT + " months",
-									"A1C measured in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months",
-									"A1C \u2264 " + reportRules.EFAULT_VALUE_A1C_COMPARED + " in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months",
-									"BP measured in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months",
-									"BP < " + reportRules.DEFAULT_VALUE_BP_SYS_COMPARED + "/" + reportRules.DEFAULT_VALUE_BP_DIAS_COMPARED + " in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months",
-									"LDL measured in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months",
-									"LDL \u2264 " + reportRules.DEFAULT_VALUE_LDL_COMPARED + " in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months",
-									"ACR measured in past " + reportRules.DEFAULT_VALUE_ACR_MEASURED + " months",
-									//"ACR Male < " + DEFAULT_VALUE_ACR_MALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months",
-									//"ACR Female < " + DEFAULT_VALUE_ACR_FEMALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months",
-									"eGFR measured in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months",
-									"eGFR > " + reportRules.DEFAULT_VALUE_EGFR_COMPARED + " in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months",
-									"Retinopathy",
-									//"Foot Checks",
-									"Self-Management",
-									"Current Smokers"]);
-									
-		calculatedData.push([	countDiabeticAssessment/numFilteredPatients*100,
-									countA1CMeasured/numFilteredPatients*100,
-									countA1CCompared/numFilteredPatients*100,
-									countBPMeasured/numFilteredPatients*100,
-									countBPCompared/numFilteredPatients*100,
-									countLDLMeasured/numFilteredPatients*100,
-									countLDLCompared/numFilteredPatients*100,
-									countACRMeasured/numFilteredPatients*100,
-									//countACRComparedMale/numFilteredPatients*100,
-									//countACRComparedFemale/numFilteredPatients*100,
-									countEGFRMeasured/numFilteredPatients*100,
-									countEGFRCompared/numFilteredPatients*100,
-									countRetinopathy/numFilteredPatients*100,
-									//countFootChecks/numFilteredPatients*100,
-									countSelfManagement/numFilteredPatients*100,
-									countCurrentSmokers/numFilteredPatients*100]);	
-	
-	}
-	
-	
-	
 	/*
 	* calculateDataTrackingMode:
 	* - Calculates data for Tracking mode
 	* - Retrieves index of diabetic measures drop down menu and create array of counts for that measure
-	*
+	* TODO - Eliminate
 	*/
 	function calcTrackingData() {
 	
@@ -387,12 +305,12 @@ var reportData = (function() {
 		}
 	
 	}
-	function getCalculatedData() {
-		return calculatedData;
-	}
-	function getMode() {
-		return mode;
-	}
+	//function getCalculatedData() {
+	//	return calculatedData;
+	//}
+	//function getMode() {
+	//	return mode;
+	//}
 	function getArrayDates() {
 		return arrayDates;
 	}
@@ -400,13 +318,13 @@ var reportData = (function() {
 	
 	return {
 		readFiles: readFiles,
-		physicianList: physicianList,
-		selectedPhysicianList: selectedPhysicianList,
-		filteredData: filteredData,
-		calculatedData: getCalculatedData,
+		physicianList: physicianIndex,
+		selectedPhysicians: selectedPhysicians,
+		//filteredData: filteredData,
+		//calculatedData: getCalculatedData,
 		calculate: calculate,
-		filter: filter,
-		mode: getMode,
+		//filter: filter,
+		mode: mode,
 		arrayDates: getArrayDates,
 	};
 
@@ -456,25 +374,17 @@ Array.prototype.allEqualsBoolean = function(bool) {
 	return true;
 };
 
-
-/*
-* getArrayIndex:
-* - Declare a 'getArrayIndex' function for the prototype of an Array object.
-* - Searches an array for a specific and returns the array index of the found object. Returns -1 if object cannot be found
-*
-* @param ele The element to search for in the array
-*/
-Array.prototype.getArrayIndex = function(ele) {
-
-	// Sets 'len' to the length of the array and checks each element to see if it exists, while decrementing the index
-	var len = this.length;
-	while (len--) {
-		
-		// Return array index of the element if it finds a match
-		if (this[len] === ele) return len;
+Array.prototype.indicesOfElementsInArrayIndex = function(arr) {
+	var index = [];
+	for (i=0; i<this.length; i++) {
+		if (arr.indexOf(this[i]) != -1) {
+			index.push(i);
+		}
 	}
-	
-	// Return -1 if cannot find a match
-	return -1;
+	return index;
 };
 
+Array.prototype.repeat= function(what, L){
+	while(L) this[--L]= what;
+	return this;
+};

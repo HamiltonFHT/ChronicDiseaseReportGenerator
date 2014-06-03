@@ -63,9 +63,188 @@ var reportRules =  (function(){
 	var DEFAULT_COLUMN_CURRENT_DATE = 23;
 	var DEFAULT_COLUMN_PRIVACY = 24;
 	
+	var filteredData = [{}];
 	
-	console.log("Initializing reportRules.js");
+	function removeMonths(date, months) {
+  		date.setMonth(date.getMonth() - months);
+  		return date;
+	}
+
+	/*
+	* calculateMonthsDifference:
+	* - Helper function
+	* - Calculates the difference between two dates in months. Returns an absolute value
+	*
+	* @param date1 The first date for comparison
+	* @param date2 The second date for comparison
+	*
+	* @return Returns the absolute number of months difference date1 and date2
+	*/
+	function calculateMonthsDifference(date1, date2) {
+		var monthsDiff = date1.getMonth() - date2.getMonth();
+		var yearsDiff = (date1.getFullYear() - date2.getFullYear()) * 12;
+		return Math.abs(monthsDiff + yearsDiff);
+	}
 	
+	
+	
+	
+	/*
+	* calculateMonthsSince:
+	* @param date A Javascript Date object as a reference point for date calculation
+	* @param numMonths The number of months to look ahead
+	*
+	* @return Returns a new Date object with numMonths prior to date
+	*/
+	function calculateMonthsSince(date, numMonths) {
+		return new Date(date.setMonth(date.getMonth() - numMonths));
+	}
+	
+	
+	var ruleA1cInLast6Months = {
+		desc: "# of patients with A1c measured in last 6 months",
+	 	col: ["Current Date", "Date Hb A1c"],
+	 	rule: function(currentDate, HbA1c_Date) {
+	 		try {
+	 			//new Date accepts date string in format YYYY-MM-DD
+	 			//currentDate is in format DD/MM/YYYY
+	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+	 				parsedDate = currentDate.split("/");
+	 				sixMonthsAgo = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), 6);
+	 			} else {
+	 				sixMonthsAgo = removeMonths(new Date(currentDate), 6);
+	 			}
+	 			return (new Date(HbA1c_Date) >= sixMonthsAgo);
+	 		} catch (err) {
+	 			// Field is likely blank
+	 			return false;
+	 		}
+	 		
+	 	}
+	};
+	
+	
+	
+	var ruleA1cLessThan0_08 = {
+		desc: "Patients with A1c less than 0.08",
+	 	col: ["Hb A1C"],
+	 	rule: function(Hb_A1c) {
+	 		try {
+	 			return (parseFloat(Hb_A1c) < 0.08);
+	 		} catch (err) {
+	 			// Field is likely blank
+	 			return false;
+	 		}
+	 		
+	 	}
+	};
+	
+	var ruleLDLInLast12Months = {
+		desc: "Diabetic Patients with LDL measured within the last 12 months",
+		col: ["Current Date", "Date LDL"],
+		rule: function(currentDate, dateLDL) {
+			 try {
+	 			//new Date accepts date string in format YYYY-MM-DD
+	 			//currentDate is in format DD/MM/YYYY
+	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+	 				parsedDate = currentDate.split("/");
+	 				twelveMonthsAgo = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), 12);
+	 			} else {
+	 				twelveMonthsAgo = removeMonths(new Date(currentDate), 12);
+	 			}
+	 			return (new Date(dateLDL) >= twelveMonthsAgo);
+	 		} catch (err) {
+	 			// Field is likely blank
+	 			return false;
+	 		}
+		}
+	};
+
+	var diabetesRules = [ruleA1cInLast6Months, ruleA1cLessThan0_08, ruleLDLInLast12Months];
+
+	function applyRules(parsedData, physicianIndex) {
+		//Loop through data from each file
+		for (var i = 0; i < parsedData.length; i++) {
+			if (filteredData.length < i) {
+				filteredData.push([]);
+			}
+			var keysLeft = Object.keys(parsedData[i]).length;
+			//For each column in the file
+			for (var key in parsedData[i]) {
+				//If this is a data element (i.e. an array) and not a property element
+				if (parsedData[i][key].length == parsedData[i]['num_elements'] &&
+					parsedData[i][key].length != undefined) {
+					//Add the element from parsedData if it is current selected (i.e. it's index is in the physicianList)
+					for (var j = 0; j < physicianIndex.length; j++) {
+						var ind = physicianIndex[j];
+						if (!filteredData[i].hasOwnProperty(key)) {
+							filteredData[i][key] = [];
+						}
+						filteredData[i][key].push(parsedData[i][key][ind]);
+					}
+				}
+				--keysLeft;
+				//TODO - promise pattern to make sure this runs at the right time
+				if (keysLeft == 0) {
+					checkRules(filteredData[i], diabetesRules);
+				}
+			}
+
+		}
+	}
+
+
+	function checkRules(csvObject, ruleList) {
+	
+		//console.log("Checking File: " + csvObject["fileName"]);
+		
+		forRule:
+		for (r = 0; r < ruleList.length; r++) {
+			currentRule = ruleList[r];
+			var passed = [];
+		
+			for (i=0; i<currentRule.col.length; i++) {
+				if (!csvObject.hasOwnProperty(currentRule.col[i])) {
+					console.log("File has no column named " + currentRule.col[i]);
+					console.log("Can't check rule: " + currentRule.desc);
+					continue forRule;
+				}
+			}
+			
+			num_items = csvObject[currentRule.col[0]].length;
+			var num_params = currentRule.col.length;
+			
+			switch (num_params) {
+				case 1:
+	
+				
+					for (i = 0; i < num_items; i++) {
+						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i]));
+					}
+					break;
+				case 2:
+					for (i = 0; i < num_items; i++) {
+						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i], csvObject[currentRule.col[1]][i]));
+					}
+					break;
+				case 3:
+					for (i = 0; i < num_items; i++) {
+						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i], csvObject[currentRule.col[1]][i], csvObject[currentRule.col[2]][i]));
+					}
+					break;
+				default:
+					console.log("Does not support this many parameters yet");
+			}
+			
+			//Count the number of cases that passed the test
+			console.log(currentRule.desc);
+			console.log(passed.filter(function(e) { return (e == true); }).length);
+			
+		}
+	}
+		
+
+	/*
 	// Functions for calculating patients counts for specific diabetic measures
 	function calculateCountDiabeticMeasure(fileIndex, measureIndex) {
 		
@@ -189,14 +368,14 @@ var reportRules =  (function(){
 						count++;
 					break;
 				
-				/*
+				
 				// Num foot checks
-				case DEFAULT_INDEX_NUM_FOOT_CHECKS:
-					if (reportData.filteredData[fileIndex][i][DEFAULT_COLUMN_FOOT_CHECK] == "Y"
-						|| reportData.filteredData[fileIndex][i][DEFAULT_COLUMN_FOOT_CHECK] == "true")
-						count++;
-					break;
-				*/
+				//case DEFAULT_INDEX_NUM_FOOT_CHECKS:
+				//	if (reportData.filteredData[fileIndex][i][DEFAULT_COLUMN_FOOT_CHECK] == "Y"
+				//		|| reportData.filteredData[fileIndex][i][DEFAULT_COLUMN_FOOT_CHECK] == "true")
+				//		count++;
+				//	break;
+				
 				
 				// Num self management
 				case DEFAULT_INDEX_NUM_SELF_MANAGEMENT:
@@ -216,10 +395,11 @@ var reportRules =  (function(){
 		return count;
 	
 	}
+	*/
 	
 	return {
-		calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
-		
+		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
+		applyRules: applyRules,
 		DEFAULT_VALUE_DIABETIC_ASSESSMENT: DEFAULT_VALUE_DIABETIC_ASSESSMENT,
 		DEFAULT_VALUE_A1C_MEASURED: DEFAULT_VALUE_A1C_MEASURED,				// months
 		DEFAULT_VALUE_A1C_COMPARED: DEFAULT_VALUE_A1C_COMPARED,			// less than or equal to
@@ -255,51 +435,3 @@ var reportRules =  (function(){
 	console.log("Finished initializing reportRules");
 	
 })();
-
-/*
-* calculateMonthsDifference:
-* - Helper function
-* - Calculates the difference between two dates in months. Returns an absolute value
-*
-* @param date1 The first date for comparison
-* @param date2 The second date for comparison
-*
-* @return Returns the absolute number of months difference date1 and date2
-*/
-function calculateMonthsDifference(date1, date2) {
-	var monthsDiff = date1.getMonth() - date2.getMonth();
-	var yearsDiff = (date1.getFullYear() - date2.getFullYear()) * 12;
-	return Math.abs(monthsDiff + yearsDiff);
-}
-
-
-
-
-/*
-* calculateMonthsSince:
-* @param date A Javascript Date object as a reference point for date calculation
-* @param numMonths The number of months to look ahead
-*
-* @return Returns a new Date object with numMonths prior to date
-*/
-function calculateMonthsSince(date, numMonths) {
-	return new Date(date.setMonth(date.getMonth() - numMonths));
-}
-
-
-var diabetesRules = [ruleDiabeticAssessment];
-
-
-var ruleDiabeticAssessment = 
-	["Diabetic Assessment in past 6 months",
- 	" ",
- 	function(val) {
-		if (new Date(DEFAULT_DATE_FORMAT.parse(arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_DM_MONTHS]))
-			>= calculateMonthsSince(new Date(DEFAULT_DATE_FORMAT.parse(arrayFilteredData[fileIndex][i][DEFAULT_COLUMN_CURRENT_DATE])), DEFAULT_VALUE_DIABETIC_ASSESSMENT)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}];
-		
-

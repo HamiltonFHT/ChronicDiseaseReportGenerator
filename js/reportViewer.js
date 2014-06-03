@@ -48,7 +48,7 @@ var reportViewer = (function() {
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("transform", function() {
-								switch (reportData.mode()) {
+								switch (reportData.mode) {
 								
 								case "snapshot":
 									return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
@@ -64,12 +64,12 @@ var reportViewer = (function() {
 		//}
 	};
 	
-	function genVisSnapshot(){
+	function genVisSnapshot(calculatedData){
 		console.log("Generating visualization for Snapshot Mode...");
 
 		clearCanvas();
 
-		var calculatedData = reportData.calculatedData();
+		//var calculatedData = reportData.calculatedData();
 
 		xScale = d3.scale.linear()
 			.domain([0, 100])
@@ -494,7 +494,7 @@ var reportViewer = (function() {
 			var calculatedData = reportData.calculatedData();
 			var arrayDates = reportData.arrayDates();
 			
-			if (reportData.mode() == "snapshot") {
+			if (reportData.mode == "snapshot") {
 								
 				canvas.selectAll("onTargetLabel")
 					.data(calculatedData[1])
@@ -613,9 +613,9 @@ var reportViewer = (function() {
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
 		
-		console.log("Adding side panels for " + reportData.mode() + " mode");
+		console.log("Adding side panels for " + reportData.mode + " mode");
 		
-		if (reportData.mode() == "tracking") {
+		if (reportData.mode == "tracking") {
 		
 			d3.select("#sidePanel").append("div")
 				.attr("class", "sidePanelSection")
