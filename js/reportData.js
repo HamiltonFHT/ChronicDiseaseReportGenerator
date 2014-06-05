@@ -43,8 +43,8 @@ var reportData = (function() {
 	var parsedData = [];
 	//var filteredData = [];
 	//var calculatedData = [];
-	var arrayLastModifiedDate = [];
-	var arrayDates = [];
+	//var arrayLastModifiedDate = [];
+	//var arrayDates = [];
 	var mode = "snapshot";
 
 	
@@ -121,8 +121,6 @@ var reportData = (function() {
 			csvObject["Current Date"] = [].repeat(fileLastModified, count);
 		}
 		
-		
-
 		return csvObject;
 	}
 	
@@ -232,6 +230,21 @@ var reportData = (function() {
 		}
 	}
 	
+	function getDateArray() {
+		var dateArray = [];
+		if (parsedData.length > 1) {
+			for (var i=0; i<parsedData.length; i++) {
+				if (parsedData[i].hasOwnProperty("Current Date")) {
+					arrayDates.push(parsedData[i]["Current Date"].pop());
+				} else {
+					arrayDates.push(parsedData[i]['fileLastModified']);
+				}
+				
+			}
+		}
+		return dataArray;
+	}
+
 
 	function uniqueDocs(value, index, self) {
 		return self.indexOf(value) === index;
@@ -240,9 +253,11 @@ var reportData = (function() {
 		return (selectedPhysicianList.indexOf(value) != -1);
 	}
 	function calculate() {
-		reportViewer.genVisSnapshot(
+				
+		reportViewer.generateCharts(
 				reportRules.applyRules(parsedData, physicianIndex),
-			 	selectedPhysicians);
+			 	selectedPhysicians,
+			 	getDateArray());
 	}
 
 	/*
@@ -311,10 +326,9 @@ var reportData = (function() {
 	//function getMode() {
 	//	return mode;
 	//}
-	function getArrayDates() {
-		return arrayDates;
-	}
-	console.log("Finished instantiating reportData");
+	//function getArrayDates() {
+	//	return arrayDates;
+	//}
 	
 	return {
 		readFiles: readFiles,
@@ -325,7 +339,7 @@ var reportData = (function() {
 		calculate: calculate,
 		//filter: filter,
 		mode: mode,
-		arrayDates: getArrayDates,
+		//arrayDates: getArrayDates,
 	};
 
 })();
