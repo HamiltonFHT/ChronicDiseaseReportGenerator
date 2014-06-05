@@ -260,12 +260,20 @@ var reportViewer = (function() {
 			.on("click", toggleDataLabels);
 	};
 	
+	function generateCharts(calculatedData, selectedPhysicians, arrayDates) {
+		
+		clearCanvas();
+		addSidePanels();
+		
+		if (calculatedData.length > 1) {
+			genVisSnapshot(calculatedData);
+		} else {
+			genVisTracking(calculatedData);
+		}
+	}
 	
 	function genVisSnapshot(calculatedData){
 		console.log("Generating visualization for Snapshot Mode...");
-
-		clearCanvas();
-		addSidePanels();
 
 		//var calculatedData = reportData.calculatedData();
 
