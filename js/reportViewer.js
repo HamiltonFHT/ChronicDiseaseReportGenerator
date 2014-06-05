@@ -63,11 +63,209 @@ var reportViewer = (function() {
 		
 		//}
 	};
+	function addSidePanels() {
+		//reportData.physicianList contains 2 columns and n rows
+		//[Doctor number, boolean selected]
+		
+		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
+		// physicianSection, measuresSection, settingsSection
+		if (document.getElementById("physicianSection")) {
+			console.log("Removing old physician panel...");
+			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
+		}
+		
+		if (document.getElementById("measuresSection")) {
+			console.log("Removing old measures panel...");
+			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
+		}
+		
+		if (document.getElementById("settingsSection")) {
+			console.log("Removing old sections panel...");
+			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
+		}
+		
+		console.log("Adding side panels...");
+	
+		// Adding a panel section for selecting physicians
+		d3.select("#sidePanel").append("div")
+			.attr("class", "sidePanelSection")
+			.attr("id", "physicianSection");
+		
+		// Adding a div within 'physicianSection' for the legend
+		d3.select("#physicianSection").append("div")
+			.attr("id", "physicianLegend");
+			
+		// Adding an unordered list within 'physicianLegend'. This unordered list will contain one list item for each option in the filter.
+		// One for each unique physician through all imported files, and one for selecting all physicians
+		d3.select("#physicianLegend").append("ul")
+			.attr("id", "physicianLegendList");
+		
+		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
+		// panel. There will also be a filter for "All Selected Physicians"
+		for (var i = 0; i < reportData.physicianList.length + 1; i++) {
+			
+			// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
+			// Selected by default
+			d3.select("#physicianLegendList").append("li")
+				.attr("class", "legendListItem physicianListItem selected")
+				.on("click", toggleSelected);
+		}
+		
+		// Retrieve an array of all physician list items
+		var physicianListItems = document.getElementsByClassName("physicianListItem");
+		console.log("Populating physicians...");
+		
+		// Looping through the array of physician list items
+		for (var i = 0; i < physicianListItems.length; i++) {
+		
+			// First item, i.e. "Select All Doctors"
+			if (i == 0) {
+				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>";
+			}
+			
+			// Every other doctor. All doctors are selected by default
+			else {
+				//arraySelectedPhysicians[i - 1] = true;
+				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + reportData.physicianList[i - 1].toString() + "</span>";
+			}
+		}
+		
+		// If tracking mode
+		// Add a section in the sidebar for the diabetic measures
+		
+		console.log("Adding side panels for " + reportData.mode + " mode");
+		
+		if (reportData.mode == "tracking") {
+		
+			d3.select("#sidePanel").append("div")
+				.attr("class", "sidePanelSection")
+				.attr("id", "measuresSection");
+				
+			console.log("Populating diabetic measures...");
+			
+			// Add a drop down menu for the diabetic measures	
+			d3.select("#measuresSection").append("select")
+				.attr("id", "dropdownDiabeticMeasures")
+				.on("change", reportData.calculate);
+					
+			// Add the options for the different diabetic measures in the drop down menu
+			// Created dynamically based on default values
+			// To do: variables to store user input values
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("Diabetic Assessment in past " + reportRules.DEFAULT_VALUE_DIABETIC_ASSESSMENT + " months")
+				.attr("id", "optionDiabeticAssessment");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("A1C measured in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
+				.attr("id", "optionA1CMeasured");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("A1C \u2264 " + reportRules.DEFAULT_VALUE_A1C_COMPARED + " in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
+				.attr("id", "optionA1CCompared");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("BP measured in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
+				.attr("id", "optionBPMeasured");
+				
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("BP < " + reportRules.DEFAULT_VALUE_BP_SYS_COMPARED + "/" + reportRules.DEFAULT_VALUE_BP_DIAS_COMPARED + " in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
+				.attr("id", "optionBPCompared");
+				
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("LDL measured in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
+				.attr("id", "optionLDLMeasured");
+				
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("LDL \u2264 " + reportRules.DEFAULT_VALUE_LDL_COMPARED + " in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
+				.attr("id", "optionLDLCompared");
+				
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("ACR measured in past " + reportRules.DEFAULT_VALUE_ACR_MEASURED + " months")
+				.attr("id", "optionACRMeasured");
+				
+			// d3.select("#dropdownDiabeticMeasures").append("option")
+				// .text("ACR Male < " + DEFAULT_VALUE_ACR_MALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
+				// .attr("id", "optionACRMaleCompared")
+				
+			// d3.select("#dropdownDiabeticMeasures").append("option")
+				// .text("ACR Female < " + DEFAULT_VALUE_ACR_FEMALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
+				// .attr("id", "optionACRFemaleCompared")
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("eGFR measured in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
+				.attr("id", "optionEGFRMeasured");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("eGFR > " + reportRules.DEFAULT_VALUE_EGFR_COMPARED + " in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
+				.attr("id", "optionEGFRCompared");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("Retinopathy")
+				.attr("id", "optionRetinopathy");
+				
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("Foot Checks")
+				.attr("id", "optionFootChecks");
+			
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("Self-Management")
+				.attr("id", "optionSelfManagement");
+	
+			d3.select("#dropdownDiabeticMeasures").append("option")
+				.text("Current Smokers")
+				.attr("id", "optionCurrentSmokers");
+				
+		}
+		
+		// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
+		d3.select("#sidePanel").append("div")
+			.attr("class", "sidePanelSection")
+			.attr("id", "settingsSection");
+		
+		// Save to PNG	
+		d3.select("#settingsSection").append("input")
+			.attr("type", "button")
+			.attr("value", "Save as image")
+			.on("click", function () {
+	
+				// Append canvas to the document
+				d3.select("body").append("canvas")
+					.attr("id", "outputCanvas")
+					.attr("width", DEFAULT_CANVAS_WIDTH)
+					.attr("height", DEFAULT_CANVAS_HEIGHT)
+					.style("border", "1px solid black")
+					.style("display", "none");
+					
+				// Retrieve output canvas and copy the current visualization into the canvas
+				var output = document.getElementById("outputCanvas");
+				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
+				canvg(output, svgXML, { ignoreDimensions: true });
+				
+				// Retrieve data string of the canvas and append to the hidden img element
+				var outputURL = output.toDataURL();
+				document.getElementById("outputImg").src = outputURL;
+				
+				// Modify attributes of hidden elements and simulate file download
+				//TODO get reportTitle here
+				console.log("reportTitle: " + reportTitle);
+				document.getElementById("outputA").download = reportTitle;
+				document.getElementById("outputA").href = outputURL;
+				document.getElementById("outputA").click();
+			});
+		
+		// Toggle data labels
+		d3.select("#settingsSection").append("input")
+			.attr("type", "button")
+			.attr("value", "Toggle data labels")
+			.on("click", toggleDataLabels);
+	};
+	
 	
 	function genVisSnapshot(calculatedData){
 		console.log("Generating visualization for Snapshot Mode...");
 
 		clearCanvas();
+		addSidePanels();
 
 		//var calculatedData = reportData.calculatedData();
 
@@ -543,202 +741,7 @@ var reportViewer = (function() {
 			}
 		}
 	};
-	function addSidePanels() {
-		//reportData.physicianList contains 2 columns and n rows
-		//[Doctor number, boolean selected]
-		
-		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
-		// physicianSection, measuresSection, settingsSection
-		if (document.getElementById("physicianSection")) {
-			console.log("Removing old physician panel...");
-			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
-		}
-		
-		if (document.getElementById("measuresSection")) {
-			console.log("Removing old measures panel...");
-			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
-		}
-		
-		if (document.getElementById("settingsSection")) {
-			console.log("Removing old sections panel...");
-			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
-		}
-		
-		console.log("Adding side panels...");
 	
-		// Adding a panel section for selecting physicians
-		d3.select("#sidePanel").append("div")
-			.attr("class", "sidePanelSection")
-			.attr("id", "physicianSection");
-		
-		// Adding a div within 'physicianSection' for the legend
-		d3.select("#physicianSection").append("div")
-			.attr("id", "physicianLegend");
-			
-		// Adding an unordered list within 'physicianLegend'. This unordered list will contain one list item for each option in the filter.
-		// One for each unique physician through all imported files, and one for selecting all physicians
-		d3.select("#physicianLegend").append("ul")
-			.attr("id", "physicianLegendList");
-		
-		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
-		// panel. There will also be a filter for "All Selected Physicians"
-		for (var i = 0; i < reportData.physicianList.length + 1; i++) {
-			
-			// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
-			// Selected by default
-			d3.select("#physicianLegendList").append("li")
-				.attr("class", "legendListItem physicianListItem selected")
-				.on("click", toggleSelected);
-		}
-		
-		// Retrieve an array of all physician list items
-		var physicianListItems = document.getElementsByClassName("physicianListItem");
-		console.log("Populating physicians...");
-		
-		// Looping through the array of physician list items
-		for (var i = 0; i < physicianListItems.length; i++) {
-		
-			// First item, i.e. "Select All Doctors"
-			if (i == 0) {
-				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>";
-			}
-			
-			// Every other doctor. All doctors are selected by default
-			else {
-				//arraySelectedPhysicians[i - 1] = true;
-				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + reportData.physicianList[i - 1].toString() + "</span>";
-			}
-		}
-		
-		// If tracking mode
-		// Add a section in the sidebar for the diabetic measures
-		
-		console.log("Adding side panels for " + reportData.mode + " mode");
-		
-		if (reportData.mode == "tracking") {
-		
-			d3.select("#sidePanel").append("div")
-				.attr("class", "sidePanelSection")
-				.attr("id", "measuresSection");
-				
-			console.log("Populating diabetic measures...");
-			
-			// Add a drop down menu for the diabetic measures	
-			d3.select("#measuresSection").append("select")
-				.attr("id", "dropdownDiabeticMeasures")
-				.on("change", reportData.calculate);
-					
-			// Add the options for the different diabetic measures in the drop down menu
-			// Created dynamically based on default values
-			// To do: variables to store user input values
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Diabetic Assessment in past " + reportRules.DEFAULT_VALUE_DIABETIC_ASSESSMENT + " months")
-				.attr("id", "optionDiabeticAssessment");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("A1C measured in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
-				.attr("id", "optionA1CMeasured");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("A1C \u2264 " + reportRules.DEFAULT_VALUE_A1C_COMPARED + " in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
-				.attr("id", "optionA1CCompared");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("BP measured in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
-				.attr("id", "optionBPMeasured");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("BP < " + reportRules.DEFAULT_VALUE_BP_SYS_COMPARED + "/" + reportRules.DEFAULT_VALUE_BP_DIAS_COMPARED + " in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
-				.attr("id", "optionBPCompared");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("LDL measured in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
-				.attr("id", "optionLDLMeasured");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("LDL \u2264 " + reportRules.DEFAULT_VALUE_LDL_COMPARED + " in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
-				.attr("id", "optionLDLCompared");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("ACR measured in past " + reportRules.DEFAULT_VALUE_ACR_MEASURED + " months")
-				.attr("id", "optionACRMeasured");
-				
-			// d3.select("#dropdownDiabeticMeasures").append("option")
-				// .text("ACR Male < " + DEFAULT_VALUE_ACR_MALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
-				// .attr("id", "optionACRMaleCompared")
-				
-			// d3.select("#dropdownDiabeticMeasures").append("option")
-				// .text("ACR Female < " + DEFAULT_VALUE_ACR_FEMALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
-				// .attr("id", "optionACRFemaleCompared")
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("eGFR measured in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
-				.attr("id", "optionEGFRMeasured");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("eGFR > " + reportRules.DEFAULT_VALUE_EGFR_COMPARED + " in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
-				.attr("id", "optionEGFRCompared");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Retinopathy")
-				.attr("id", "optionRetinopathy");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Foot Checks")
-				.attr("id", "optionFootChecks");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Self-Management")
-				.attr("id", "optionSelfManagement");
-	
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Current Smokers")
-				.attr("id", "optionCurrentSmokers");
-				
-		}
-		
-		// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
-		d3.select("#sidePanel").append("div")
-			.attr("class", "sidePanelSection")
-			.attr("id", "settingsSection");
-		
-		// Save to PNG	
-		d3.select("#settingsSection").append("input")
-			.attr("type", "button")
-			.attr("value", "Save as image")
-			.on("click", function () {
-	
-				// Append canvas to the document
-				d3.select("body").append("canvas")
-					.attr("id", "outputCanvas")
-					.attr("width", DEFAULT_CANVAS_WIDTH)
-					.attr("height", DEFAULT_CANVAS_HEIGHT)
-					.style("border", "1px solid black")
-					.style("display", "none");
-					
-				// Retrieve output canvas and copy the current visualization into the canvas
-				var output = document.getElementById("outputCanvas");
-				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
-				canvg(output, svgXML, { ignoreDimensions: true });
-				
-				// Retrieve data string of the canvas and append to the hidden img element
-				var outputURL = output.toDataURL();
-				document.getElementById("outputImg").src = outputURL;
-				
-				// Modify attributes of hidden elements and simulate file download
-				//TODO get reportTitle here
-				console.log("reportTitle: " + reportTitle);
-				document.getElementById("outputA").download = reportTitle;
-				document.getElementById("outputA").href = outputURL;
-				document.getElementById("outputA").click();
-			});
-		
-		// Toggle data labels
-		d3.select("#settingsSection").append("input")
-			.attr("type", "button")
-			.attr("value", "Toggle data labels")
-			.on("click", toggleDataLabels);
-	};
 	
 	function toggleSelected() {
 

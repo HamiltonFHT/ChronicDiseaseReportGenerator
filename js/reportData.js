@@ -45,12 +45,12 @@ var reportData = (function() {
 	//var calculatedData = [];
 	var arrayLastModifiedDate = [];
 	var arrayDates = [];
-	var mode = "snapshot";
+	var mode = "";
 
 	
 	function readFiles(files) {
 
-	   //mode = (files.length == 1) ? "snapshot" : "tracking";
+	   mode = (files.length == 1) ? "snapshot" : "tracking";
 	   
 	   filesLeftToRead = files.length;
 	   
@@ -72,8 +72,8 @@ var reportData = (function() {
 			    		if (filesLeftToRead == 0) {
 							getPhysicianIndex();
 
-							console.log("Calling addSidePanels");
-							reportViewer.addSidePanels();
+							//console.log("Calling addSidePanels");
+							//reportViewer.addSidePanels();
 							
 							calculate();
 			    		}
@@ -322,7 +322,7 @@ var reportData = (function() {
 		selectedPhysicians: selectedPhysicians,
 		//filteredData: filteredData,
 		//calculatedData: getCalculatedData,
-		calculate: calculate,
+		//calculate: calculate,
 		//filter: filter,
 		mode: mode,
 		arrayDates: getArrayDates,

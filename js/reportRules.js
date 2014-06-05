@@ -165,28 +165,39 @@ var reportRules =  (function(){
 	function applyRules(parsedData, physicianIndex) {
 		//Loop through data from each file
 		for (var i = 0; i < parsedData.length; i++) {
+			//Initialize filteredData if required
+			//TODO Does this need to be global? Likely not
 			if (filteredData.length < i) {
 				filteredData.push([]);
 			}
+			
+			//Work around for asynch function calls
+			//Make sure filtering is finished before checking rules on them
 			var keysLeft = Object.keys(parsedData[i]).length;
+			
 			//For each column in the file
 			for (var key in parsedData[i]) {
-				//If this is a data element (i.e. an array) and not a property element
+				
+				//If this is a data element (i.e. an array) and not a property element (i.e. a file name)
 				if (parsedData[i][key].length == parsedData[i]['num_elements'] &&
 					parsedData[i][key].length != undefined) {
-					//Add the element from parsedData if it is current selected (i.e. it's index is in the physicianList)
+						
+					//Add the element from parsedData if the user selected it (i.e. it's index is in the physicianList)
 					for (var j = 0; j < physicianIndex.length; j++) {
 						var ind = physicianIndex[j];
+						//Add the key to filteredData if it doesn't have it
 						if (!filteredData[i].hasOwnProperty(key)) {
 							filteredData[i][key] = [];
 						}
+						//Add the element
 						filteredData[i][key].push(parsedData[i][key][ind]);
 					}
 				}
 				--keysLeft;
-				//TODO - promise pattern to make sure this runs at the right time
+				//TODO - promise pattern to make sure this runs at the right time?
+				//This current method seems a bit hacky
 				if (keysLeft == 0) {
-					checkRules(filteredData[i], diabetesRules);
+					return checkRules(filteredData[i], diabetesRules);
 				}
 			}
 
@@ -196,10 +207,10 @@ var reportRules =  (function(){
 
 	function checkRules(csvObject, ruleList) {
 	
-		//console.log("Checking File: " + csvObject["fileName"]);
+		var results = [];
 		
 		forRule:
-		for (r = 0; r < ruleList.length; r++) {
+		for (var r = 0; r < ruleList.length; r++) {
 			currentRule = ruleList[r];
 			var passed = [];
 		
@@ -207,6 +218,16 @@ var reportRules =  (function(){
 				if (!csvObject.hasOwnProperty(currentRule.col[i])) {
 					console.log("File has no column named " + currentRule.col[i]);
 					console.log("Can't check rule: " + currentRule.desc);
+					//Break out to the next rule
+					// TODO - What do I really want to do here?
+					// Skip the rule entirely, count it as 0, or code it is -1 and handle appropriately in the viewer?
+					/*
+					results.push({	
+							desc: currentRule.desc,
+						  	passed: 0,
+						  	total: num_items
+					});
+					*/
 					continue forRule;
 				}
 			}
@@ -216,8 +237,6 @@ var reportRules =  (function(){
 			
 			switch (num_params) {
 				case 1:
-	
-				
 					for (i = 0; i < num_items; i++) {
 						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i]));
 					}
@@ -237,10 +256,13 @@ var reportRules =  (function(){
 			}
 			
 			//Count the number of cases that passed the test
-			console.log(currentRule.desc);
-			console.log(passed.filter(function(e) { return (e == true); }).length);
-			
-		}
+			results.push({	
+					desc: currentRule.desc,
+				  	passed: passed.filter(function(e) { return (e == true); }).length,
+				  	total: num_items
+			});
+		}	
+		return results;
 	}
 		
 
