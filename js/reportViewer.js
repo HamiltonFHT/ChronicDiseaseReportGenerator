@@ -63,7 +63,7 @@ var reportViewer = (function() {
 		
 		//}
 	};
-	function addSidePanels() {
+	function addSidePanels(selectedPhysicians) {
 		//reportData.physicianList contains 2 columns and n rows
 		//[Doctor number, boolean selected]
 		
@@ -133,7 +133,7 @@ var reportViewer = (function() {
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
 		
-		console.log("Adding side panels for " + reportData.mode + " mode");
+		//console.log("Adding side panels for " + reportData.mode + " mode");
 		
 		if (reportData.mode == "tracking") {
 		
@@ -263,19 +263,27 @@ var reportViewer = (function() {
 	function generateCharts(calculatedData, selectedPhysicians, arrayDates) {
 		
 		clearCanvas();
-		addSidePanels();
+		addSidePanels(selectedPhysicians);
 		
 		if (calculatedData.length > 1) {
-			genVisSnapshot(calculatedData);
+			genVisSnapshot(calculatedData, selectedPhysicians, arrayDates);
 		} else {
-			genVisTracking(calculatedData);
+			genVisTracking(calculatedData, selectedPhysicians, arrayDates);
 		}
 	}
 	
-	function genVisSnapshot(calculatedData){
+	function genVisSnapshot(calculatedData, selectedPhysicians, arrayDates){
 		console.log("Generating visualization for Snapshot Mode...");
 
 		//var calculatedData = reportData.calculatedData();
+		// Add rectangles for percentage of patients within criteria
+		var arrayData = [];
+		var arrayDesc = [];
+		for (var i=0; i < calculatedData.length; i++) {
+			arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
+			arrayDesc.push(calculatedData[i]["desc"]);
+		}
+
 
 		xScale = d3.scale.linear()
 			.domain([0, 100])
@@ -287,7 +295,7 @@ var reportViewer = (function() {
 			.tickFormat(function(d) { return d + "%"; });
 		
 		yScale = d3.scale.ordinal()
-			.domain(calculatedData[0])
+			.domain(arrayDesc)
 			.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE], 0.1);
 			
 		yAxis = d3.svg.axis()
@@ -305,14 +313,15 @@ var reportViewer = (function() {
 				.style("stroke-width", 1)
 				.style("opacity", 0.7);
 			
-		// Add rectangles for percentage of patients within criteria
+
+		
 		canvas.selectAll("onTargetBar")
-			.data(calculatedData[1])
+			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "onTargetBar")
 				.attr("width", function(d) { return xScale(d); })
 				.attr("height", yScale.rangeBand())
-				.attr("y", function (d, i) { return yScale(calculatedData[0][i]); })
+				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
 				.attr("fill", DEFAULT_COLOURS[0])
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
@@ -320,13 +329,13 @@ var reportViewer = (function() {
 				
 		// Add bars for patients not within criteria
 		canvas.selectAll("offTargetBar")
-			.data(calculatedData[1])
+			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "offTargetBar")
 				.attr("width", function(d) { return xScale(100 - d); })
 				.attr("height", yScale.rangeBand())
 				.attr("x", function(d) { return xScale(d); })
-				.attr("y", function(d, i) { return yScale(calculatedData[0][i]); })
+				.attr("y", function(d, i) { return yScale(arrayDesc[i]); })
 				.attr("fill", "white")
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
@@ -359,11 +368,11 @@ var reportViewer = (function() {
 		}
 		
 		canvas.selectAll("onTargetLabel")
-			.data(calculatedData[1])
+			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
 				.attr("x", function(d, i) { return xScale(d / 2); })
-				.attr("y", function(d, i) { return yScale(calculatedData[0][i]) + (yScale.rangeBand()/2); })
+				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 				.attr("text-anchor", "middle")
 				.style("font-family", "Arial")
 				.style("font-size", "13px")
@@ -372,11 +381,11 @@ var reportViewer = (function() {
 				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 		
 		canvas.selectAll("offTargetLabel")
-			.data(calculatedData[1])
+			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
 				.attr("x", function(d) { return xScale((100 - d)/2 + parseFloat(d)); })
-				.attr("y", function(d, i) { return yScale(calculatedData[0][i]) + (yScale.rangeBand()/2); })
+				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 				.attr("text-anchor", "middle")
 				.attr("dy", ".35em")
 				.style("fill", "black")
@@ -398,10 +407,9 @@ var reportViewer = (function() {
 				var title = "Diabetes Report for Doctor";
 				var arraySelectedOnly = [];
 
-				var indices = reportData.selectedPhysicianList.allIndicesOf(true);
-				
-				for (i=0; i < indices.length; i++) {
-					arraySelectedOnly.push(reportData.physicianList[indices[i]]);
+				for (var doc in selectedPhysicians) {
+					if (selectedPhysicians[doc] == true)
+						arraySelectedOnly.push(doc);
 				}
 				
 				if (arraySelectedOnly.length > 1) title += "s ";
@@ -413,8 +421,8 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + reportData.filteredData[0][1][DEFAULT_COLUMN_CURRENT_DATE];
-				title += " (n = " + (reportData.filteredData[0].length - 1) + ")";
+				title += " as of " + arrayDates[0];
+				title += " (n = " + calculatedData[0]["total"] + ")";
 				reportTitle = title;
 				return title;
 			});
@@ -856,10 +864,11 @@ var reportViewer = (function() {
 	};
 	
 	return {
-		addSidePanels: addSidePanels,
-		genVisTracking: genVisTracking,
-		genVisSnapshot: genVisSnapshot,
-		clearCanvas: clearCanvas,
+		//addSidePanels: addSidePanels,
+		generateCharts: generateCharts,
+		//genVisTracking: genVisTracking,
+		//genVisSnapshot: genVisSnapshot,
+		//clearCanvas: clearCanvas,
 	};
 	
 })();

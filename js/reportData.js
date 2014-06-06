@@ -38,7 +38,7 @@ var reportData = (function() {
 	*/
 
 	var physicianIndex = [];
-	var selectedPhysicians = null;
+	var selectedPhysicians = [];
 	//var rawData = [];
 	var parsedData = [];
 	//var filteredData = [];
@@ -49,6 +49,10 @@ var reportData = (function() {
 
 	
 	function readFiles(files) {
+
+		physicianIndex = [];
+		selectedPhysicians = [];
+		parsedData = [];
 
 	   mode = (files.length == 1) ? "snapshot" : "tracking";
 	   
@@ -71,7 +75,7 @@ var reportData = (function() {
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
 							getPhysicianIndex();
-
+	
 							//console.log("Calling addSidePanels");
 							//reportViewer.addSidePanels();
 							
@@ -212,8 +216,7 @@ var reportData = (function() {
 		for (var i = 0; i < parsedData.length; i++) {
 			var uniquePhysicians = parsedData[i]["Doctor Number"].filter(uniqueDocs);
 			
-			if (selectedPhysicians == null) {
-				selectedPhysicians = {};
+			if (selectedPhysicians.length == 0) {
 				for (var j = 0; j < uniquePhysicians.length; j++) {
 					selectedPhysicians[uniquePhysicians[j]] = true;
 				}
@@ -231,8 +234,8 @@ var reportData = (function() {
 	}
 	
 	function getDateArray() {
-		var dateArray = [];
-		if (parsedData.length > 1) {
+		var arrayDates = [];
+		if (parsedData.length > 0) {
 			for (var i=0; i<parsedData.length; i++) {
 				if (parsedData[i].hasOwnProperty("Current Date")) {
 					arrayDates.push(parsedData[i]["Current Date"].pop());
@@ -242,7 +245,7 @@ var reportData = (function() {
 				
 			}
 		}
-		return dataArray;
+		return arrayDates;
 	}
 
 
