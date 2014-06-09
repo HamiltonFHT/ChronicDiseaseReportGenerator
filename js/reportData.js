@@ -5,38 +5,6 @@ var reportData = (function() {
 	var DEFAULT_DATE_FORMAT = d3.time.format("%b %d, %Y");
 	var DEFAULT_CURR_DATE_FORMAT = d3.time.format("%d/%m/%Y");
 
-	// Default column numbers for diabetic measures, which are based on the PSS search titled "DM-Patients"
-	// NOTE: If new columns are added or columns are rearranged, these values MUST reflect those changes.
-	// TO CHANGE: Column numbers and variable for other searches for patient populations
-	// **TPS: One array for each possible chronic condition?
-	/*
-	var DEFAULT_COLUMN_PATIENT_NUMBER = 0;
-	var DEFAULT_COLUMN_PATIENT_AGE = 1;
-	var DEFAULT_COLUMN_PATIENT_SEX = 2;
-	var DEFAULT_COLUMN_DOCTOR_NUMBER = 3;
-	var DEFAULT_COLUMN_DM_MONTHS = 4;
-	var DEFAULT_COLUMN_A1C = 5;
-	var DEFAULT_COLUMN_A1C_DATE = 6;
-	var DEFAULT_COLUMN_SYSTOLIC_BP = 7;
-	var DEFAULT_COLUMN_SYSTOLIC_BP_DATE = 8;
-	var DEFAULT_COLUMN_LDL = 9;
-	var DEFAULT_COLUMN_LDL_DATE = 10;
-	var DEFAULT_COLUMN_CHOL = 11;
-	var DEFAULT_COLUMN_CHOL_DATE = 12;
-	var DEFAULT_COLUMN_ACR = 13;
-	var DEFAULT_COLUMN_ACR_DATE = 14;
-	var DEFAULT_COLUMN_EGFR = 15;
-	var DEFAULT_COLUMN_EGFR_DATE = 16;
-	var DEFAULT_COLUMN_RISK = 17;
-	var DEFAULT_COLUMN_DIASTOLIC_BP = 18;
-	var DEFAULT_COLUMN_DIASTOLIC_BP_DATE = 19;
-	var DEFAULT_COLUMN_RETINOPATHY = 20;
-	var DEFAULT_COLUMN_FOOT_CHECK = 21;
-	var DEFAULT_COLUMN_SELF_MANAGEMENT = 22;
-	var DEFAULT_COLUMN_CURRENT_DATE = 23;
-	var DEFAULT_COLUMN_PRIVACY = 24;
-	*/
-
 	var physicianIndex = [];
 	var selectedPhysicians = [];
 	//var rawData = [];
@@ -99,7 +67,6 @@ var reportData = (function() {
 		csvObject['fileLastModified'] = f.lastModifiedDate;
 	
 		arrData = CSVToArray(unparsed);
-		var count = 0;
 		
 		if (arrData[0].length == 0) {
 			arrData.shift();
@@ -108,7 +75,6 @@ var reportData = (function() {
 		
 		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
 			var rowArray = arrData[rowIndex];
-			++count;
 			for (var propIndex = 0; propIndex < rowArray.length; ++propIndex) {
 				if (csvObject[csvHeaders[propIndex]] == undefined) {
 					csvObject[csvHeaders[propIndex]] = [];
@@ -118,8 +84,12 @@ var reportData = (function() {
 			}
 		}
 		
-		csvObject["num_elements"] = count;
-				
+		if (arrData[arrData.length-1] == "") {
+			csvObject["num_elements"] = arrData.length - 1;
+		} else {
+			csvObject["num_elements"] = arrData.length;
+		}
+		
 		//PSS include a blank column
 		if (csvObject.hasOwnProperty("")) {
 			delete csvObject[""];
