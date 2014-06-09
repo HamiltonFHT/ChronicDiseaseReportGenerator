@@ -58,13 +58,20 @@ var reportData = (function() {
 	   
 	   filesLeftToRead = files.length;
 	   
+	   if (files.length == 0) {
+	   		reportViewer.clearCanvas();
+	   }
+	   
+	   
 		for (i = 0; i < files.length; i++) {
 			var f = files[i]; 
 			
 			if (!f) {
 			   alert("Failed to load file");
+			   reportViewer.clearCanvas();
 			} else if (!f.type.match(/^text*/)) {
 			    alert(f.name + " is not a valid text file.");
+			    reportViewer.clearCanvas();
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 
@@ -74,11 +81,7 @@ var reportData = (function() {
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
-							getPhysicianIndex();
-	
-							//console.log("Calling addSidePanels");
-							//reportViewer.addSidePanels();
-							
+					
 							calculate();
 			    		}
 			 		};
@@ -115,14 +118,14 @@ var reportData = (function() {
 			}
 		}
 		
-		csvObject["num_elements"] = count-1;
+		csvObject["num_elements"] = count;
 				
 		//PSS include a blank column
 		if (csvObject.hasOwnProperty("")) {
 			delete csvObject[""];
 		}
 		if (!csvObject.hasOwnProperty("Current Date")) {
-			csvObject["Current Date"] = [].repeat(fileLastModified, count);
+			csvObject["Current Date"] = [].repeat(csvObject["fileLastModified"], count);
 		}
 		
 		return csvObject;
@@ -211,7 +214,7 @@ var reportData = (function() {
 	    return( arrData );
 	}
 		
-	function getPhysicianIndex() {
+	function getPhysicianIndex(selectedPhysicians) {
 		// Loop through each CSV file imported
 		for (var i = 0; i < parsedData.length; i++) {
 			var uniquePhysicians = parsedData[i]["Doctor Number"].filter(uniqueDocs);
@@ -228,9 +231,10 @@ var reportData = (function() {
 						arrSelectedPhysicians.push(p);
 					}
 				}
-				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(Object.keys(selectedPhysicians));
+				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(Object.keys(arrSelectedPhysicians));
 			}
 		}
+		return {physicianIndex: physicianIndex, selectedPhysicians: selectedPhysicians};
 	}
 	
 	function getDateArray() {
@@ -256,10 +260,23 @@ var reportData = (function() {
 		return (selectedPhysicianList.indexOf(value) != -1);
 	}
 	function calculate() {
-				
+		
+		physObj = getPhysicianIndex(selectedPhysicians);
+		
 		reportViewer.generateCharts(
-				reportRules.applyRules(parsedData, physicianIndex),
-			 	selectedPhysicians,
+				reportRules.applyRules(parsedData, physObj.physicianIndex),
+			 	physObj.selectedPhysicians,
+			 	getDateArray());
+	}
+	function reCalculate(rV_selectedPhysicians) {
+		//This function is called from reportViewer when the user deselects/reselects
+		//physicians, hence the selectedPhysicians from reportViewer is used in generateCharts
+		
+		physObj = getPhysicianIndex(rV_selectedPhysicians);
+		
+		reportViewer.generateCharts(
+				reportRules.applyRules(parsedData, physObj.physicianIndex),
+			 	physObj.selectedPhysicians,
 			 	getDateArray());
 	}
 
@@ -335,14 +352,7 @@ var reportData = (function() {
 	
 	return {
 		readFiles: readFiles,
-		physicianList: physicianIndex,
-		selectedPhysicians: selectedPhysicians,
-		//filteredData: filteredData,
-		//calculatedData: getCalculatedData,
-		//calculate: calculate,
-		//filter: filter,
-		mode: mode,
-		//arrayDates: getArrayDates,
+		reCalculate: reCalculate,
 	};
 
 })();

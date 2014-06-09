@@ -3,7 +3,13 @@ var reportViewer = (function() {
 	//				.attr("id", "canvasSVG");
 	var canvas = d3.select("#canvasContainer").select("#canvasSVG");
 	
-	var mode = reportData.mode;
+	var mode = "";
+	
+	var calculatedData = null;
+	var selectedPhysicians = null;
+	var arrayDates = null;
+	
+	var tracking_measure = 0;
 	
 	var reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
@@ -32,14 +38,6 @@ var reportViewer = (function() {
 	function clearCanvas() {
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
 		
-		/*
-		try {
-			canvas_ele.removeChild(document.getElementById("canvasSVG"));
-		} catch (err) {
-			console.log(err);
-		}
-		*/
-		
 		canvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					// Set the width and height of the canvas
@@ -48,7 +46,7 @@ var reportViewer = (function() {
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("transform", function() {
-								switch (reportData.mode) {
+								switch (mode) {
 								
 								case "snapshot":
 									return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
@@ -59,11 +57,9 @@ var reportViewer = (function() {
 								break;
 						}	
 				});
-		
-		
-		//}
 	};
-	function addSidePanels(selectedPhysicians) {
+	
+	function addSidePanels() {
 		//reportData.physicianList contains 2 columns and n rows
 		//[Doctor number, boolean selected]
 		
@@ -102,12 +98,12 @@ var reportViewer = (function() {
 		
 		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 		// panel. There will also be a filter for "All Selected Physicians"
-		for (var i = 0; i < reportData.physicianList.length + 1; i++) {
+		for (var i = 0; i < Object.keys(selectedPhysicians).length+1; i++) {
 			
 			// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
 			// Selected by default
 			d3.select("#physicianLegendList").append("li")
-				.attr("class", "legendListItem physicianListItem selected")
+				.attr("class", "legendListItem physicianListItem")
 				.on("click", toggleSelected);
 		}
 		
@@ -126,16 +122,22 @@ var reportViewer = (function() {
 			// Every other doctor. All doctors are selected by default
 			else {
 				//arraySelectedPhysicians[i - 1] = true;
-				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + reportData.physicianList[i - 1].toString() + "</span>";
+				var doc = Object.keys(selectedPhysicians)[i-1];
+				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + doc + "</span>";
+				if (selectedPhysicians[doc] == true) {
+					physicianListItems[i].classList.add("selected");
+				} else {
+					physicianListItems[i].classList.add("notSelected");
+				}
+				
+				
 			}
 		}
 		
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
-		
-		//console.log("Adding side panels for " + reportData.mode + " mode");
-		
-		if (reportData.mode == "tracking") {
+	
+		if (mode == "tracking") {
 		
 			d3.select("#sidePanel").append("div")
 				.attr("class", "sidePanelSection")
@@ -146,75 +148,16 @@ var reportViewer = (function() {
 			// Add a drop down menu for the diabetic measures	
 			d3.select("#measuresSection").append("select")
 				.attr("id", "dropdownDiabeticMeasures")
-				.on("change", reportData.calculate);
+				.on("change", function() { updateTrackingMeasure(this.selectedIndex); });
 					
 			// Add the options for the different diabetic measures in the drop down menu
 			// Created dynamically based on default values
 			// To do: variables to store user input values
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Diabetic Assessment in past " + reportRules.DEFAULT_VALUE_DIABETIC_ASSESSMENT + " months")
-				.attr("id", "optionDiabeticAssessment");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("A1C measured in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
-				.attr("id", "optionA1CMeasured");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("A1C \u2264 " + reportRules.DEFAULT_VALUE_A1C_COMPARED + " in past " + reportRules.DEFAULT_VALUE_A1C_MEASURED + " months")
-				.attr("id", "optionA1CCompared");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("BP measured in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
-				.attr("id", "optionBPMeasured");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("BP < " + reportRules.DEFAULT_VALUE_BP_SYS_COMPARED + "/" + reportRules.DEFAULT_VALUE_BP_DIAS_COMPARED + " in past " + reportRules.DEFAULT_VALUE_BP_MEASURED + " months")
-				.attr("id", "optionBPCompared");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("LDL measured in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
-				.attr("id", "optionLDLMeasured");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("LDL \u2264 " + reportRules.DEFAULT_VALUE_LDL_COMPARED + " in past " + reportRules.DEFAULT_VALUE_LDL_MEASURED + " months")
-				.attr("id", "optionLDLCompared");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("ACR measured in past " + reportRules.DEFAULT_VALUE_ACR_MEASURED + " months")
-				.attr("id", "optionACRMeasured");
-				
-			// d3.select("#dropdownDiabeticMeasures").append("option")
-				// .text("ACR Male < " + DEFAULT_VALUE_ACR_MALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
-				// .attr("id", "optionACRMaleCompared")
-				
-			// d3.select("#dropdownDiabeticMeasures").append("option")
-				// .text("ACR Female < " + DEFAULT_VALUE_ACR_FEMALE_COMPARED + " in past " + DEFAULT_VALUE_ACR_MEASURED + " months")
-				// .attr("id", "optionACRFemaleCompared")
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("eGFR measured in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
-				.attr("id", "optionEGFRMeasured");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("eGFR > " + reportRules.DEFAULT_VALUE_EGFR_COMPARED + " in past " + reportRules.DEFAULT_VALUE_EGFR_MEASURED + " months")
-				.attr("id", "optionEGFRCompared");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Retinopathy")
-				.attr("id", "optionRetinopathy");
-				
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Foot Checks")
-				.attr("id", "optionFootChecks");
-			
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Self-Management")
-				.attr("id", "optionSelfManagement");
-	
-			d3.select("#dropdownDiabeticMeasures").append("option")
-				.text("Current Smokers")
-				.attr("id", "optionCurrentSmokers");
-				
+			for (var i = 0; i < calculatedData.length; i++) {
+				d3.select("#dropdownDiabeticMeasures").append("option")
+					.text(calculatedData[i]["desc"])
+					.attr("id", "optionDiabeticAssessment");
+			}
 		}
 		
 		// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
@@ -260,19 +203,33 @@ var reportViewer = (function() {
 			.on("click", toggleDataLabels);
 	};
 	
-	function generateCharts(calculatedData, selectedPhysicians, arrayDates) {
-		
-		clearCanvas();
-		addSidePanels(selectedPhysicians);
-		
-		if (calculatedData.length > 1) {
-			genVisSnapshot(calculatedData, selectedPhysicians, arrayDates);
-		} else {
-			genVisTracking(calculatedData, selectedPhysicians, arrayDates);
-		}
+	function updateTrackingMeasure(selectedIndex) {
+		console.log("Selected: ", selectedIndex);
 	}
 	
-	function genVisSnapshot(calculatedData, selectedPhysicians, arrayDates){
+	function generateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
+		
+		mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";
+		calculatedData = rd_calculatedData;
+		selectedPhysicians = rd_selectedPhysicians;
+		arrayDates = rd_arrayDates;
+				
+		clearCanvas();
+		addSidePanels();
+		
+		if (calculatedData == undefined) {
+			console.log("calculatedData undefined");
+			return;
+		}
+		
+		if (calculatedData.length > 1) {
+			genVisSnapshot();
+		} //else {
+			//genVisTracking();
+		//}
+	}
+	
+	function genVisSnapshot(){
 		console.log("Generating visualization for Snapshot Mode...");
 
 		//var calculatedData = reportData.calculatedData();
@@ -455,11 +412,6 @@ var reportViewer = (function() {
 		console.log("Generating visualization for Tracking Mode...");
 
 		clearCanvas();
-
-
-		var calculatedData = reportData.calculatedData();
-		var arrayDates = reportData.arrayDates();
-
 	
 	// Create min and max dates for the time scale - 1 week before and after
 		var minDate = new Date(arrayDates[0].getFullYear(),
@@ -705,17 +657,23 @@ var reportViewer = (function() {
 		if (d3.selectAll(".dataLabel")[0].length > 0) 
 			d3.selectAll(".dataLabel").remove();
 		else {
-			var calculatedData = reportData.calculatedData();
-			var arrayDates = reportData.arrayDates();
 			
-			if (reportData.mode == "snapshot") {
-								
+			var arrayData = [];
+			var arrayDesc = [];
+			for (var i=0; i < calculatedData.length; i++) {
+				arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
+				arrayDesc.push(calculatedData[i]["desc"]);
+			}
+			
+			
+			if (mode == "snapshot") {
+			
 				canvas.selectAll("onTargetLabel")
-					.data(calculatedData[1])
+					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
 						.attr("x", function(d, i) { return xScale(d / 2); })
-						.attr("y", function(d, i) { return yScale(calculatedData[0][i]) + (yScale.rangeBand()/2); })
+						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 						.attr("text-anchor", "middle")
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
@@ -724,17 +682,18 @@ var reportViewer = (function() {
 						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 				
 				canvas.selectAll("offTargetLabel")
-					.data(calculatedData[1])
+					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
 						.attr("x", function(d) { return xScale((100 - d)/2 + parseFloat(d)); })
-						.attr("y", function(d, i) { return yScale(calculatedData[0][i]) + (yScale.rangeBand()/2); })
+						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 						.attr("text-anchor", "middle")
 						.attr("dy", ".35em")
 						.style("fill", "black")
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
 						.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
+						// don't display off target labels
 						.attr("display", "none");
 			} else {
 				canvas.selectAll(".dataLabel")
@@ -761,6 +720,18 @@ var reportViewer = (function() {
 	
 	function toggleSelected() {
 
+		if (calculatedData == undefined) { 
+			console.log("Calculated data undefined");
+			return;
+		}
+
+		var arrayData = [];
+		var arrayDesc = [];
+		for (var i=0; i < calculatedData.length; i++) {
+			arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
+			arrayDesc.push(calculatedData[i]["desc"]);
+		}
+
 		// Retrieve an array of all physician item labels
 		var physicianListItems = document.getElementsByClassName("physicianListItem");
 		
@@ -774,13 +745,14 @@ var reportViewer = (function() {
 				// Splice out 'selected' and add 'notSelected'
 				this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 				
+				for (doc in selectedPhysicians) {
+					if (selectedPhysicians.hasOwnProperty(doc)) {
+						selectedPhysicians[doc] = false;
+					}
+				}
+				
 				// Set everything to false and 'notSelected', start at index 1
-				for (var i = 1; i < physicianListItems.length; i++) {
-					
-					// Update each element in the array
-					//TPS changed to reportData.physicianList
-					reportData.selectedPhysicianList[i - 1] = false;
-					
+				for (var i = 1; i < physicianListItems.length; i++) {			
 					// If doctor is 'selected', unselect it
 					if (physicianListItems[i].className.indexOf("selected") != -1)
 						physicianListItems[i].className = physicianListItems[i].className.substring(0, physicianListItems[i].className.indexOf("selected")) + "notSelected";
@@ -793,11 +765,14 @@ var reportViewer = (function() {
 				// Splice out 'notSelected' and add 'selected'
 				this.className = this.className.substring(0, this.className.indexOf("notSelected")) + "selected";
 				
+				for (doc in selectedPhysicians) {
+					if (selectedPhysicians.hasOwnProperty(doc)) {
+						selectedPhysicians[doc] = true;
+					}
+				}
+				
 				// Set everything to true and 'selected'
 				for (var i = 1; i < physicianListItems.length; i++) {
-				
-					// Update each element in the array
-					reportData.selectedPhysicianList[i - 1] = true;
 					
 					// If doctor is 'notSelected', select it
 					if (physicianListItems[i].className.indexOf("notSelected") != -1)
@@ -859,16 +834,13 @@ var reportViewer = (function() {
 		
 		// After toggling, filter the data for calculations and graph the data
 		//TODO is this best practice?
-		reportData.filter();
-		reportData.calculate();
+		//reportData.filter();
+		reportData.reCalculate(selectedPhysicians);
 	};
 	
 	return {
-		//addSidePanels: addSidePanels,
 		generateCharts: generateCharts,
-		//genVisTracking: genVisTracking,
-		//genVisSnapshot: genVisSnapshot,
-		//clearCanvas: clearCanvas,
+		clearCanvas: clearCanvas
 	};
 	
 })();
