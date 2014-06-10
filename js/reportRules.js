@@ -59,7 +59,8 @@ var reportRules =  (function(){
 	
 	
 	var ruleA1cInLast6Months = {
-		desc: "# of patients with A1c measured in last 6 months",
+		desc: "A1c measured in last 6 months",
+		long_desc: "# of patients with A1c measured in last 6 months",
 	 	col: ["Current Date", "Date Hb A1c"],
 	 	rule: function(currentDate, HbA1c_Date) {
 	 		try {
@@ -83,7 +84,8 @@ var reportRules =  (function(){
 	
 	
 	var ruleA1cLessThan0_08 = {
-		desc: "Patients with A1c less than 0.08",
+		desc: "A1c less than 0.08",
+		long_desc: "Patients with A1c less than 0.08",
 	 	col: ["Hb A1c"],
 	 	rule: function(Hb_A1c) {
 	 		try {
@@ -97,7 +99,8 @@ var reportRules =  (function(){
 	};
 	
 	var ruleLDLInLast12Months = {
-		desc: "Diabetic Patients with LDL measured within the last 12 months",
+		desc: "LDL measured within the last 12 months",
+		long_desc: "Diabetic Patients with LDL measured within the last 12 months",
 		col: ["Current Date", "Date LDL"],
 		rule: function(currentDate, dateLDL) {
 			 try {
@@ -152,6 +155,11 @@ var reportRules =  (function(){
 				//TODO - promise pattern to make sure this runs at the right time?
 				//This current method seems a bit hacky
 				if (keysLeft == 0) {
+					if (!("Current Date" in filteredData[i])) {
+						filteredData[i]["Current Date"] = [].repeat(parsedData[0]["fileLastModified"], physicianIndex.length);
+					}
+					
+					
 					return checkRules(filteredData[i], diabetesRules);
 				}
 			}
