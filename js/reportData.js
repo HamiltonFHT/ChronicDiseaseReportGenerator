@@ -85,17 +85,16 @@ var reportData = (function() {
 		}
 		
 		if (arrData[arrData.length-1] == "") {
-			csvObject["num_elements"] = arrData.length - 1;
-		} else {
-			csvObject["num_elements"] = arrData.length;
+			arrData.pop();
 		}
-		
+		csvObject["num_elements"] = arrData.length;
+
 		//PSS include a blank column
 		if (csvObject.hasOwnProperty("")) {
 			delete csvObject[""];
 		}
 		if (!csvObject.hasOwnProperty("Current Date")) {
-			csvObject["Current Date"] = [].repeat(csvObject["fileLastModified"], count);
+			csvObject["Current Date"] = [].repeat(csvObject["fileLastModified"], arrData.length);
 		}
 		
 		return csvObject;
@@ -214,7 +213,7 @@ var reportData = (function() {
 			for (var i=0; i<parsedData.length; i++) {
 				if (parsedData[i].hasOwnProperty("Current Date")) {
 					if (parsedData[i]["Current Date"].length > 0) {
-						arrayDates.push(parsedData[i]["Current Date"].pop());
+						arrayDates.push(parsedData[i]["Current Date"][0]);
 					} else {
 						arrayDates.push(parsedData[i]['fileLastModified']);
 					}
