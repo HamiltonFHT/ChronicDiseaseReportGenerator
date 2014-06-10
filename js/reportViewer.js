@@ -117,6 +117,19 @@ var reportViewer = (function() {
 			// First item, i.e. "Select All Doctors"
 			if (i == 0) {
 				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>";
+				
+				var all_selected = true;
+				for (doc in selectedPhysicians) {
+					if (selectedPhysicians.hasOwnProperty(doc) &
+						selectedPhysicians[doc] == false){
+						all_selected = false;
+					} 
+				}
+				if (all_selected) {
+					physicianListItems[i].classList.add("selected");				
+				} else {
+					physicianListItems[i].classList.add("notSelected");
+				}
 			}
 			
 			// Every other doctor. All doctors are selected by default
@@ -133,6 +146,9 @@ var reportViewer = (function() {
 				
 			}
 		}
+		
+		
+		
 		
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
@@ -729,48 +745,28 @@ var reportViewer = (function() {
 		var physicianListItems = document.getElementsByClassName("physicianListItem");
 		
 		// If clicked on "Select All"
-		//TODO -- changed reference
 		if (this.innerHTML.indexOf("Select All") != -1) {
 			
-			// If class has 'selected', unselect it and unselect all doctors
+			// If class has 'selected', unselect all doctors
 			if (this.className.indexOf("selected") != -1) {
-				
-				// Splice out 'selected' and add 'notSelected'
-				this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 				
 				for (doc in selectedPhysicians) {
 					if (selectedPhysicians.hasOwnProperty(doc)) {
 						selectedPhysicians[doc] = false;
 					}
 				}
-				
-				// Set everything to false and 'notSelected', start at index 1
-				for (var i = 1; i < physicianListItems.length; i++) {			
-					// If doctor is 'selected', unselect it
-					if (physicianListItems[i].className.indexOf("selected") != -1)
-						physicianListItems[i].className = physicianListItems[i].className.substring(0, physicianListItems[i].className.indexOf("selected")) + "notSelected";
-				}
 			}
 			
 			// Else class has 'notSelected', select it and select all doctors
 			else {
 			
-				// Splice out 'notSelected' and add 'selected'
-				this.className = this.className.substring(0, this.className.indexOf("notSelected")) + "selected";
-				
+			
 				for (doc in selectedPhysicians) {
 					if (selectedPhysicians.hasOwnProperty(doc)) {
 						selectedPhysicians[doc] = true;
 					}
 				}
-				
-				// Set everything to true and 'selected'
-				for (var i = 1; i < physicianListItems.length; i++) {
-					
-					// If doctor is 'notSelected', select it
-					if (physicianListItems[i].className.indexOf("notSelected") != -1)
-						physicianListItems[i].className = physicianListItems[i].className.substring(0, physicianListItems[i].className.indexOf("notSelected")) + "selected";
-				}
+
 			}
 		}	
 		
@@ -784,16 +780,12 @@ var reportViewer = (function() {
 				if (physicianListItems[0].className.indexOf("selected") != -1) {
 				
 					// Updating classes of "Select All" and clicked doctor
-					physicianListItems[0].className = physicianListItems[0].className.substring(0, physicianListItems[0].className.indexOf("selected")) + "notSelected";
-					this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
-					
+				
 					// Search innerHTML for Doctor Number, match against arrayUniquePhysicians for the array index, use index to update selected Boolean
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
 					//TPS come back to this, it can be cleaned up
 					selectedPhysicians[docNum] = false;
-					
-					//var index = reportData.physicianList.getArrayIndex(docNum);
-					//reportData.selectedPhysicianList[index] = false;
+
 				}
 				
 				// "Select All" is not selected, so just unselect the clicked doctor 
@@ -803,7 +795,7 @@ var reportViewer = (function() {
 					// 14 is based on the number of characters "Doctor Number "
 					// 7 is based on the number of characters "</span>"
 					// This will need to be updated if we show actual physician names
-					this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
+					//this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
 					selectedPhysicians[docNum] = false;
 					//var index = reportData.physicianList.getArrayIndex(docNum);
@@ -814,24 +806,10 @@ var reportViewer = (function() {
 			// Clicked doctor is not selected
 			else {
 				
-				// Select it and update array
-				this.className = this.className.substring(0, this.className.indexOf("notSelected")) + "selected";
 				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
 				selectedPhysicians[docNum] = true;
-				//var index = reportData.physicianList.getArrayIndex(docNum);
-				//reportData.selectedPhysicianList[index] = true;
-				
+
 				// Loop through array to see if ALL doctors are now selected, if so, select "Select All"
-				var all_selected = true;
-				for (doc in selectedPhysicians) {
-					if (selectedPhysicians.hasOwnProperty(doc) &
-						selectedPhysicians[doc] == false){
-						all_selected = false;
-					}
-				}
-				if (all_selected) {
-					physicianListItems[0].className = physicianListItems[0].className.substring(0, physicianListItems[0].className.indexOf("notSelected")) + "selected";
-				}
 			}	
 		}
 		
