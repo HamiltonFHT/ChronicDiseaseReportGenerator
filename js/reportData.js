@@ -197,11 +197,12 @@ var reportData = (function() {
 			} else {
 				var arrSelectedPhysicians = [];
 				for (p in selectedPhysicians) {
-					if (selectedPhysicians[p] == true) {
+					if (selectedPhysicians.hasOwnProperty(p) &
+						selectedPhysicians[p] == true) {
 						arrSelectedPhysicians.push(p);
 					}
 				}
-				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(Object.keys(arrSelectedPhysicians));
+				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(arrSelectedPhysicians);
 			}
 		}
 		return {physicianIndex: physicianIndex, selectedPhysicians: selectedPhysicians};
@@ -212,7 +213,11 @@ var reportData = (function() {
 		if (parsedData.length > 0) {
 			for (var i=0; i<parsedData.length; i++) {
 				if (parsedData[i].hasOwnProperty("Current Date")) {
-					arrayDates.push(parsedData[i]["Current Date"].pop());
+					if (parsedData[i]["Current Date"].length > 0) {
+						arrayDates.push(parsedData[i]["Current Date"].pop());
+					} else {
+						arrayDates.push(parsedData[i]['fileLastModified']);
+					}
 				} else {
 					arrayDates.push(parsedData[i]['fileLastModified']);
 				}

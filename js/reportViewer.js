@@ -725,13 +725,6 @@ var reportViewer = (function() {
 			return;
 		}
 
-		var arrayData = [];
-		var arrayDesc = [];
-		for (var i=0; i < calculatedData.length; i++) {
-			arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
-			arrayDesc.push(calculatedData[i]["desc"]);
-		}
-
 		// Retrieve an array of all physician item labels
 		var physicianListItems = document.getElementsByClassName("physicianListItem");
 		
@@ -797,8 +790,10 @@ var reportViewer = (function() {
 					// Search innerHTML for Doctor Number, match against arrayUniquePhysicians for the array index, use index to update selected Boolean
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
 					//TPS come back to this, it can be cleaned up
-					var index = reportData.physicianList.getArrayIndex(docNum);
-					reportData.selectedPhysicianList[index] = false;
+					selectedPhysicians[docNum] = false;
+					
+					//var index = reportData.physicianList.getArrayIndex(docNum);
+					//reportData.selectedPhysicianList[index] = false;
 				}
 				
 				// "Select All" is not selected, so just unselect the clicked doctor 
@@ -810,8 +805,9 @@ var reportViewer = (function() {
 					// This will need to be updated if we show actual physician names
 					this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-					var index = reportData.physicianList.getArrayIndex(docNum);
-					reportData.selectedPhysicianList[index] = false;
+					selectedPhysicians[docNum] = false;
+					//var index = reportData.physicianList.getArrayIndex(docNum);
+					//reportData.selectedPhysicianList[index] = false;
 				}
 			}
 			
@@ -821,12 +817,19 @@ var reportViewer = (function() {
 				// Select it and update array
 				this.className = this.className.substring(0, this.className.indexOf("notSelected")) + "selected";
 				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				
-				var index = reportData.physicianList.getArrayIndex(docNum);
-				reportData.selectedPhysicianList[index] = true;
+				selectedPhysicians[docNum] = true;
+				//var index = reportData.physicianList.getArrayIndex(docNum);
+				//reportData.selectedPhysicianList[index] = true;
 				
 				// Loop through array to see if ALL doctors are now selected, if so, select "Select All"
-				if (reportData.selectedPhysicianList.allEqualsBoolean(true)) {
+				var all_selected = true;
+				for (doc in selectedPhysicians) {
+					if (selectedPhysicians.hasOwnProperty(doc) &
+						selectedPhysicians[doc] == false){
+						all_selected = false;
+					}
+				}
+				if (all_selected) {
 					physicianListItems[0].className = physicianListItems[0].className.substring(0, physicianListItems[0].className.indexOf("notSelected")) + "selected";
 				}
 			}	
