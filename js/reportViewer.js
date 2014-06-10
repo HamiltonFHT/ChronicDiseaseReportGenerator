@@ -222,7 +222,7 @@ var reportViewer = (function() {
 			return;
 		}
 		
-		if (calculatedData.length > 1) {
+		if (calculatedData.length >= 1) {
 			genVisSnapshot();
 		} //else {
 			//genVisTracking();
