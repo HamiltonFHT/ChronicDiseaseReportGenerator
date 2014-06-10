@@ -171,7 +171,7 @@ var reportViewer = (function() {
 			// To do: variables to store user input values
 			for (var i = 0; i < calculatedData.length; i++) {
 				d3.select("#dropdownDiabeticMeasures").append("option")
-					.text(calculatedData[i]["desc"])
+					.text(calculatedData[0][i]["desc"])
 					.attr("id", "optionDiabeticAssessment");
 			}
 		}
@@ -238,15 +238,20 @@ var reportViewer = (function() {
 			return;
 		}
 		
-		if (calculatedData.length >= 1) {
+		if (mode == "snapshot") {
+			calculatedData = calculatedData[0];
 			genVisSnapshot();
-		} //else {
-			//genVisTracking();
-		//}
+		} else {
+			genVisTracking();
+		}
 	}
 	
 	function genVisSnapshot(){
 		console.log("Generating visualization for Snapshot Mode...");
+
+		if (calculatedData.length == 0) {
+			return;
+		}
 
 		//var calculatedData = reportData.calculatedData();
 		// Add rectangles for percentage of patients within criteria
@@ -427,8 +432,6 @@ var reportViewer = (function() {
 	function genVisTracking() {
 		console.log("Generating visualization for Tracking Mode...");
 
-		clearCanvas();
-	
 	// Create min and max dates for the time scale - 1 week before and after
 		var minDate = new Date(arrayDates[0].getFullYear(),
 							   arrayDates[0].getMonth(),

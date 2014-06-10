@@ -124,7 +124,8 @@ var reportRules =  (function(){
 
 	function applyRules(parsedData, physicianIndex) {
 		//Loop through data from each file
-		var filteredData = [{}];
+		var filteredData = [];
+		var results = [];
 		
 		for (var i = 0; i < parsedData.length; i++) {
 			//Initialize filteredData if required
@@ -132,7 +133,7 @@ var reportRules =  (function(){
 			//Work around for asynch function calls
 			//Make sure filtering is finished before checking rules on them
 			var keysLeft = Object.keys(parsedData[i]).length;
-			
+			filteredData.push({});
 			//For each column in the file
 			for (var key in parsedData[i]) {
 				
@@ -160,10 +161,11 @@ var reportRules =  (function(){
 					}
 					
 					
-					return checkRules(filteredData[i], diabetesRules);
+					results.push(checkRules(filteredData[i], diabetesRules));
 				}
 			}
 		}
+		return results;
 	}
 
 
