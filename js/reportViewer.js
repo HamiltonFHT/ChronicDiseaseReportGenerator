@@ -9,8 +9,7 @@ var reportViewer = (function() {
 	var selectedPhysicians = null;
 	var arrayDates = null;
 	var selectedDate = 0;
-	
-	var tracking_measure = 0;
+	var selectedRule = 0;
 	
 	var reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
@@ -222,7 +221,9 @@ var reportViewer = (function() {
 	
 	function updateTrackingMeasure(selectedIndex) {
 		clearCanvas();
-		genVisTracking(selectedIndex-1);
+		mode = "tracking";
+		selectedRule = selectedIndex-1;
+		genVisTracking();
 	}
 	
 	function generateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
@@ -244,7 +245,7 @@ var reportViewer = (function() {
 			//calculatedData = calculatedData[0];
 			genVisSnapshot();
 		} else {
-			genVisTracking(0);
+			genVisTracking();
 		}
 	}
 	
@@ -439,7 +440,7 @@ var reportViewer = (function() {
 	
 	};
 	
-	function genVisTracking(selectedRule) {
+	function genVisTracking() {
 		console.log("Generating visualization for Tracking Mode...");
 
 	// Create min and max dates for the time scale - 1 week before and after
@@ -583,6 +584,7 @@ var reportViewer = (function() {
 					// To do: generate graph underneath for the date clicked
 					//document.getElementById("canvasContainer_extra").removeChild(document.getElementById("canvasSVG"));
 					selectedDate = i;
+					mode = "snapshot";
 					clearCanvas();
 					genVisSnapshot();
 				});
@@ -650,14 +652,14 @@ var reportViewer = (function() {
 				.attr("x", function(d, i) { return xScale(arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
-					if ((calculatedData[i][0]) < 10)
-						return yScale(calculatedData[i][0]) - 15;
+					if ((arrayData[i][0]) < 10)
+						return yScale(arrayData[i][0]) - 15;
 					// Else	
 					else {
 						// For first data point
 						if (i == 0) {
 							// If adjacent point is above, place label below, vice versa
-							if (calculatedData[1][0] >= arrayData[i][selectedRule])
+							if (arrayData[1][0] >= arrayData[i][selectedRule])
 								return yScale(arrayData[i][selectedRule]) + 25;
 							else return yScale(arrayData[i][selectedRule]) - 15;
 						}
@@ -700,13 +702,20 @@ var reportViewer = (function() {
 			
 			var arrayData = [];
 			var arrayDesc = [];
-			for (var i=0; i < calculatedData.length; i++) {
-				arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
-				arrayDesc.push(calculatedData[i]["desc"]);
-			}
-			
-			
+
 			if (mode == "snapshot") {
+				var snapshotData = calculatedData[selectedDate];
+			
+				for (var i=0; i < snapshotData.length; i++) {
+					if (snapshotData[i]["total"] == 0) {
+						continue;
+					}
+					arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
+					arrayDesc.push(snapshotData[i]["desc"]);
+				}
+				if (arrayData.length == 0) {
+					return;
+				}
 			
 				canvas.selectAll("onTargetLabel")
 					.data(arrayData)
@@ -736,21 +745,37 @@ var reportViewer = (function() {
 						// don't display off target labels
 						.attr("display", "none");
 			} else {
+
+				for (var i=0; i < calculatedData.length; i++) {
+					arrayData.push([]);
+					arrayDesc.push([]);
+					for (var j=0; j < calculatedData[i].length; j++) {
+						if (calculatedData[i][j]["total"] == 0) {
+							continue;
+						}
+						arrayData[i].push(calculatedData[i][j]["passed"] / calculatedData[i][j]["total"] * 100);
+						arrayDesc[i].push(calculatedData[i][j]["desc"]);
+					}
+				}
+				if (arrayData.length == 0) {
+					return;
+				}
+						
 				canvas.selectAll(".dataLabel")
-					.data(calculatedData)
+					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
 						.attr("x", function(d, i) { return xScale(arrayDates[i]); })
-						.attr("y", function(d, i) { return yScale(calculatedData[i][0] * 100) - 15; }) // 15 pixels above data point
+						.attr("y", function(d, i) { return yScale(arrayData[i][selectedRule]) - 15; }) // 15 pixels above data point
 						.attr("text-anchor", "middle")
 						.style("fill", "black")
 						.style("font-size", "13px")
 						.style("font-family", "Arial")
 						.text(function(d, i) { 
-							if ((calculatedData[i][0] * 100) == 0)
-								return (calculatedData[i][0] * 100).toFixed(0) + "%";
+							if ((arrayData[i][selectedRule]) == 0)
+								return (arrayData[i][selectedRule]).toFixed(0) + "%";
 							else 
-							return (calculatedData[i][0] * 100).toFixed(1) + "%";
+							return (arrayData[i][selectedRule]).toFixed(1) + "%";
 						});
 			
 			}
