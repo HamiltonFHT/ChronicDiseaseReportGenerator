@@ -28,9 +28,6 @@ var reportRules =  (function(){
 		return Math.abs(monthsDiff + yearsDiff);
 	}
 	
-	
-	
-	
 	/*
 	* calculateMonthsSince:
 	* @param date A Javascript Date object as a reference point for date calculation
@@ -67,7 +64,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -88,7 +85,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -109,7 +106,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -131,7 +128,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -155,7 +152,7 @@ var reportRules =  (function(){
 	 			//currentDate is in format DD/MM/YYYY
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -179,7 +176,7 @@ var reportRules =  (function(){
 	 			//currentDate is in format DD/MM/YYYY
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -201,7 +198,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -249,7 +246,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -270,7 +267,7 @@ var reportRules =  (function(){
 			try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -281,54 +278,18 @@ var reportRules =  (function(){
 	 		}
 	 	},
 	};
-	
-
 
 	var diabetesRules = [ruleDMPast12Months, ruleA1cPast3Months, ruleA1cLessThanEqualTo0_07Past3Months, ruleBPPast6Months, ruleBPLessThan130_80Last6Months, ruleLDLPast12Months, ruleLDLLessThanEqualTo2Past12Months, ruleACRLast12Months, ruleEGFRMeasuredPast12Months, ruleEGFRGreaterThan60Past12Months];
 
-	function applyRules(parsedData, physicianIndex) {
+	function applyRules(filteredData) {
 		//Loop through data from each file
-		var filteredData = [];
 		var results = [];
 		
-		for (var i = 0; i < parsedData.length; i++) {
-			//Initialize filteredData if required
-			//TODO Does this need to be global? Likely not
-			//Work around for asynch function calls
-			//Make sure filtering is finished before checking rules on them
-			var keysLeft = Object.keys(parsedData[i]).length;
-			filteredData.push({});
-			//For each column in the file
-			for (var key in parsedData[i]) {
-				
-				//If this is a data element (i.e. an array) and not a property element (i.e. a file name)
-				if (parsedData[i][key].length == parsedData[i]['num_elements'] &&
-					parsedData[i][key].length != undefined) {
-						
-					//Add the element from parsedData if the user selected it (i.e. it's index is in the physicianList)
-					for (var j = 0; j < physicianIndex.length; j++) {
-						var ind = physicianIndex[j];
-						//Add the key to filteredData if it doesn't have it
-						if (!filteredData[i].hasOwnProperty(key)) {
-							filteredData[i][key] = [];
-						}
-						//Add the element
-						filteredData[i][key].push(parsedData[i][key][ind]);
-					}
-				}
-				--keysLeft;
-				//TODO - promise pattern to make sure this runs at the right time?
-				//This current method seems a bit hacky
-				if (keysLeft == 0) {
-					if (!("Current Date" in filteredData[i])) {
-						filteredData[i]["Current Date"] = [].repeat(parsedData[0]["fileLastModified"], physicianIndex.length);
-					}
-					
-					
-					results.push(checkRules(filteredData[i], diabetesRules));
-				}
-			}
+		//loop through each file
+		for (var i = 0; i < filteredData.length; i++) {
+			results.push(checkRules(filteredData[i], diabetesRules));
 		}
+		
 		return results;
 	}
 
@@ -345,17 +306,8 @@ var reportRules =  (function(){
 			for (i=0; i<currentRule.col.length; i++) {
 				if (!csvObject.hasOwnProperty(currentRule.col[i])) {
 					console.log("File has no column named " + currentRule.col[i]);
-					console.log("Can't check rule: " + currentRule.desc);
-					//Break out to the next rule
-					// TODO - What do I really want to do here?
-					// Skip the rule entirely, count it as 0, or code it is -1 and handle appropriately in the viewer?
-					/*
-					results.push({	
-							desc: currentRule.desc,
-						  	passed: 0,
-						  	total: num_items
-					});
-					*/
+					console.log("Can't check rule: " + currentRule.desc());
+
 					continue forRule;
 				}
 			}

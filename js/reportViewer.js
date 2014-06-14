@@ -8,6 +8,7 @@ var reportViewer = (function() {
 	var calculatedData = null;
 	var selectedPhysicians = null;
 	var arrayDates = null;
+	var selectedDate = 0;
 	
 	var tracking_measure = 0;
 	
@@ -169,7 +170,7 @@ var reportViewer = (function() {
 			// Add the options for the different diabetic measures in the drop down menu
 			// Created dynamically based on default values
 			// To do: variables to store user input values
-			for (var i = 0; i < calculatedData.length; i++) {
+			for (var i = 0; i < calculatedData[0].length; i++) {
 				d3.select("#dropdownDiabeticMeasures").append("option")
 					.text(calculatedData[0][i]["desc"])
 					.attr("id", "optionDiabeticAssessment");
@@ -220,7 +221,8 @@ var reportViewer = (function() {
 	};
 	
 	function updateTrackingMeasure(selectedIndex) {
-		console.log("Selected: ", selectedIndex);
+		clearCanvas();
+		genVisTracking(selectedIndex-1);
 	}
 	
 	function generateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
@@ -239,27 +241,34 @@ var reportViewer = (function() {
 		}
 		
 		if (mode == "snapshot") {
-			calculatedData = calculatedData[0];
+			//calculatedData = calculatedData[0];
 			genVisSnapshot();
 		} else {
-			genVisTracking();
+			genVisTracking(0);
 		}
 	}
 	
 	function genVisSnapshot(){
 		console.log("Generating visualization for Snapshot Mode...");
 
-		if (calculatedData.length == 0) {
+		var snapshotData = calculatedData[selectedDate];
+
+		if (snapshotData.length == 0) {
 			return;
 		}
 
-		//var calculatedData = reportData.calculatedData();
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
 		var arrayDesc = [];
-		for (var i=0; i < calculatedData.length; i++) {
-			arrayData.push(calculatedData[i]["passed"] / calculatedData[i]["total"] * 100);
-			arrayDesc.push(calculatedData[i]["desc"]);
+		for (var i=0; i < snapshotData.length; i++) {
+			if (snapshotData[i]["total"] == 0) {
+				continue;
+			}
+			arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
+			arrayDesc.push(snapshotData[i]["desc"]);
+		}
+		if (arrayData.length == 0) {
+			return;
 		}
 
 
@@ -400,7 +409,7 @@ var reportViewer = (function() {
 					else title += arraySelectedOnly[i] + ", ";
 				}
 				title += " as of " + arrayDates[0];
-				title += " (n = " + calculatedData[0]["total"] + ")";
+				title += " (n = " + snapshotData[0]["total"] + ")";
 				reportTitle = title;
 				return title;
 			});
@@ -429,7 +438,8 @@ var reportViewer = (function() {
 			.text("Diabetic Measure");
 	
 	};
-	function genVisTracking() {
+	
+	function genVisTracking(selectedRule) {
 		console.log("Generating visualization for Tracking Mode...");
 
 	// Create min and max dates for the time scale - 1 week before and after
@@ -439,6 +449,24 @@ var reportViewer = (function() {
 		var maxDate = new Date(arrayDates[arrayDates.length - 1].getFullYear(),
 							   arrayDates[arrayDates.length - 1].getMonth(),
 							   arrayDates[arrayDates.length - 1].getDate() + 7);
+		
+		var arrayData = [];
+		var arrayDesc = [];
+		for (var i=0; i < calculatedData.length; i++) {
+			arrayData.push([]);
+			arrayDesc.push([]);
+			for (var j=0; j < calculatedData[i].length; j++) {
+				if (calculatedData[i][j]["total"] == 0) {
+					continue;
+				}
+				arrayData[i].push(calculatedData[i][j]["passed"] / calculatedData[i][j]["total"] * 100);
+				arrayDesc[i].push(calculatedData[i][j]["desc"]);
+			}
+		}
+		if (arrayData.length == 0) {
+			return;
+		}
+		
 		
 		// Creat the scale for the X axis
 		xScale = d3.time.scale()
@@ -462,7 +490,7 @@ var reportViewer = (function() {
 			
 		// Create and append ticklines for the xAxis
 		canvas.selectAll(".xTickLine")
-			.data(calculatedData)
+			.data(arrayData)
 			.enter().append("line")
 				.attr("class", "tickLine xTickLine")
 				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
@@ -522,23 +550,23 @@ var reportViewer = (function() {
 		
 		// Append lines between data points
 		canvas.selectAll(".dataPointConnector")
-			.data(new Array(calculatedData.length - 1))
+			.data(new Array(arrayData.length - 1))
 			.enter().append("line")
 				.attr("class", "dataPointConnector")
 				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("x2", function (d, i) { return xScale(arrayDates[i + 1]); })
-				.attr("y1", function (d, i) { return yScale(calculatedData[i][0] * 100); })
-				.attr("y2", function (d, i) { return yScale(calculatedData[i + 1][0] * 100); })
+				.attr("y1", function (d, i) { return yScale(arrayData[i][selectedRule]); })
+				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][selectedRule]); })
 				.attr("stroke", DEFAULT_COLOURS[0])
 				.attr("stroke-width", 2);
 		
 		// Append data points
 		canvas.selectAll(".dataPoint")
-			.data(calculatedData)
+			.data(arrayData)
 			.enter().append("circle")
 				.attr("class", "dataPoint")
 				.attr("cx", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("cy", function(d, i) { return yScale(calculatedData[i][0] * 100); })
+				.attr("cy", function(d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("r", 5)
 				.attr("fill", DEFAULT_COLOURS[0])
 				.on("mouseover", function(d) {
@@ -554,8 +582,9 @@ var reportViewer = (function() {
 				.on("click", function(d, i) {
 					// To do: generate graph underneath for the date clicked
 					//document.getElementById("canvasContainer_extra").removeChild(document.getElementById("canvasSVG"));
-					clearCanvas("canvasContainer_extra");
-					genVisSnapshot("canvasContainer_extra");
+					selectedDate = i;
+					clearCanvas();
+					genVisSnapshot();
 				});
 				
 		// Add x axis label
@@ -594,21 +623,12 @@ var reportViewer = (function() {
 				var d = document.getElementById("dropdownDiabeticMeasures");
 				var title = d.options[d.selectedIndex].value + " for Doctor";
 				var arraySelectedOnly = [];
-				
-				
-				//TODO -- work out selected and unique physicians
-				var indices = reportData.selectedPhysicianList.allIndicesOf(true);
-				for (i=0; i < indices.length; i++) {
-					arraySelectedOnly.push(reportData.physicianList[indices[i]]);
+
+				for (var doc in selectedPhysicians) {
+					if (selectedPhysicians[doc] == true)
+						arraySelectedOnly.push(doc);
 				}
-				
-				/*
-				for (var i = 0; i < arraySelectedPhysicians.length; i++) {
-					if (arraySelectedPhysicians[i]) {
-						arraySelectedOnly.push(arrayUniquePhysicians[i]);
-					}
-				}
-				*/
+							
 				if (arraySelectedOnly.length > 1) title += "s ";
 				else title += " ";
 				for (var i = 0; i < arraySelectedOnly.length; i++) {
@@ -624,39 +644,39 @@ var reportViewer = (function() {
 		
 		// Add labels for data points
 		canvas.selectAll(".dataLabel")
-			.data(calculatedData)
+			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
 				.attr("x", function(d, i) { return xScale(arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
-					if ((calculatedData[i][0] * 100) < 10)
-						return yScale(calculatedData[i][0] * 100) - 15;
+					if ((calculatedData[i][0]) < 10)
+						return yScale(calculatedData[i][0]) - 15;
 					// Else	
 					else {
 						// For first data point
 						if (i == 0) {
 							// If adjacent point is above, place label below, vice versa
-							if (calculatedData[1][0] >= calculatedData[i][0])
-								return yScale(calculatedData[i][0] * 100) + 25;
-							else return yScale(calculatedData[i][0] * 100) - 15;
+							if (calculatedData[1][0] >= arrayData[i][selectedRule])
+								return yScale(arrayData[i][selectedRule]) + 25;
+							else return yScale(arrayData[i][selectedRule]) - 15;
 						}
 						// For last point, compare with second last point
-						else if (i == calculatedData.length - 1) {
-							if (calculatedData[calculatedData.length - 2][0] >= calculatedData[i][0])
-								return yScale(calculatedData[i][0] * 100) + 25;
-							else return yScale(calculatedData[i][0] * 100) - 15;
+						else if (i == arrayData.length - 1) {
+							if (arrayData[arrayData.length - 2][0] >= arrayData[i][selectedRule])
+								return yScale(arrayData[i][selectedRule]) + 25;
+							else return yScale(arrayData[i][selectedRule]) - 15;
 						}
 						// Else all points in between, check both sides
 						else {
 							// If both adjacent points are above, place below
-							if (calculatedData[i - 1][0] >= calculatedData[i][0] && calculatedData[i + 1][0] >= calculatedData[i][0])
-								return yScale(calculatedData[i][0] * 100) + 25;
+							if (arrayData[i - 1][0] >= arrayData[i][selectedRule] && arrayData[i + 1][0] >= arrayData[i][selectedRule])
+								return yScale(arrayData[i][selectedRule]) + 25;
 							// Else if both are below, place above	
-							else if (calculatedData[i - 1][0] < calculatedData[i][0] && calculatedData[i + 1][0] < calculatedData[i][0])
-								return yScale(calculatedData[i][0] * 100) - 15;
+							else if (arrayData[i - 1][0] < arrayData[i][selectedRule] && arrayData[i + 1][0] < arrayData[i][selectedRule])
+								return yScale(arrayData[i][selectedRule]) - 15;
 							// Else just place above
-							else return yScale(calculatedData[i][0] * 100) - 15;
+							else return yScale(arrayData[i][selectedRule]) - 15;
 						}
 					}
 				}) 
@@ -665,12 +685,13 @@ var reportViewer = (function() {
 				.style("font-size", "13px")
 				.style("font-family", "Arial")
 				.text(function(d, i) { 
-					if ((calculatedData[i][0] * 100) == 0)
-						return (calculatedData[i][0] * 100).toFixed(0) + "%";
+					if ((arrayData[i][selectedRule]) == 0)
+						return (arrayData[i][selectedRule]).toFixed(0) + "%";
 					else 
-					return (calculatedData[i][0] * 100).toFixed(1) + "%";
+					return (arrayData[i][selectedRule]).toFixed(1) + "%";
 				});
 	};
+	
 	function toggleDataLabels() {
 			// Find data labels
 		if (d3.selectAll(".dataLabel")[0].length > 0) 
@@ -735,8 +756,7 @@ var reportViewer = (function() {
 			}
 		}
 	};
-	
-	
+		
 	function toggleSelected() {
 
 		if (calculatedData == undefined) { 
