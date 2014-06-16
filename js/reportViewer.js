@@ -222,7 +222,7 @@ var reportViewer = (function() {
 	function updateTrackingMeasure(selectedIndex) {
 		clearCanvas();
 		mode = "tracking";
-		selectedRule = selectedIndex-1;
+		selectedRule = selectedIndex;
 		genVisTracking();
 	}
 	
