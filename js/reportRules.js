@@ -64,7 +64,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -85,7 +85,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -106,7 +106,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -128,7 +128,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -152,7 +152,7 @@ var reportRules =  (function(){
 	 			//currentDate is in format DD/MM/YYYY
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -176,7 +176,7 @@ var reportRules =  (function(){
 	 			//currentDate is in format DD/MM/YYYY
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -193,16 +193,16 @@ var reportRules =  (function(){
 		desc: function(){return "ACR measured in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with ACR measured in past " + this.months + " months";},
 		months: 12,
-	 	col: ["Current Date", "Date CHOL/HDL"],
+	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
-	 			console.log("Date: " + measuredDate + " True: " + (new Date(measuredDate) >= targetDate));
+
 	 			return (new Date(measuredDate) >= targetDate);
 	 		} catch (err) {
 	 			console.log("Error: " + err);
@@ -246,7 +246,7 @@ var reportRules =  (function(){
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
@@ -267,7 +267,7 @@ var reportRules =  (function(){
 			try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]), this.months);
+	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
