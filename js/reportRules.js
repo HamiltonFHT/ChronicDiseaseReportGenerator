@@ -193,8 +193,8 @@ var reportRules =  (function(){
 		desc: function(){return "ACR measured in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with ACR measured in past " + this.months + " months";},
 		months: 12,
-	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio"],
-	 	rule: function(currentDate, measuredDate) {
+	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
+	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
@@ -203,7 +203,7 @@ var reportRules =  (function(){
 	 				targetDate = removeMonths(new Date(currentDate), this.months);
 	 			}
 
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return (new Date(measuredDate) >= targetDate && parseFloat(value) != NaN);
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;

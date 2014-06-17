@@ -1,17 +1,14 @@
 var reportViewer = (function() {
-	//var canvas = d3.select("#canvasContainer").append("svg")
-	//				.attr("id", "canvasSVG");
-	var canvas = d3.select("#canvasContainer").select("#canvasSVG");
+
+	var g_canvas = d3.select("#canvasContainer").select("#canvasSVG");
 	
-	var mode = "";
+	var g_mode = "";
 	
-	var calculatedData = null;
-	var selectedPhysicians = null;
-	var arrayDates = null;
-	var selectedDate = 0;
-	var selectedRule = 0;
+	var g_calculatedData = null;
+	var g_selectedPhysicians = null;
+	var g_arrayDates = null;
 	
-	var reportTitle = "";
+	var g_reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
 	
 	var DEFAULT_CANVAS_WIDTH = 960;  		// pixels
@@ -20,8 +17,6 @@ var reportViewer = (function() {
 	var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300;
 	var DEFAULT_PADDING_TOP_SNAPSHOT_MODE = 50;
 	
-	var	DEFAULT_COLUMN_CURRENT_DATE = 23;
-
 	var DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT_MODE - 25;
 	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_SNAPSHOT_MODE;
 	
@@ -35,10 +30,10 @@ var reportViewer = (function() {
 							"sandybrown", "slategray", "goldenrod", "darkslateblue", "palevioletred",
 							"forestgreen", "sienna", "bisque"];
 
-	function clearCanvas() {
+	function ClearCanvas() {
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
 		
-		canvas = d3.select("#canvasContainer").append("svg")
+		g_canvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					// Set the width and height of the canvas
 					.attr("width", DEFAULT_CANVAS_WIDTH)
@@ -46,7 +41,7 @@ var reportViewer = (function() {
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("transform", function() {
-								switch (mode) {
+								switch (g_mode) {
 								
 								case "snapshot":
 									return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
@@ -59,7 +54,7 @@ var reportViewer = (function() {
 				});
 	};
 	
-	function addSidePanels() {
+	function AddUserInterface() {
 		//reportData.physicianList contains 2 columns and n rows
 		//[Doctor number, boolean selected]
 		
@@ -98,13 +93,13 @@ var reportViewer = (function() {
 		
 		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 		// panel. There will also be a filter for "All Selected Physicians"
-		for (var i = 0; i < Object.keys(selectedPhysicians).length+1; i++) {
+		for (var i = 0; i < Object.keys(g_selectedPhysicians).length+1; i++) {
 			
 			// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
 			// Selected by default
 			d3.select("#physicianLegendList").append("li")
 				.attr("class", "legendListItem physicianListItem")
-				.on("click", toggleSelected);
+				.on("click", ToggleSelectedPhysicians);
 		}
 		
 		// Retrieve an array of all physician list items
@@ -119,9 +114,9 @@ var reportViewer = (function() {
 				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>";
 				
 				var all_selected = true;
-				for (doc in selectedPhysicians) {
-					if (selectedPhysicians.hasOwnProperty(doc) &
-						selectedPhysicians[doc] == false){
+				for (doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians.hasOwnProperty(doc) &
+						g_selectedPhysicians[doc] == false){
 						all_selected = false;
 					} 
 				}
@@ -135,9 +130,9 @@ var reportViewer = (function() {
 			// Every other doctor. All doctors are selected by default
 			else {
 				//arraySelectedPhysicians[i - 1] = true;
-				var doc = Object.keys(selectedPhysicians)[i-1];
+				var doc = Object.keys(g_selectedPhysicians)[i-1];
 				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + doc + "</span>";
-				if (selectedPhysicians[doc] == true) {
+				if (g_selectedPhysicians[doc] == true) {
 					physicianListItems[i].classList.add("selected");
 				} else {
 					physicianListItems[i].classList.add("notSelected");
@@ -153,7 +148,7 @@ var reportViewer = (function() {
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
 	
-		if (mode == "tracking") {
+		if (g_mode == "tracking") {
 		
 			d3.select("#sidePanel").append("div")
 				.attr("class", "sidePanelSection")
@@ -164,14 +159,18 @@ var reportViewer = (function() {
 			// Add a drop down menu for the diabetic measures	
 			d3.select("#measuresSection").append("select")
 				.attr("id", "dropdownDiabeticMeasures")
-				.on("change", function() { updateTrackingMeasure(this.selectedIndex); });
+				.on("change", function() { 
+					ClearCanvas();
+					g_mode = "tracking";
+					GenerateTracking(this.selectedIndex); 
+				});
 					
 			// Add the options for the different diabetic measures in the drop down menu
 			// Created dynamically based on default values
 			// To do: variables to store user input values
-			for (var i = 0; i < calculatedData[0].length; i++) {
+			for (var i = 0; i < g_calculatedData[0].length; i++) {
 				d3.select("#dropdownDiabeticMeasures").append("option")
-					.text(calculatedData[0][i]["desc"])
+					.text(g_calculatedData[0][i]["desc"])
 					.attr("id", "optionDiabeticAssessment");
 			}
 		}
@@ -216,47 +215,37 @@ var reportViewer = (function() {
 		d3.select("#settingsSection").append("input")
 			.attr("type", "button")
 			.attr("value", "Toggle data labels")
-			.on("click", toggleDataLabels);
+			.on("click", ToggleDataLabels);
 	};
 	
-	function updateTrackingMeasure(selectedIndex) {
-		clearCanvas();
-		mode = "tracking";
-		selectedRule = selectedIndex;
-		genVisTracking();
-	}
-	
-	function generateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
+	function GenerateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
 		
-		mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";
-		calculatedData = rd_calculatedData;
-		selectedPhysicians = rd_selectedPhysicians;
-		arrayDates = rd_arrayDates;
+		g_mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";
+		g_calculatedData = rd_calculatedData;
+		g_selectedPhysicians = rd_selectedPhysicians;
+		g_arrayDates = rd_arrayDates;
 				
-		clearCanvas();
-		addSidePanels();
+		ClearCanvas();
+		AddUserInterface();
 		
-		if (calculatedData == undefined) {
-			console.log("calculatedData undefined");
+		if (g_calculatedData == undefined) {
+			console.log("no calculated data!");
 			return;
 		}
 		
-		if (mode == "snapshot") {
+		if (g_mode == "snapshot") {
 			//calculatedData = calculatedData[0];
-			genVisSnapshot();
+			GenerateSnapshot(0);
 		} else {
-			genVisTracking();
+			//By default, select first item in dropdown
+			GenerateTracking(0);
 		}
 	}
 	
-	function genVisSnapshot(){
+	function GenerateSnapshot(selectedDate){
 		console.log("Generating visualization for Snapshot Mode...");
 
-		var snapshotData = calculatedData[selectedDate];
-
-		if (snapshotData.length == 0) {
-			return;
-		}
+		var snapshotData = g_calculatedData[selectedDate];
 
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
@@ -268,10 +257,6 @@ var reportViewer = (function() {
 			arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
 			arrayDesc.push(snapshotData[i]["desc"]);
 		}
-		if (arrayData.length == 0) {
-			return;
-		}
-
 
 		xScale = d3.scale.linear()
 			.domain([0, 100])
@@ -290,7 +275,7 @@ var reportViewer = (function() {
 			.scale(yScale)
 			.orient("left");
 			
-		canvas.selectAll(".tickline")
+		g_canvas.selectAll(".tickline")
 			.data(xScale.ticks(10))
 			.enter().append("line")
 				.attr("x1", xScale)
@@ -301,45 +286,79 @@ var reportViewer = (function() {
 				.style("stroke-width", 1)
 				.style("opacity", 0.7);
 			
+		// Add x axis label
+		g_canvas.append("text")
+			.attr("class", "xAxisLabel")
+			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
+			.attr("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "14px")
+			.style("font-family", "Arial")
+			.text("% of Patients");
+			
+		// Add y axis label
+		g_canvas.append("text")
+			.attr("class", "yAxisLabel")
+			.attr("transform", "rotate(-90)")
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
+			.attr("y", -DEFAULT_PADDING_LEFT_SNAPSHOT_MODE / 2 - 125)
+			.attr("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "14px")
+			.style("font-family", "Arial")
+			.text("Diabetic Measure");
+		
+		// Graph title text
+		g_canvas.append("text")
+			.attr("class", "graphTitle")
+			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
+			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
+			.attr("text-anchor", "middle")
+			.style("font-size", "14px")
+			.style("font-weight", "bold")
+			.text(function() {
+				var arraySelectedOnly = [];
 
-		
-		canvas.selectAll("onTargetBar")
-			.data(arrayData)
-			.enter().append("rect")
-				.attr("class", "onTargetBar")
-				.attr("width", function(d) { return xScale(d); })
-				.attr("height", yScale.rangeBand())
-				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
-				.attr("fill", DEFAULT_COLOURS[0])
-				.style("stroke", "black")
-				.style("stroke-width", "1px")
-				.attr("shape-rendering", "crispEdges");
+				for (var doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians[doc] == true)
+						arraySelectedOnly.push(doc);
+				}
 				
-		// Add bars for patients not within criteria
-		canvas.selectAll("offTargetBar")
-			.data(arrayData)
-			.enter().append("rect")
-				.attr("class", "offTargetBar")
-				.attr("width", function(d) { return xScale(100 - d); })
-				.attr("height", yScale.rangeBand())
-				.attr("x", function(d) { return xScale(d); })
-				.attr("y", function(d, i) { return yScale(arrayDesc[i]); })
-				.attr("fill", "white")
-				.style("stroke", "black")
-				.style("stroke-width", "1px")
-				.attr("shape-rendering", "crispEdges");
+				if (arraySelectedOnly.length == 0) {
+					return "No Doctors Selected";
+				}
+				
+				var title = "Diabetes Report for Doctor";
+				
+				if (arraySelectedOnly.length > 1) title += "s ";
+				else title += " ";
+				for (var i = 0; i < arraySelectedOnly.length; i++) {
+					if (i == arraySelectedOnly.length - 2)
+						title += arraySelectedOnly[i] + " and ";
+					else if (i == arraySelectedOnly.length - 1)	
+						title += arraySelectedOnly[i];
+					else title += arraySelectedOnly[i] + ", ";
+				}
+				title += " as of " + g_arrayDates[0].toString().substring(4, 15);
+				title += " (n = " + snapshotData[0]["total"] + ")";
+				reportTitle = title;
+				return title;
+			});
 		
-		canvas.append("g")
+		//Translate graph into center of page
+		g_canvas.append("g")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
 			
-		canvas.append("g")
+		g_canvas.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(yAxis);
 		
+				
 		// Add styling and attributes for major ticks in axes
 		var majorTicks = document.getElementsByClassName("tick major");
 		for (var i = 0; i < majorTicks.length; i++) {
@@ -355,7 +374,40 @@ var reportViewer = (function() {
 			paths[i].setAttribute("shape-rendering", "crispEdges");
 		}
 		
-		canvas.selectAll("onTargetLabel")
+		
+		if (arrayData.length == 0) {
+			return;
+		}
+		
+		//Labels for each bar
+		g_canvas.selectAll("onTargetBar")
+			.data(arrayData)
+			.enter().append("rect")
+				.attr("class", "onTargetBar")
+				.attr("width", function(d) { return xScale(d); })
+				.attr("height", yScale.rangeBand())
+				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
+				.attr("fill", DEFAULT_COLOURS[0])
+				.style("stroke", "black")
+				.style("stroke-width", "1px")
+				.attr("shape-rendering", "crispEdges");
+
+		// Add bars for patients not within criteria
+		g_canvas.selectAll("offTargetBar")
+			.data(arrayData)
+			.enter().append("rect")
+				.attr("class", "offTargetBar")
+				.attr("width", function(d) { return xScale(100 - d); })
+				.attr("height", yScale.rangeBand())
+				.attr("x", function(d) { return xScale(d); })
+				.attr("y", function(d, i) { return yScale(arrayDesc[i]); })
+				.attr("fill", "white")
+				.style("stroke", "black")
+				.style("stroke-width", "1px")
+				.attr("shape-rendering", "crispEdges");
+		
+		
+		g_canvas.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -368,7 +420,7 @@ var reportViewer = (function() {
 				.style("fill", "white")
 				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 		
-		canvas.selectAll("offTargetLabel")
+		g_canvas.selectAll("offTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -382,86 +434,30 @@ var reportViewer = (function() {
 				.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
 				// don't display off target labels
 				.attr("display", "none");
-		
-		// Graph title text
-		canvas.append("text")
-			.attr("class", "graphTitle")
-			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
-			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
-			.attr("text-anchor", "middle")
-			.style("font-size", "14px")
-			.style("font-weight", "bold")
-			.text(function() {
-				var title = "Diabetes Report for Doctor";
-				var arraySelectedOnly = [];
-
-				for (var doc in selectedPhysicians) {
-					if (selectedPhysicians[doc] == true)
-						arraySelectedOnly.push(doc);
-				}
-				
-				if (arraySelectedOnly.length > 1) title += "s ";
-				else title += " ";
-				for (var i = 0; i < arraySelectedOnly.length; i++) {
-					if (i == arraySelectedOnly.length - 2)
-						title += arraySelectedOnly[i] + " and ";
-					else if (i == arraySelectedOnly.length - 1)	
-						title += arraySelectedOnly[i];
-					else title += arraySelectedOnly[i] + ", ";
-				}
-				title += " as of " + arrayDates[0];
-				title += " (n = " + snapshotData[0]["total"] + ")";
-				reportTitle = title;
-				return title;
-			});
-			
-		// Add x axis label
-		canvas.append("text")
-			.attr("class", "xAxisLabel")
-			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
-			.attr("text-anchor", "middle")
-			.style("font-weight", "bold")
-			.style("font-size", "14px")
-			.style("font-family", "Arial")
-			.text("% of Patients");
-			
-		// Add y axis label
-		canvas.append("text")
-			.attr("class", "yAxisLabel")
-			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
-			.attr("y", -DEFAULT_PADDING_LEFT_SNAPSHOT_MODE / 2 - 125)
-			.attr("text-anchor", "middle")
-			.style("font-weight", "bold")
-			.style("font-size", "14px")
-			.style("font-family", "Arial")
-			.text("Diabetic Measure");
-	
 	};
 	
-	function genVisTracking() {
+	function GenerateTracking(selectedRule) {
 		console.log("Generating visualization for Tracking Mode...");
 
 	// Create min and max dates for the time scale - 1 week before and after
-		var minDate = new Date(arrayDates[0].getFullYear(),
-							   arrayDates[0].getMonth(),
-							   arrayDates[0].getDate() - 7);
-		var maxDate = new Date(arrayDates[arrayDates.length - 1].getFullYear(),
-							   arrayDates[arrayDates.length - 1].getMonth(),
-							   arrayDates[arrayDates.length - 1].getDate() + 7);
+		var minDate = new Date(g_arrayDates[0].getFullYear(),
+							   g_arrayDates[0].getMonth(),
+							   g_arrayDates[0].getDate() - 7);
+		var maxDate = new Date(g_arrayDates[g_arrayDates.length - 1].getFullYear(),
+							   g_arrayDates[g_arrayDates.length - 1].getMonth(),
+							   g_arrayDates[g_arrayDates.length - 1].getDate() + 7);
 		
 		var arrayData = [];
 		var arrayDesc = [];
-		for (var i=0; i < calculatedData.length; i++) {
+		for (var i=0; i < g_calculatedData.length; i++) {
 			arrayData.push([]);
 			arrayDesc.push([]);
-			for (var j=0; j < calculatedData[i].length; j++) {
-				if (calculatedData[i][j]["total"] == 0) {
+			for (var j=0; j < g_calculatedData[i].length; j++) {
+				if (g_calculatedData[i][j]["total"] == 0) {
 					continue;
 				}
-				arrayData[i].push(calculatedData[i][j]["passed"] / calculatedData[i][j]["total"] * 100);
-				arrayDesc[i].push(calculatedData[i][j]["desc"]);
+				arrayData[i].push(g_calculatedData[i][j]["passed"] / g_calculatedData[i][j]["total"] * 100);
+				arrayDesc[i].push(g_calculatedData[i][j]["desc"]);
 			}
 		}
 		if (arrayData.length == 0) {
@@ -490,12 +486,12 @@ var reportViewer = (function() {
 			.orient("left");
 			
 		// Create and append ticklines for the xAxis
-		canvas.selectAll(".xTickLine")
+		g_canvas.selectAll(".xTickLine")
 			.data(arrayData)
 			.enter().append("line")
 				.attr("class", "tickLine xTickLine")
-				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(arrayDates[i]); })
+				.attr("x1", function (d, i) { return xScale(g_arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScale(g_arrayDates[i]); })
 				.attr("y1", 0)
 				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE)
 				.style("opacity", 0.7)
@@ -503,7 +499,7 @@ var reportViewer = (function() {
 				.style("stroke-width", "1px");
 	
 		// Create and append ticklines for the yAxis
-		canvas.selectAll(".yTickLine")
+		g_canvas.selectAll(".yTickLine")
 			.data(yScale.ticks(10))
 			.enter().append("line")
 				.attr("class", "tickLine yTickLine")
@@ -515,16 +511,16 @@ var reportViewer = (function() {
 				.style("stroke", "#cccccc")
 				.style("stroke-width", "1px");
 		
-		// Append xAxis to the canvas
-		canvas.append("g")
+		// Append xAxis to the g_canvas
+		g_canvas.append("g")
 			.attr("class", "xAxis")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + ")")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.call(xAxis);
 					
-		// Append yAxis to the canvas
-		canvas.append("g")
+		// Append yAxis to the g_canvas
+		g_canvas.append("g")
 			.attr("class", "yAxis")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
@@ -550,23 +546,23 @@ var reportViewer = (function() {
 		}
 		
 		// Append lines between data points
-		canvas.selectAll(".dataPointConnector")
+		g_canvas.selectAll(".dataPointConnector")
 			.data(new Array(arrayData.length - 1))
 			.enter().append("line")
 				.attr("class", "dataPointConnector")
-				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(arrayDates[i + 1]); })
+				.attr("x1", function (d, i) { return xScale(g_arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScale(g_arrayDates[i + 1]); })
 				.attr("y1", function (d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][selectedRule]); })
 				.attr("stroke", DEFAULT_COLOURS[0])
 				.attr("stroke-width", 2);
 		
 		// Append data points
-		canvas.selectAll(".dataPoint")
+		g_canvas.selectAll(".dataPoint")
 			.data(arrayData)
 			.enter().append("circle")
 				.attr("class", "dataPoint")
-				.attr("cx", function (d, i) { return xScale(arrayDates[i]); })
+				.attr("cx", function (d, i) { return xScale(g_arrayDates[i]); })
 				.attr("cy", function(d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("r", 5)
 				.attr("fill", DEFAULT_COLOURS[0])
@@ -583,14 +579,13 @@ var reportViewer = (function() {
 				.on("click", function(d, i) {
 					// To do: generate graph underneath for the date clicked
 					//document.getElementById("canvasContainer_extra").removeChild(document.getElementById("canvasSVG"));
-					selectedDate = i;
-					mode = "snapshot";
-					clearCanvas();
-					genVisSnapshot();
+					g_mode = "snapshot";
+					ClearCanvas();
+					GenerateSnapshot(i);
 				});
 				
 		// Add x axis label
-		canvas.append("text")
+		g_canvas.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + 40)
@@ -601,7 +596,7 @@ var reportViewer = (function() {
 			.text("Date");
 		
 		// Add y axis label
-		canvas.append("text")
+		g_canvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
 			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING_MODE / 2)
@@ -613,7 +608,7 @@ var reportViewer = (function() {
 			.text("% of patients");
 			
 		// Add graph title
-		canvas.append("text")
+		g_canvas.append("text")
 			.attr("class", "graphTitle")
 			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 			.attr("y", -DEFAULT_PADDING_TOP_TRACKING_MODE / 2)
@@ -626,8 +621,8 @@ var reportViewer = (function() {
 				var title = d.options[d.selectedIndex].value + " for Doctor";
 				var arraySelectedOnly = [];
 
-				for (var doc in selectedPhysicians) {
-					if (selectedPhysicians[doc] == true)
+				for (var doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians[doc] == true)
 						arraySelectedOnly.push(doc);
 				}
 							
@@ -645,11 +640,11 @@ var reportViewer = (function() {
 			});
 		
 		// Add labels for data points
-		canvas.selectAll(".dataLabel")
+		g_canvas.selectAll(".dataLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
-				.attr("x", function(d, i) { return xScale(arrayDates[i]); })
+				.attr("x", function(d, i) { return xScale(g_arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
 					if ((arrayData[i][0]) < 10)
@@ -694,7 +689,7 @@ var reportViewer = (function() {
 				});
 	};
 	
-	function toggleDataLabels() {
+	function ToggleDataLabels(selectedDate) {
 			// Find data labels
 		if (d3.selectAll(".dataLabel")[0].length > 0) 
 			d3.selectAll(".dataLabel").remove();
@@ -703,8 +698,8 @@ var reportViewer = (function() {
 			var arrayData = [];
 			var arrayDesc = [];
 
-			if (mode == "snapshot") {
-				var snapshotData = calculatedData[selectedDate];
+			if (g_mode == "snapshot") {
+				var snapshotData = g_calculatedData[selectedDate];
 			
 				for (var i=0; i < snapshotData.length; i++) {
 					if (snapshotData[i]["total"] == 0) {
@@ -717,7 +712,7 @@ var reportViewer = (function() {
 					return;
 				}
 			
-				canvas.selectAll("onTargetLabel")
+				g_canvas.selectAll("onTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
@@ -730,7 +725,7 @@ var reportViewer = (function() {
 						.style("fill", "white")
 						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 				
-				canvas.selectAll("offTargetLabel")
+				g_canvas.selectAll("offTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
@@ -746,26 +741,26 @@ var reportViewer = (function() {
 						.attr("display", "none");
 			} else {
 
-				for (var i=0; i < calculatedData.length; i++) {
+				for (var i=0; i < g_calculatedData.length; i++) {
 					arrayData.push([]);
 					arrayDesc.push([]);
-					for (var j=0; j < calculatedData[i].length; j++) {
-						if (calculatedData[i][j]["total"] == 0) {
+					for (var j=0; j < g_calculatedData[i].length; j++) {
+						if (g_calculatedData[i][j]["total"] == 0) {
 							continue;
 						}
-						arrayData[i].push(calculatedData[i][j]["passed"] / calculatedData[i][j]["total"] * 100);
-						arrayDesc[i].push(calculatedData[i][j]["desc"]);
+						arrayData[i].push(g_calculatedData[i][j]["passed"] / g_calculatedData[i][j]["total"] * 100);
+						arrayDesc[i].push(g_calculatedData[i][j]["desc"]);
 					}
 				}
 				if (arrayData.length == 0) {
 					return;
 				}
 						
-				canvas.selectAll(".dataLabel")
+				g_canvas.selectAll(".dataLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
-						.attr("x", function(d, i) { return xScale(arrayDates[i]); })
+						.attr("x", function(d, i) { return xScale(g_arrayDates[i]); })
 						.attr("y", function(d, i) { return yScale(arrayData[i][selectedRule]) - 15; }) // 15 pixels above data point
 						.attr("text-anchor", "middle")
 						.style("fill", "black")
@@ -782,9 +777,9 @@ var reportViewer = (function() {
 		}
 	};
 		
-	function toggleSelected() {
+	function ToggleSelectedPhysicians() {
 
-		if (calculatedData == undefined) { 
+		if (g_calculatedData == undefined) { 
 			console.log("Calculated data undefined");
 			return;
 		}
@@ -798,9 +793,9 @@ var reportViewer = (function() {
 			// If class has 'selected', unselect all doctors
 			if (this.className.indexOf("selected") != -1) {
 				
-				for (doc in selectedPhysicians) {
-					if (selectedPhysicians.hasOwnProperty(doc)) {
-						selectedPhysicians[doc] = false;
+				for (doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians.hasOwnProperty(doc)) {
+						g_selectedPhysicians[doc] = false;
 					}
 				}
 			}
@@ -809,9 +804,9 @@ var reportViewer = (function() {
 			else {
 			
 			
-				for (doc in selectedPhysicians) {
-					if (selectedPhysicians.hasOwnProperty(doc)) {
-						selectedPhysicians[doc] = true;
+				for (doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians.hasOwnProperty(doc)) {
+						g_selectedPhysicians[doc] = true;
 					}
 				}
 
@@ -832,7 +827,7 @@ var reportViewer = (function() {
 					// Search innerHTML for Doctor Number, match against arrayUniquePhysicians for the array index, use index to update selected Boolean
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
 					//TPS come back to this, it can be cleaned up
-					selectedPhysicians[docNum] = false;
+					g_selectedPhysicians[docNum] = false;
 
 				}
 				
@@ -845,7 +840,7 @@ var reportViewer = (function() {
 					// This will need to be updated if we show actual physician names
 					//this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
 					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-					selectedPhysicians[docNum] = false;
+					g_selectedPhysicians[docNum] = false;
 					//var index = reportData.physicianList.getArrayIndex(docNum);
 					//reportData.selectedPhysicianList[index] = false;
 				}
@@ -855,7 +850,7 @@ var reportViewer = (function() {
 			else {
 				
 				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				selectedPhysicians[docNum] = true;
+				g_selectedPhysicians[docNum] = true;
 
 				// Loop through array to see if ALL doctors are now selected, if so, select "Select All"
 			}	
@@ -864,23 +859,12 @@ var reportViewer = (function() {
 		// After toggling, filter the data for calculations and graph the data
 		//TODO is this best practice?
 		//reportData.filter();
-		reportData.reCalculate(selectedPhysicians);
+		reportData.reCalculate(g_selectedPhysicians);
 	};
 	
 	return {
-		generateCharts: generateCharts,
-		clearCanvas: clearCanvas
+		GenerateCharts: GenerateCharts,
+		ClearCanvas: ClearCanvas
 	};
 	
 })();
-
-
-Array.prototype.allIndicesOf = function(ele) {
-	var indices = [];
-	var idx = this.indexOf(ele);
-	while (idx != -1) {
-    	indices.push(idx);
-    	idx = this.indexOf(ele, idx + 1);
-	}
-	return indices;
-};
