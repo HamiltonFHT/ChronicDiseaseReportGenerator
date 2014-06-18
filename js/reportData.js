@@ -10,7 +10,7 @@ var reportData = (function() {
 	var parsedData = [];
 	var mode = "";
 	
-	function readFiles(files) {
+	function ReadFiles(files) {
 
 		physicianIndex = [];
 		selectedPhysicians = [];
@@ -39,12 +39,12 @@ var reportData = (function() {
 			  	r.onload = (function(f) { 
 			  		return function(e) { 
 			    		var contents = e.target.result;
-			    		parsedData.push(parseToObject(f, contents));
+			    		parsedData.push(ParseToObject(f, contents));
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
 					
-							calculate();
+							Calculate();
 			    		}
 			 		};
 			 	})(f);
@@ -54,7 +54,7 @@ var reportData = (function() {
 	}
 		
 
-	function parseToObject(f, unparsed) {
+	function ParseToObject(f, unparsed) {
 
 		csvObject = {};
 		csvObject['fileName'] = f.name;
@@ -177,7 +177,7 @@ var reportData = (function() {
 	    return( arrData );
 	}
 		
-	function getFilteredData(selectedPhysicians) {
+	function GetFilteredData(selectedPhysicians) {
 		
 		
 		function uniqueDocs(value, pos, self) {
@@ -240,7 +240,7 @@ var reportData = (function() {
 	}
 	
 	
-	function getDateArray() {
+	function GetDateArray() {
 		
 		var arrayDates = [];
 		
@@ -268,31 +268,31 @@ var reportData = (function() {
 		return arrayDates;
 	}
 
-	function calculate() {
+	function Calculate() {
 		
-		physObj = getFilteredData(selectedPhysicians);
+		physObj = GetFilteredData(selectedPhysicians);
 		
 		reportViewer.GenerateCharts(
-				reportRules.applyRules(physObj.filteredData),
+				reportRules.ApplyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	getDateArray()
+			 	GetDateArray()
 			 	);
 	}
-	function reCalculate(rV_selectedPhysicians) {
+	function ReCalculate(rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
 		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
 		
-		physObj = getFilteredData(rV_selectedPhysicians);
+		physObj = GetFilteredData(rV_selectedPhysicians);
 		
 		reportViewer.GenerateCharts(
-				reportRules.applyRules(physObj.filteredData),
+				reportRules.ApplyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	getDateArray());
+			 	GetDateArray());
 	}
 	
 	return {
-		readFiles: readFiles,
-		reCalculate: reCalculate,
+		ReadFiles: ReadFiles,
+		ReCalculate: ReCalculate,
 	};
 	
 })();

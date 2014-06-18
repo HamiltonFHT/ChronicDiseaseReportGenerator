@@ -856,10 +856,7 @@ var reportViewer = (function() {
 			}	
 		}
 		
-		// After toggling, filter the data for calculations and graph the data
-		//TODO is this best practice?
-		//reportData.filter();
-		reportData.reCalculate(g_selectedPhysicians);
+		reportData.ReCalculate(g_selectedPhysicians);
 	};
 	
 	return {

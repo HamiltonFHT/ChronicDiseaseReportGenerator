@@ -322,7 +322,7 @@ var reportRules =  (function(){
 	
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
-		applyRules: ApplyRules,
+		ApplyRules: ApplyRules,
 	};
 	
 })();
