@@ -7,48 +7,43 @@ var reportRules =  (function(){
 	var DEFAULT_DATE_FORMAT = d3.time.format("%b %d, %Y");
 	var DEFAULT_CURR_DATE_FORMAT = d3.time.format("%d/%m/%Y");
 	
-	function removeMonths(date, months) {
+	function RemoveMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
-  		//return date;
 	}
 
-	/*
-	* calculateMonthsDifference:
-	* - Helper function
-	* - Calculates the difference between two dates in months. Returns an absolute value
-	*
-	* @param date1 The first date for comparison
-	* @param date2 The second date for comparison
-	*
-	* @return Returns the absolute number of months difference date1 and date2
-	*/
-	function calculateMonthsDifference(date1, date2) {
-		var monthsDiff = date1.getMonth() - date2.getMonth();
-		var yearsDiff = (date1.getFullYear() - date2.getFullYear()) * 12;
-		return Math.abs(monthsDiff + yearsDiff);
+	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
+	// Return true if it is in-date and false if it is out-of-date
+	function WithinDateRange(currentDate, maxMonthsAgo, measuredDate) {
+		if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+	 		parsedDate = currentDate.split("/");
+	 		targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
+	 	} else {
+	 		targetDate = RemoveMonths(new Date(currentDate), maxMonthsAgo);
+	 	}
+	 	return (new Date(measuredDate) >= targetDate);	
 	}
-	
-	/*
-	* calculateMonthsSince:
-	* @param date A Javascript Date object as a reference point for date calculation
-	* @param numMonths The number of months to look ahead
-	*
-	* @return Returns a new Date object with numMonths prior to date
-	*/
-	function calculateMonthsSince(date, numMonths) {
-		return new Date(date.setMonth(date.getMonth() - numMonths));
-	}
-	
-	
-	
+
 	var ruleDMPast12Months = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
-	 	col: ["DM_months"],
-	 	rule: function(measuredDate) {
+	 	col: ["Current Date", "DM Months"],
+	 	rule: function(currentDate, measuredDate) {
 	 		try {
-				return (parseInt(measuredDate) <= this.months);
+	 			// Old version output date of last assessment
+	 			// New version outputs number of months since last assessment,
+	 			// have to check which case and handle appropriately
+		 		if (isNaN(parseInt(measuredDate)) && measuredDate != "") {
+		 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+		 				parsedDate = currentDate.split("/");
+		 				targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+			 		} else {
+			 			targetDate = RemoveMonths(new Date(currentDate), this.months);
+			 		}
+			 		return (new Date(measuredDate) >= targetDate);
+			 	} else {
+			 		return (parseInt(measuredDate) <= this.months);
+			 	}
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -58,15 +53,15 @@ var reportRules =  (function(){
 	var ruleA1cPast3Months = {
 		desc: function(){ return "A1c measured in last " + this.months + " months"; },
 		long_desc: function(){return "# of patients with A1c measured in last " +  this.months + " months"; },
-		months: 3,
+		months: 6,
 	 	col: ["Current Date", "Date Hb A1c"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+	 				targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
+	 				targetDate = RemoveMonths(new Date(currentDate), this.months);
 	 			}
 	 			return (new Date(measuredDate) >= targetDate);
 	 		} catch (err) {
@@ -80,17 +75,10 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of patients with A1c less than or equal to " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date Hb A1c", "Hb A1c"],
 		target: 0.07,
-		months: 3,
+		months: 6,
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate &&
-	 					parseFloat(value) <= this.target);
+	 			return (WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -104,13 +92,7 @@ var reportRules =  (function(){
 	 	months: 6,
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return WithinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -126,15 +108,8 @@ var reportRules =  (function(){
 	 	months: 6,
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate &&
-	 					(parseInt(diasValue) < this.diasTarget ||
-	 					parseInt(sysValue) < this.sysTarget));
+	 			return (WithinDateRange(currentDate, this.months, measuredDate) &&
+	 				   (parseInt(diasValue) < this.diasTarget || parseInt(sysValue) < this.sysTarget));
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -148,15 +123,7 @@ var reportRules =  (function(){
 		months: 12,
 		rule: function(currentDate, measuredDate) {
 			 try {
-	 			//new Date accepts date string in format YYYY-MM-DD
-	 			//currentDate is in format DD/MM/YYYY
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return WithinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			// Field is likely blank
 	 			return false;
@@ -173,15 +140,8 @@ var reportRules =  (function(){
 		rule: function(currentDate, measuredDate, value) {
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
-	 			//currentDate is in format DD/MM/YYYY
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate && 
-	 			(parseFloat(value) <= this.target || value == "<1.00"));
+	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
+	 				   (parseFloat(value) <= this.target || value == "<1.00");
 	 		} catch (err) {
 	 			// Field is likely blank
 	 			return false;
@@ -196,14 +156,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return WithinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -244,13 +197,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date eGFR"],
 	 	rule: function(currentDate, measuredDate) { 
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return WithinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -265,36 +212,53 @@ var reportRules =  (function(){
 		months: 12,
 	 	rule: function(currentDate, measuredDate, value) {
 			try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = removeMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate && 
-	 			(parseInt(value) > this.target || value == ">=90" || value == ">120"));
+	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
+	 					(parseInt(value) > this.target || value == ">=90" || value == ">120");
 	 		} catch (err) {
 	 			return false;
 	 		}
 	 	},
 	};
+	
+	var ruleCurrentSmokers = {
+		desc: function(){return "Current Smokers"; },
+		long_desc: function() { "% of patients who are coded as current smokers"; },
+		col: ["Risk Factors"],
+		rule: function(factors) {
+			try {
+				return (factors.toLowerCase().indexOf("current smoker") != -1);
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		},
+	};
 
-	var diabetesRules = [ruleDMPast12Months, ruleA1cPast3Months, ruleA1cLessThanEqualTo0_07Past3Months, ruleBPPast6Months, ruleBPLessThan130_80Last6Months, ruleLDLPast12Months, ruleLDLLessThanEqualTo2Past12Months, ruleACRLast12Months, ruleEGFRMeasuredPast12Months, ruleEGFRGreaterThan60Past12Months];
+	var diabetesRules = [ruleDMPast12Months,
+						 ruleA1cPast3Months, 
+						 ruleA1cLessThanEqualTo0_07Past3Months, 
+						 ruleBPPast6Months, 
+						 ruleBPLessThan130_80Last6Months, 
+						 ruleLDLPast12Months, 
+						 ruleLDLLessThanEqualTo2Past12Months, 
+						 ruleACRLast12Months, 
+						 ruleEGFRMeasuredPast12Months, 
+						 ruleEGFRGreaterThan60Past12Months,
+						 ruleCurrentSmokers];
 
-	function applyRules(filteredData) {
+	function ApplyRules(filteredData) {
 		//Loop through data from each file
 		var results = [];
 		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
-			results.push(checkRules(filteredData[i], diabetesRules));
+			results.push(CheckRules(filteredData[i], diabetesRules));
 		}
 		
 		return results;
 	}
 
-
-	function checkRules(csvObject, ruleList) {
+	function CheckRules(csvObject, ruleList) {
 	
 		var results = [];
 		
@@ -358,9 +322,7 @@ var reportRules =  (function(){
 	
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
-		applyRules: applyRules,
+		applyRules: ApplyRules,
 	};
-	
-	console.log("Finished initializing reportRules");
 	
 })();
