@@ -21,7 +21,7 @@ var reportData = (function() {
 	   filesLeftToRead = files.length;
 	   
 	   if (files.length == 0) {
-	   		reportViewer.clearCanvas();
+	   		reportViewer.ClearCanvas();
 	   }
 	   
 	   
@@ -30,10 +30,10 @@ var reportData = (function() {
 			
 			if (!f) {
 			   alert("Failed to load file");
-			   reportViewer.clearCanvas();
+			   reportViewer.ClearCanvas();
 			} else if (!f.type.match(/^text*/)) {
 			    alert(f.name + " is not a valid text file.");
-			    reportViewer.clearCanvas();
+			    reportViewer.ClearCanvas();
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 
@@ -272,7 +272,7 @@ var reportData = (function() {
 		
 		physObj = getFilteredData(selectedPhysicians);
 		
-		reportViewer.generateCharts(
+		reportViewer.GenerateCharts(
 				reportRules.applyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	getDateArray()
@@ -280,11 +280,11 @@ var reportData = (function() {
 	}
 	function reCalculate(rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
-		//physicians, hence the selectedPhysicians from reportViewer is used in generateCharts
+		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
 		
 		physObj = getFilteredData(rV_selectedPhysicians);
 		
-		reportViewer.generateCharts(
+		reportViewer.GenerateCharts(
 				reportRules.applyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	getDateArray());
