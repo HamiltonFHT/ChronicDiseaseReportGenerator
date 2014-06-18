@@ -212,6 +212,49 @@ var reportViewer = (function() {
 				document.getElementById("outputA").click();
 			});
 		
+		// Save to PDF
+		d3.select("#settingsSection").append("input")
+			.attr("type", "button")
+			.attr("value", "Save as PDF")
+			.on("click", function () {
+			
+				// Append canvas to the document
+				d3.select("body").append("canvas")
+					.attr("id", "outputCanvas")
+					.attr("width", DEFAULT_CANVAS_WIDTH)
+					.attr("height", DEFAULT_CANVAS_HEIGHT)
+					.style("border", "1px solid black")
+					.style("display", "none");
+				
+					
+				// Retrieve output canvas and copy the current visualization into the canvas
+				var output = document.getElementById("outputCanvas");
+				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
+				canvg(output, svgXML, { ignoreDimensions: true });
+				
+				// Create a white background
+				var ctx = document.getElementById("outputCanvas").getContext('2d');
+				ctx.globalCompositeOperation = "destination-over";
+				ctx.fillStyle = 'white';
+				ctx.fillRect(0, 0, output.width, output.height);
+				
+				// Retrieve data URL of the graph
+				var outputURL = output.toDataURL('image/jpeg');
+				
+				// Create portrait PDF object
+				var doc = new jsPDF();
+
+				// Title
+				doc.setFontSize(20);
+				var splitTitle = doc.splitTextToSize(reportTitle, 180);
+				doc.text(15, 20, splitTitle);
+				doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
+				
+				// save() to download automatically, output() to open in a new tab
+				//doc.save(reportTitle);
+				doc.output('dataurlnewwindow');
+			});
+		
 		// Toggle data labels
 		d3.select("#settingsSection").append("input")
 			.attr("type", "button")
