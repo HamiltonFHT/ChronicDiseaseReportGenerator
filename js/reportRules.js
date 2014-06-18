@@ -164,27 +164,39 @@ var reportRules =  (function(){
 	 	},
 	};
 	
-	var ruleACRMaleLessThan2 = {
-		desc: "",
-		long_desc: "",
-	 	col: [""],
-	 	rule: function(ACR) {
+	var ruleACRMaleLessThan2Last12Months = {
+desc: function(){return "ACR Male < " + this.target + " in past " + this.months + " months"; },
+		long_desc: function(){return "% of male patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
+		months: 12,
+		target: 2.0,
+	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
+	 	rule: function(currentDate, measuredDate, value, sex) {
+	 		if (sex != "M") {
+	 			return NaN;
+	 		}
 	 		try {
-	 			
+	 			return WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) < this.target;
 	 		} catch (err) {
+	 			console.log("Error: " + err);
 	 			return false;
 	 		}
 	 	},
 	};
 	
-	var ruleACRFemaleLessThan2_8 = {
-		desc: "",
-		long_desc: "",
-	 	col: [""],
-	 	rule: function(ACR) {
+	var ruleACRFemaleLessThan2_8Last12Months = {
+		desc: function(){return "ACR Female < " + this.target + " in past " + this.months + " months"; },
+		long_desc: function(){return "% of female patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
+		months: 12,
+		target: 2.8,
+	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
+	 	rule: function(currentDate, measuredDate, value, sex) {
+	 		if (sex != "F") {
+	 			return NaN;
+	 		}	 		
 	 		try {
-	 			
+	  			return WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) < this.target;
 	 		} catch (err) {
+	 			console.log("Error: " + err);
 	 			return false;
 	 		}
 	 	},
@@ -244,7 +256,9 @@ var reportRules =  (function(){
 						 ruleACRLast12Months, 
 						 ruleEGFRMeasuredPast12Months, 
 						 ruleEGFRGreaterThan60Past12Months,
-						 ruleCurrentSmokers];
+						 ruleCurrentSmokers,
+						 ruleACRFemaleLessThan2_8Last12Months,
+						 ruleACRMaleLessThan2Last12Months];
 
 	function ApplyRules(filteredData) {
 		//Loop through data from each file
@@ -314,7 +328,7 @@ var reportRules =  (function(){
 			results.push({	
 					desc: currentRule.desc(),
 				  	passed: passed.filter(function(e) { return (e == true); }).length,
-				  	total: num_items
+				  	total: num_items - passed.filter(function(e) { return (isNaN(e).length); })
 			});
 		}	
 		return results;

@@ -142,23 +142,17 @@ var reportViewer = (function() {
 			}
 		}
 		
-		
-		
-		
 		// If tracking mode
 		// Add a section in the sidebar for the diabetic measures
-	
 		if (g_mode == "tracking") {
 		
 			d3.select("#sidePanel").append("div")
 				.attr("class", "sidePanelSection")
 				.attr("id", "measuresSection");
 				
-			console.log("Populating diabetic measures...");
-			
 			// Add a drop down menu for the diabetic measures	
 			d3.select("#measuresSection").append("select")
-				.attr("id", "dropdownDiabeticMeasures")
+				.attr("id", "dropdownIndicators")
 				.on("change", function() { 
 					ClearCanvas();
 					g_mode = "tracking";
@@ -169,7 +163,7 @@ var reportViewer = (function() {
 			// Created dynamically based on default values
 			// To do: variables to store user input values
 			for (var i = 0; i < g_calculatedData[0].length; i++) {
-				d3.select("#dropdownDiabeticMeasures").append("option")
+				d3.select("#dropdownIndicators").append("option")
 					.text(g_calculatedData[0][i]["desc"])
 					.attr("id", "optionDiabeticAssessment");
 			}
@@ -439,13 +433,13 @@ var reportViewer = (function() {
 	function GenerateTracking(selectedRule) {
 		console.log("Generating visualization for Tracking Mode...");
 
-	// Create min and max dates for the time scale - 1 week before and after
-		var minDate = new Date(g_arrayDates[0].getFullYear(),
-							   g_arrayDates[0].getMonth(),
-							   g_arrayDates[0].getDate() - 7);
-		var maxDate = new Date(g_arrayDates[g_arrayDates.length - 1].getFullYear(),
-							   g_arrayDates[g_arrayDates.length - 1].getMonth(),
-							   g_arrayDates[g_arrayDates.length - 1].getDate() + 7);
+		// Create min and max dates for the time scale - 1 week before and after
+		var minDate = new Date(g_arrayDates[0]);
+		minDate.setDate(minDate.getDate()-7);				   
+							   
+		var maxDate = new Date(g_arrayDates[g_arrayDates.length - 1]);
+		maxDate.setDate(maxDate.getDate()+7);
+	
 		
 		var arrayData = [];
 		var arrayDesc = [];
@@ -617,7 +611,7 @@ var reportViewer = (function() {
 			.style("font-family", "sans-serif")
 			.style("font-weight", "bold")
 			.text(function() {
-				var d = document.getElementById("dropdownDiabeticMeasures");
+				var d = document.getElementById("dropdownIndicators");
 				var title = d.options[d.selectedIndex].value + " for Doctor";
 				var arraySelectedOnly = [];
 
@@ -699,7 +693,7 @@ var reportViewer = (function() {
 			var arrayDesc = [];
 
 			if (g_mode == "snapshot") {
-				var snapshotData = g_calculatedData[selectedDate];
+				var snapshotData = g_calculatedData[0];
 			
 				for (var i=0; i < snapshotData.length; i++) {
 					if (snapshotData[i]["total"] == 0) {
@@ -755,7 +749,9 @@ var reportViewer = (function() {
 				if (arrayData.length == 0) {
 					return;
 				}
-						
+				
+				var selectedRule = document.getElementById("dropdownIndicators").selectedIndex;
+				
 				g_canvas.selectAll(".dataLabel")
 					.data(arrayData)
 					.enter().append("text")
