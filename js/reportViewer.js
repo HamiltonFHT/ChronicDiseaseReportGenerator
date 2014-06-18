@@ -784,76 +784,23 @@ var reportViewer = (function() {
 			return;
 		}
 
-		// Retrieve an array of all physician item labels
-		var physicianListItems = document.getElementsByClassName("physicianListItem");
-		
+		var isSelected = (this.className.indexOf("selected") != -1);
+
 		// If clicked on "Select All"
 		if (this.innerHTML.indexOf("Select All") != -1) {
-			
-			// If class has 'selected', unselect all doctors
-			if (this.className.indexOf("selected") != -1) {
+			// If class has 'selected', it currently is selected and must be unselected
 				
-				for (doc in g_selectedPhysicians) {
-					if (g_selectedPhysicians.hasOwnProperty(doc)) {
-						g_selectedPhysicians[doc] = false;
-					}
+			for (doc in g_selectedPhysicians) {
+				if (g_selectedPhysicians.hasOwnProperty(doc)) {
+					//negate the isSelected status to select/deselect the option
+					g_selectedPhysicians[doc] = !isSelected;
 				}
-			}
-			
-			// Else class has 'notSelected', select it and select all doctors
-			else {
-			
-			
-				for (doc in g_selectedPhysicians) {
-					if (g_selectedPhysicians.hasOwnProperty(doc)) {
-						g_selectedPhysicians[doc] = true;
-					}
-				}
-
 			}
 		}	
-		
 		// Otherwise, clicked on an individual doctor
 		else {
-			
-			// If clicked doctor is selected
-			if (this.className.indexOf("selected") != -1) {
-			
-				// Check "Select All", if "Select All" is selected, unselect it AND unselect the clicked doctor, otherwise just unselect the clicked doctor
-				if (physicianListItems[0].className.indexOf("selected") != -1) {
-				
-					// Updating classes of "Select All" and clicked doctor
-				
-					// Search innerHTML for Doctor Number, match against arrayUniquePhysicians for the array index, use index to update selected Boolean
-					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-					//TPS come back to this, it can be cleaned up
-					g_selectedPhysicians[docNum] = false;
-
-				}
-				
-				// "Select All" is not selected, so just unselect the clicked doctor 
-				else {
-				
-					// Update class name, get index in innerHTML and update array based on the index
-					// 14 is based on the number of characters "Doctor Number "
-					// 7 is based on the number of characters "</span>"
-					// This will need to be updated if we show actual physician names
-					//this.className = this.className.substring(0, this.className.indexOf("selected")) + "notSelected";
-					var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-					g_selectedPhysicians[docNum] = false;
-					//var index = reportData.physicianList.getArrayIndex(docNum);
-					//reportData.selectedPhysicianList[index] = false;
-				}
-			}
-			
-			// Clicked doctor is not selected
-			else {
-				
-				var docNum = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				g_selectedPhysicians[docNum] = true;
-
-				// Loop through array to see if ALL doctors are now selected, if so, select "Select All"
-			}	
+			var doc = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
+			g_selectedPhysicians[doc] = !isSelected;
 		}
 		
 		reportData.ReCalculate(g_selectedPhysicians);
