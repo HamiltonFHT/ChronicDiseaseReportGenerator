@@ -44,6 +44,7 @@ var reportViewer = (function() {
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
 							"sandybrown", "slategray", "goldenrod", "darkslateblue", "palevioletred",
 							"forestgreen", "sienna", "bisque"];
+	var chosen_colour = 0;
 
 	function ClearCanvas() {
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
@@ -169,8 +170,8 @@ var reportViewer = (function() {
 			d3.select("#measuresSection").append("select")
 				.attr("id", "dropdownIndicators")
 				.on("change", function() { 
-					ClearCanvas();
 					g_mode = "tracking";
+					ClearCanvas();
 					GenerateTracking(this.selectedIndex); 
 				});
 					
@@ -396,7 +397,7 @@ var reportViewer = (function() {
 				.attr("width", function(d) { return xScale(d); })
 				.attr("height", yScale.rangeBand())
 				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
-				.attr("fill", DEFAULT_COLOURS[0])
+				.attr("fill", DEFAULT_COLOURS[chosen_colour])
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
 				.attr("shape-rendering", "crispEdges");
@@ -420,13 +421,19 @@ var reportViewer = (function() {
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
-				.attr("x", function(d, i) { return xScale(d / 2); })
+				.attr("x", function(d, i) { 
+											if (d<5) { return xScale(d+5); } 
+											else { return xScale(d/2);	} 
+										  })
 				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 				.attr("text-anchor", "middle")
 				.style("font-family", "Arial")
 				.style("font-size", "13px")
 				.attr("dy", ".35em")
-				.style("fill", "white")
+				.style("fill", function(d, i) { 
+												if (d<5) { return "black"; } 
+												else { return "white";	} 
+											  })
 				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 		
 		g_canvas.selectAll("offTargetLabel")
@@ -450,11 +457,10 @@ var reportViewer = (function() {
 
 		// Create min and max dates for the time scale - 1 week before and after
 		var minDate = new Date(g_arrayDates[0]);
-		minDate.setDate(minDate.getDate()-7);				   
+		minDate.setDate(minDate.getDate()-30);				   
 							   
 		var maxDate = new Date(g_arrayDates[g_arrayDates.length - 1]);
-		maxDate.setDate(maxDate.getDate()+7);
-	
+		maxDate.setDate(maxDate.getDate()+30);
 		
 		var arrayData = [];
 		var arrayDesc = [];
@@ -483,7 +489,7 @@ var reportViewer = (function() {
 		xAxis = d3.svg.axis()
 			.scale(xScale)
 			.orient("bottom")
-			.tickFormat(d3.time.format("%b %d"));
+			.tickFormat(d3.time.format("%b %Y"));
 	
 		// Create Y Axis scale
 		yScale = d3.scale.linear()
@@ -563,7 +569,7 @@ var reportViewer = (function() {
 				.attr("x2", function (d, i) { return xScale(g_arrayDates[i + 1]); })
 				.attr("y1", function (d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][selectedRule]); })
-				.attr("stroke", DEFAULT_COLOURS[0])
+				.attr("stroke", DEFAULT_COLOURS[chosen_colour])
 				.attr("stroke-width", 2);
 		
 		// Append data points
@@ -574,7 +580,7 @@ var reportViewer = (function() {
 				.attr("cx", function (d, i) { return xScale(g_arrayDates[i]); })
 				.attr("cy", function(d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("r", 5)
-				.attr("fill", DEFAULT_COLOURS[0])
+				.attr("fill", DEFAULT_COLOURS[chosen_colour])
 				.on("mouseover", function(d) {
 					d3.select(this)
 						.attr("r", 7)
@@ -583,7 +589,7 @@ var reportViewer = (function() {
 				.on("mouseout", function(d) {
 					d3.select(this)
 						.attr("r", 5)
-						.attr("fill", DEFAULT_COLOURS[0]);
+						.attr("fill", DEFAULT_COLOURS[chosen_colour]);
 				})
 				.on("click", function(d, i) {
 					// To do: generate graph underneath for the date clicked

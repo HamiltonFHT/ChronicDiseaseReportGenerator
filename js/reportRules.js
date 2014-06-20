@@ -29,7 +29,7 @@ var reportRules =  (function(){
 	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
 	// Return true if it is in-date and false if it is out-of-date
 	function WithinDateRange(currentDate, maxMonthsAgo, measuredDate) {
-		if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+		if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 		parsedDate = currentDate.split("/");
 	 		targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
 	 	} else {
@@ -42,7 +42,7 @@ var reportRules =  (function(){
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
-	 	col: ["Current Date", "DM Months"],
+	 	col: ["Current Date", "DM_months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			// Old version output date of last assessment
@@ -66,19 +66,13 @@ var reportRules =  (function(){
 	};
 	
 	var ruleA1cPast3Months = {
-		desc: function(){ return "A1c measured in last " + this.months + " months"; },
-		long_desc: function(){return "# of patients with A1c measured in last " +  this.months + " months"; },
+		desc: function(){ return "A1C measured in last " + this.months + " months"; },
+		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
-	 	col: ["Current Date", "Date Hb A1c"],
+	 	col: ["Current Date", "Date Hb A1C"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				parsedDate = currentDate.split("/");
-	 				targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
-	 			} else {
-	 				targetDate = RemoveMonths(new Date(currentDate), this.months);
-	 			}
-	 			return (new Date(measuredDate) >= targetDate);
+	 			return WithinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -86,9 +80,9 @@ var reportRules =  (function(){
 	};
 	
 	var ruleA1cLessThanEqualTo0_07Past3Months = {
-		desc: function(){ return "A1c \u2264 " + this.target + " in past " + this.months + " months"; },
-		long_desc: function(){return "% of patients with A1c less than or equal to " + this.target + " measured in the past " + this.months + " months";},
-	 	col: ["Current Date", "Date Hb A1c", "Hb A1c"],
+		desc: function(){ return "A1C \u2264 " + this.target + " in past " + this.months + " months"; },
+		long_desc: function(){return "% of patients with A1C less than or equal to " + this.target + " measured in the past " + this.months + " months";},
+	 	col: ["Current Date", "Date Hb A1C", "Hb A1C"],
 		target: 0.07,
 		months: 6,
 	 	rule: function(currentDate, measuredDate, value) {
@@ -268,12 +262,12 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 						 ruleBPLessThan130_80Last6Months, 
 						 ruleLDLPast12Months, 
 						 ruleLDLLessThanEqualTo2Past12Months, 
-						 ruleACRLast12Months, 
+						 ruleACRLast12Months,
+						 ruleACRFemaleLessThan2_8Last12Months,
+						 ruleACRMaleLessThan2Last12Months,
 						 ruleEGFRMeasuredPast12Months, 
 						 ruleEGFRGreaterThan60Past12Months,
-						 ruleCurrentSmokers,
-						 ruleACRFemaleLessThan2_8Last12Months,
-						 ruleACRMaleLessThan2Last12Months];
+						 ruleCurrentSmokers];
 
 	function ApplyRules(filteredData) {
 		//Loop through data from each file

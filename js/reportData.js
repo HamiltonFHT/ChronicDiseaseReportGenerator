@@ -263,9 +263,10 @@ var reportData = (function() {
 			for (var i=0; i<parsedData.length; i++) {
 				if (parsedData[i].hasOwnProperty("Current Date")) {
 					if (parsedData[i]["Current Date"].length > 0) {
-						currentDate = parsedData[i]["Current Date"][0];
-						if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/)){
-			 				parsedDate = currentDate.split("/");
+						var fileDate = "";
+						var currentDate = parsedData[i]["Current Date"][0];
+						if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/)){
+			 				var parsedDate = currentDate.split("/");
 			 				fileDate = new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]);
 			 			} else {
 			 				fileDate = new Date(currentDate);
