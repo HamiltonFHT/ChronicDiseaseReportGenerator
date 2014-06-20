@@ -214,8 +214,6 @@ var reportViewer = (function() {
 				document.getElementById("outputImg").src = outputURL;
 				
 				// Modify attributes of hidden elements and simulate file download
-				//TODO get reportTitle here
-				console.log("reportTitle: " + reportTitle);
 				document.getElementById("outputA").download = reportTitle;
 				document.getElementById("outputA").href = outputURL;
 				document.getElementById("outputA").click();
@@ -350,7 +348,7 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + g_arrayDates[0].toString().substring(4, 15);
+				title += " as of " + g_arrayDates[selectedRule].toString().substring(4, 15);
 				title += " (n = " + snapshotData[0]["total"] + ")";
 				reportTitle = title;
 				return title;
@@ -455,13 +453,8 @@ var reportViewer = (function() {
 	function GenerateTracking(selectedRule) {
 		console.log("Generating visualization for Tracking Mode...");
 
-		// Create min and max dates for the time scale - 1 week before and after
-		var minDate = new Date(g_arrayDates[0]);
-		minDate.setDate(minDate.getDate()-30);				   
-							   
-		var maxDate = new Date(g_arrayDates[g_arrayDates.length - 1]);
-		maxDate.setDate(maxDate.getDate()+30);
-		
+		var arrayDates = g_arrayDates;
+
 		var arrayData = [];
 		var arrayDesc = [];
 		for (var i=0; i < g_calculatedData.length; i++) {
@@ -475,9 +468,17 @@ var reportViewer = (function() {
 				arrayDesc[i].push(g_calculatedData[i][j]["desc"]);
 			}
 		}
+
 		if (arrayData.length == 0) {
 			return;
 		}
+		
+		// Create min and max dates for the time scale - 1 week before and after
+		var minDate = new Date(arrayDates[0]);
+		minDate.setDate(minDate.getDate()-30);				   
+							   
+		var maxDate = new Date(arrayDates[arrayDates.length - 1]);
+		maxDate.setDate(maxDate.getDate()+30);
 		
 		
 		// Creat the scale for the X axis
@@ -505,8 +506,8 @@ var reportViewer = (function() {
 			.data(arrayData)
 			.enter().append("line")
 				.attr("class", "tickLine xTickLine")
-				.attr("x1", function (d, i) { return xScale(g_arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(g_arrayDates[i]); })
+				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("y1", 0)
 				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE)
 				.style("opacity", 0.7)
@@ -565,8 +566,8 @@ var reportViewer = (function() {
 			.data(new Array(arrayData.length - 1))
 			.enter().append("line")
 				.attr("class", "dataPointConnector")
-				.attr("x1", function (d, i) { return xScale(g_arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(g_arrayDates[i + 1]); })
+				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScale(arrayDates[i + 1]); })
 				.attr("y1", function (d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][selectedRule]); })
 				.attr("stroke", DEFAULT_COLOURS[chosen_colour])
@@ -577,7 +578,7 @@ var reportViewer = (function() {
 			.data(arrayData)
 			.enter().append("circle")
 				.attr("class", "dataPoint")
-				.attr("cx", function (d, i) { return xScale(g_arrayDates[i]); })
+				.attr("cx", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("cy", function(d, i) { return yScale(arrayData[i][selectedRule]); })
 				.attr("r", 5)
 				.attr("fill", DEFAULT_COLOURS[chosen_colour])
@@ -659,7 +660,7 @@ var reportViewer = (function() {
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
-				.attr("x", function(d, i) { return xScale(g_arrayDates[i]); })
+				.attr("x", function(d, i) { return xScale(arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
 					if ((arrayData[i][0]) < 10)

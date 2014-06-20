@@ -302,6 +302,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 			num_items = csvObject[currentRule.col[0]].length;
 			var num_params = currentRule.col.length;
 			
+			//TODO: Make this intelligent
 			switch (num_params) {
 				case 1:
 					for (i = 0; i < num_items; i++) {
