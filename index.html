@@ -7,6 +7,15 @@
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
 	<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
+	
+	<!-- jsPDF -->
+	<script type="text/javascript" src="js/jsPDF/examples/js/jquery/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script> 
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.split_text_to_size.js"></script>               
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.from_html.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.addimage.js"></script>
+	<script type="text/javascript" src="js/jsPDF/libs/FileSaver.js/FileSaver.min.js"></script>
 </head>
 
 <body>
@@ -53,6 +62,12 @@
 		<div id="hidden">
 			<a href="" download="" id="outputA" style="display: none;">
 				<img src="" id="outputImg" style="display: none;" />
+			</a>
+		</div>
+		
+		div id="hidden">
+			<a href="" download="" id="outputB" style="display: none;">
+				<img src="" id="outputPdf" style="display: none;" />
 			</a>
 		</div>
 		
