@@ -38,7 +38,7 @@ var reportRules =  (function(){
 	 	return (new Date(measuredDate) >= targetDate);	
 	}
 
-	var ruleDMPast12Months = {
+	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
@@ -65,7 +65,7 @@ var reportRules =  (function(){
 	 	},
 	};
 	
-	var ruleA1cPast3Months = {
+	var ruleA1cPastNMonths = {
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
 		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
@@ -79,11 +79,11 @@ var reportRules =  (function(){
 	 	},
 	};
 	
-	var ruleA1cLessThanEqualTo0_07Past3Months = {
+	var ruleA1cLessThanEqualToXPastNMonths = {
 		desc: function(){ return "A1C \u2264 " + this.target + " in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with A1C less than or equal to " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date Hb A1C", "Hb A1C"],
-		target: 0.07,
+		target: 0.08,
 		months: 6,
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
@@ -94,7 +94,7 @@ var reportRules =  (function(){
 	 	}
 	};
 	
-	var ruleBPPast6Months = {
+	var ruleBPPastNMonths = {
 		desc: function(){return "BP measured in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with BP measured in past " + this.months + " months";},
 	 	col: ["Current Date", "Date Systolic BP"],
@@ -108,7 +108,7 @@ var reportRules =  (function(){
 	 	},
 	};
 	
-	var ruleBPLessThan130_80Last6Months = {
+	var ruleBPLessThanS_DLastNMonths = {
 		desc: function(){return "BP < " + this.sysTarget + "/" + this.diasTarget +" in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with LDL less than or equal to 2.0";},
 	 	col: ["Current Date", "Date Systolic BP", "Systolic BP", "Diastolic BP"],
@@ -125,7 +125,7 @@ var reportRules =  (function(){
 	 	}
 	};
 
-	var ruleLDLPast12Months = {
+	var ruleLDLPastNMonths = {
 		desc: function(){return "LDL measured within the last " + this.months + " months";},
 		long_desc: function(){return "% of diabetic patients with LDL measured within the past " + this.months + " months";},
 		col: ["Current Date", "Date LDL"],
@@ -140,7 +140,7 @@ var reportRules =  (function(){
 		}
 	};
 	
-	var ruleLDLLessThanEqualTo2Past12Months = {
+	var ruleLDLLessThanEqualToXPastNMonths = {
 		desc: function(){return "LDL \u2264 " + this.target + " in past " + this.months + " months";},
 		long_desc: function(){return "% of diabetic patients with LDL less than or equal to " + this.target + " measured within the past " + this.months + " months";},
 		col: ["Current Date", "Date LDL", "LDL"],
@@ -158,7 +158,7 @@ var reportRules =  (function(){
 		}
 	};
 	
-	var ruleACRLast12Months = {
+	var ruleACRLastNMonths = {
 		desc: function(){return "ACR measured in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with ACR measured in past " + this.months + " months";},
 		months: 12,
@@ -173,8 +173,8 @@ var reportRules =  (function(){
 	 	},
 	};
 	
-	var ruleACRMaleLessThan2Last12Months = {
-desc: function(){return "ACR Male < " + this.target + " in past " + this.months + " months"; },
+	var ruleACRMaleLessThanXLastNMonths = {
+		desc: function(){return "ACR Male < " + this.target + " in past " + this.months + " months"; },
 		long_desc: function(){return "% of male patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
 		months: 12,
 		target: 2.0,
@@ -184,7 +184,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 	 			return NaN;
 	 		}
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) < this.target;
+	 			return WithinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.0");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -192,7 +192,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 	 	},
 	};
 	
-	var ruleACRFemaleLessThan2_8Last12Months = {
+	var ruleACRFemaleLessThanXLastNMonths = {
 		desc: function(){return "ACR Female < " + this.target + " in past " + this.months + " months"; },
 		long_desc: function(){return "% of female patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
 		months: 12,
@@ -203,7 +203,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 	 			return NaN;
 	 		}	 		
 	 		try {
-	  			return WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) < this.target;
+	  			return WithinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.8");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -211,7 +211,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 	 	},
 	};
 	
-	var ruleEGFRMeasuredPast12Months = {
+	var ruleEGFRMeasuredPastNMonths = {
 		months: 12,
 		desc: function(){return "EGFR measured in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with EGFR measured in the past " + this.months + " months";},
@@ -225,7 +225,7 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 	 	},
 	};
 	
-	var ruleEGFRGreaterThan60Past12Months = {
+	var ruleEGFRGreaterThanXPastNMonths = {
 		desc: function(){return "EGFR > " + this.target + " in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with EGFR greater than " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date eGFR", "eGFR"],
@@ -255,18 +255,18 @@ desc: function(){return "ACR Male < " + this.target + " in past " + this.months 
 		},
 	};
 
-	var diabetesRules = [ruleDMPast12Months,
-						 ruleA1cPast3Months, 
-						 ruleA1cLessThanEqualTo0_07Past3Months, 
-						 ruleBPPast6Months, 
-						 ruleBPLessThan130_80Last6Months, 
-						 ruleLDLPast12Months, 
-						 ruleLDLLessThanEqualTo2Past12Months, 
-						 ruleACRLast12Months,
-						 ruleACRFemaleLessThan2_8Last12Months,
-						 ruleACRMaleLessThan2Last12Months,
-						 ruleEGFRMeasuredPast12Months, 
-						 ruleEGFRGreaterThan60Past12Months,
+	var diabetesRules = [ruleDMPastNMonths,
+						 ruleA1cPastNMonths, 
+						 ruleA1cLessThanEqualToXPastNMonths, 
+						 ruleBPPastNMonths, 
+						 ruleBPLessThanS_DLastNMonths, 
+						 ruleLDLPastNMonths, 
+						 ruleLDLLessThanEqualToXPastNMonths, 
+						 ruleACRLastNMonths,
+						 ruleACRFemaleLessThanXLastNMonths,
+						 ruleACRMaleLessThanXLastNMonths,
+						 ruleEGFRMeasuredPastNMonths, 
+						 ruleEGFRGreaterThanXPastNMonths,
 						 ruleCurrentSmokers];
 
 	function ApplyRules(filteredData) {

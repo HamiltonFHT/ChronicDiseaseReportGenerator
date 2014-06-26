@@ -348,7 +348,7 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + g_arrayDates[selectedRule].toString().substring(4, 15);
+				title += " as of " + g_arrayDates[selectedDate].toString().substring(4, 15);
 				title += " (n = " + snapshotData[0]["total"] + ")";
 				reportTitle = title;
 				return title;
