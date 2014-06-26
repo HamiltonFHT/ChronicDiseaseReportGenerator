@@ -391,7 +391,7 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + g_arrayDates[selectedRule].toString().substring(4, 15);
+				title += " as of " + g_arrayDates[selectedDate].toString().substring(4, 15);
 				title += " (n = " + snapshotData[0]["total"] + ")";
 				reportTitle = title;
 				return title;
@@ -775,13 +775,19 @@ var reportViewer = (function() {
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
-						.attr("x", function(d, i) { return xScale(d / 2); })
+						.attr("x", function(d, i) { 
+											if (d<5) { return xScale(d+5); } 
+											else { return xScale(d/2);	} 
+										  })
 						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 						.attr("text-anchor", "middle")
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
 						.attr("dy", ".35em")
-						.style("fill", "white")
+						.style("fill", function(d, i) { 
+												if (d<5) { return "black"; } 
+												else { return "white";	} 
+											  })
 						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
 				
 				g_canvas.selectAll("offTargetLabel")
