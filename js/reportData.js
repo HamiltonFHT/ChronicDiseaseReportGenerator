@@ -1,3 +1,18 @@
+/*
+	Chronic Disease Report Generator - Web based reports on quality of care standards
+    Copyright (C) 2014  Tom Sitter - Hamilton Family Health Team
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*/
+
 //Single Object that holds all data variables and data manipulation functions
 var reportData = (function() {
 	//var dataSource = [];
@@ -7,16 +22,10 @@ var reportData = (function() {
 
 	var physicianIndex = [];
 	var selectedPhysicians = [];
-	//var rawData = [];
 	var parsedData = [];
-	//var filteredData = [];
-	//var calculatedData = [];
-	//var arrayLastModifiedDate = [];
-	//var arrayDates = [];
 	var mode = "";
-
 	
-	function readFiles(files) {
+	function ReadFiles(files) {
 
 		physicianIndex = [];
 		selectedPhysicians = [];
@@ -27,7 +36,7 @@ var reportData = (function() {
 	   filesLeftToRead = files.length;
 	   
 	   if (files.length == 0) {
-	   		reportViewer.clearCanvas();
+	   		reportViewer.ClearCanvas();
 	   }
 	   
 	   
@@ -36,21 +45,21 @@ var reportData = (function() {
 			
 			if (!f) {
 			   alert("Failed to load file");
-			   reportViewer.clearCanvas();
+			   reportViewer.ClearCanvas();
 			} else if (!f.type.match(/^text*/)) {
 			    alert(f.name + " is not a valid text file.");
-			    reportViewer.clearCanvas();
+			    reportViewer.ClearCanvas();
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 
 			  		return function(e) { 
 			    		var contents = e.target.result;
-			    		parsedData.push(parseToObject(f, contents));
+			    		parsedData.push(ParseToObject(f, contents));
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
 					
-							calculate();
+							Calculate();
 			    		}
 			 		};
 			 	})(f);
@@ -60,7 +69,7 @@ var reportData = (function() {
 	}
 		
 
-	function parseToObject(f, unparsed) {
+	function ParseToObject(f, unparsed) {
 
 		csvObject = {};
 		csvObject['fileName'] = f.name;
@@ -183,197 +192,126 @@ var reportData = (function() {
 	    return( arrData );
 	}
 		
-	function getPhysicianIndex(selectedPhysicians) {
+	function GetFilteredData(selectedPhysicians) {
+		
+		
+		function uniqueDocs(value, pos, self) {
+			return self.indexOf(value) === pos;
+		}
+		
+		//uses global parsedDate
+		
+		var uniquePhysicians = [];
 		// Loop through each CSV file imported
 		for (var i = 0; i < parsedData.length; i++) {
-			var uniquePhysicians = parsedData[i]["Doctor Number"].filter(uniqueDocs);
-			
-			if (selectedPhysicians.length == 0) {
-				for (var j = 0; j < uniquePhysicians.length; j++) {
-					selectedPhysicians[uniquePhysicians[j]] = true;
-				}
-				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(uniquePhysicians);
-			} else {
-				var arrSelectedPhysicians = [];
-				for (p in selectedPhysicians) {
-					if (selectedPhysicians.hasOwnProperty(p) &
-						selectedPhysicians[p] == true) {
-						arrSelectedPhysicians.push(p);
-					}
-				}
-				physicianIndex = parsedData[i]["Doctor Number"].indicesOfElementsInArrayIndex(arrSelectedPhysicians);
+			//array of array of unique physicians
+			uniquePhysicians.push(parsedData[i]["Doctor Number"].filter(uniqueDocs));
+		}
+		
+		//If selectedPhysicians is uninitialized, add all physicians and set to true
+		if (selectedPhysicians.length == 0) {
+			//Flatten and filter for only unique docs
+			//array of all unique physicians
+			flatUniquePhysicians = [].concat.apply([], uniquePhysicians).filter(uniqueDocs);
+			for (var j = 0; j < flatUniquePhysicians.length; j++) {
+				selectedPhysicians[flatUniquePhysicians[j]] = true;
 			}
 		}
-		return {physicianIndex: physicianIndex, selectedPhysicians: selectedPhysicians};
+		
+		var filteredData = [];
+		for (var i = 0; i < parsedData.length; i++) {
+			
+			//push new object for each file
+			filteredData.push({});
+			
+			//For each column in the file
+			for (var key in parsedData[i]) {
+				
+				//If this is a data element (i.e. an array) and not a property element (i.e. a file name)
+				if (parsedData[i][key].length == parsedData[i]['num_elements'] &&
+					parsedData[i][key].length != undefined) {
+					
+					//array per column
+					//Add the key to filteredData if it doesn't have it
+					if (!filteredData[i].hasOwnProperty(key)) {
+						filteredData[i][key] = [];
+					}
+						
+					//Add the element from parsedData if the user selected it (i.e. it's index is in the physicianList)
+					for (var j = 0; j < parsedData[i][key].length; j++) {
+						var docNum = parsedData[i]["Doctor Number"][j];
+						if (selectedPhysicians[docNum] == true) {
+							filteredData[i][key].push(parsedData[i][key][j]);
+						}
+					}
+				}
+			}
+			if (!("Current Date" in filteredData[i])) {
+				filteredData[i]["Current Date"] = [].repeat(parsedData[i]["fileLastModified"], filteredData[i][0].length);
+			}
+		}
+
+		return {filteredData: filteredData, selectedPhysicians: selectedPhysicians};
 	}
 	
-	function getDateArray() {
+	
+	function GetDateArray() {
+		
 		var arrayDates = [];
+		
 		if (parsedData.length > 0) {
 			for (var i=0; i<parsedData.length; i++) {
 				if (parsedData[i].hasOwnProperty("Current Date")) {
 					if (parsedData[i]["Current Date"].length > 0) {
-						arrayDates.push(parsedData[i]["Current Date"][0]);
+						var fileDate = "";
+						var currentDate = parsedData[i]["Current Date"][0];
+						if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/)){
+			 				var parsedDate = currentDate.split("/");
+			 				fileDate = new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]);
+			 			} else {
+			 				fileDate = new Date(currentDate);
+			 			}
+						
+						arrayDates.push(fileDate);
 					} else {
 						arrayDates.push(parsedData[i]['fileLastModified']);
 					}
 				} else {
 					arrayDates.push(parsedData[i]['fileLastModified']);
 				}
-				
 			}
 		}
 		return arrayDates;
 	}
 
-
-	function uniqueDocs(value, index, self) {
-		return self.indexOf(value) === index;
-	}
-	function selectedDocs(value) {
-		return (selectedPhysicianList.indexOf(value) != -1);
-	}
-	function calculate() {
+	function Calculate() {
 		
-		physObj = getPhysicianIndex(selectedPhysicians);
+		physObj = GetFilteredData(selectedPhysicians);
 		
-		reportViewer.generateCharts(
-				reportRules.applyRules(parsedData, physObj.physicianIndex),
+		reportViewer.GenerateCharts(
+				reportRules.ApplyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	getDateArray());
+			 	GetDateArray()
+			 	);
 	}
-	function reCalculate(rV_selectedPhysicians) {
+	function ReCalculate(rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
-		//physicians, hence the selectedPhysicians from reportViewer is used in generateCharts
+		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
 		
-		physObj = getPhysicianIndex(rV_selectedPhysicians);
+		physObj = GetFilteredData(rV_selectedPhysicians);
 		
-		reportViewer.generateCharts(
-				reportRules.applyRules(parsedData, physObj.physicianIndex),
+		reportViewer.GenerateCharts(
+				reportRules.ApplyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	getDateArray());
+			 	GetDateArray());
 	}
-
-	/*
-	* calculateDataTrackingMode:
-	* - Calculates data for Tracking mode
-	* - Retrieves index of diabetic measures drop down menu and create array of counts for that measure
-	* TODO - Eliminate
-	*/
-	function calcTrackingData() {
-	
-		console.log("Calculating patient counts for Tracking Mode...");
-	
-		arrayDates = [];
-		calculatedData = [];
-		
-		// Retrieve index of diabetic measures drop down menu, use index to calculate data for graphing
-		var measureIndex = document.getElementById("dropdownDiabeticMeasures").selectedIndex;
-		
-		// Loop through each CSV file imported of the filtered data
-		for (var i = 0; i < filteredData.length; i++) {
-		
-			if (filteredData[i].length > 1) {
-			
-				// Push date into dates array. Call from parsed array because filtered array might not have date for that file
-				arrayDates.push(new Date(DEFAULT_DATE_FORMAT.parse(parsedData[i][1][DEFAULT_COLUMN_CURRENT_DATE])));
-				
-				// Push empty array for current file, will store date for sorting, and value of diabetic measure
-				calculatedData.push(new Array());
-				
-				// Reset the count, and set to calculate count based on measure index
-				var count = 0;
-				count = reportRules.calculateCountDiabeticMeasure(i, measureIndex);
-				
-				// Denominator
-				var numFilteredPatients = filteredData[i].length - 1;
-				
-				// Finish calculating all diabetic measure for this CSV file
-				// Insert date as first element, for sorting. Insert percentages into array 0.XX
-				calculatedData[calculatedData.length - 1].push(parsedData[i][1][DEFAULT_COLUMN_CURRENT_DATE]); // Date - index 0
-				calculatedData[calculatedData.length - 1].push(count / numFilteredPatients);
-	
-			}
-		}
-		
-		// Sort by date
-		calculatedData.sort(function(a, b) {
-			a = new Date(DEFAULT_DATE_FORMAT.parse(a[0]));
-			b = new Date(DEFAULT_DATE_FORMAT.parse(b[0]));
-			return a < b ? - 1 : a > b ? 1 : 0; 
-		});
-		
-		// Sort by date
-		arrayDates.sort(function(a,b) {
-			return a < b ? - 1 : a > b ? 1 : 0; 
-		});
-		
-		// For each file, splice out the date
-		for (var i = 0; i < calculatedData.length; i++) {
-			calculatedData[i] = calculatedData[i].splice(1);
-		}
-	
-	}
-	//function getCalculatedData() {
-	//	return calculatedData;
-	//}
-	//function getMode() {
-	//	return mode;
-	//}
-	//function getArrayDates() {
-	//	return arrayDates;
-	//}
 	
 	return {
-		readFiles: readFiles,
-		reCalculate: reCalculate,
+		ReadFiles: ReadFiles,
+		ReCalculate: ReCalculate,
 	};
-
+	
 })();
-
-
-/*
-* contains:
-* - Declare a 'contains' function for the prototype of an Array object. 
-* - Loops through the array to see if any of its elements is equal to the object in both variable type and value. Only works on 1-dimensional arrays.
-* 
-* @param obj The object to find in the array
-*/
-Array.prototype.contains = function(obj) {
-	
-	// Sets 'len' to the length of the array and checks each element, while decrementing the index
-	var len = this.length;
-	while (len--) {
-	
-		// If the element and object matches in both variable type and value, return true
-		if (this[len] === obj) return true;
-	}
-	
-	// Checked entire array and could not find a match. Return false
-	return false;
-};
-
-
-/*
-* allEqualsBoolean:
-* - Declare an 'allEqualsBoolean' function for the prototype of an Array object.
-* - Loops through the array to match each element with bool. Only works on 1-dimensional arrays.
-* 
-* @param bool The Boolean value to compare with each element in the array. Returns true if all elements are equal to the Boolean value
-*/
-Array.prototype.allEqualsBoolean = function(bool) {
-
-	// Sets 'len' to the length of the array and checks each element, while decrementing the index
-	var len = this.length;
-	while (len--) {
-	
-		// If element doesn't match the passed in Boolean value, return false
-		if (this[len] != bool) return false;
-	}
-	
-	// If all elements match, return true
-	return true;
-};
 
 Array.prototype.indicesOfElementsInArrayIndex = function(arr) {
 	var index = [];
