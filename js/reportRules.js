@@ -94,6 +94,7 @@ var reportRules =  (function(){
 	 	}
 	};
 	
+
 	var ruleBPPastNMonths = {
 		desc: function(){return "BP measured in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with BP measured in past " + this.months + " months";},
