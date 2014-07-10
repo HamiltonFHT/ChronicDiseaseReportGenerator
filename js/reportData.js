@@ -67,7 +67,6 @@ var reportData = (function() {
 			 r.readAsText(f);
 		}
 	}
-		
 
 	function ParseToObject(f, unparsed) {
 
@@ -109,7 +108,6 @@ var reportData = (function() {
 		return csvObject;
 	}
 	
-		
 	function CSVToArray( strData, strDelimiter ){
 	    // Check to see if the delimiter is defined. If not,
 	    // then default to comma.
@@ -253,8 +251,7 @@ var reportData = (function() {
 
 		return {filteredData: filteredData, selectedPhysicians: selectedPhysicians};
 	}
-	
-	
+
 	function GetDateArray() {
 		
 		var arrayDates = [];
@@ -294,6 +291,7 @@ var reportData = (function() {
 			 	GetDateArray()
 			 	);
 	}
+	
 	function ReCalculate(rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
 		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts

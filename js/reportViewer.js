@@ -49,6 +49,7 @@ var reportViewer = (function() {
 	function ClearCanvas() {
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
 		
+		
 		g_canvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					// Set the width and height of the canvas
@@ -58,11 +59,11 @@ var reportViewer = (function() {
 						.append("g")
 							.attr("transform", function() {
 								switch (g_mode) {
-								
+
 								case "snapshot":
 									return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
 								break;
-									
+
 								case "tracking":
 									return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
 								break;
@@ -208,6 +209,12 @@ var reportViewer = (function() {
 				var output = document.getElementById("outputCanvas");
 				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
 				canvg(output, svgXML, { ignoreDimensions: true });
+				
+				var ctx = document.getElementById("outputCanvas").getContext('2d');
+				ctx.globalCompositeOperation = "destination-over";
+				ctx.fillStyle = 'white';
+				ctx.fillRect(0, 0, output.width, output.height);
+				
 				
 				// Retrieve data string of the canvas and append to the hidden img element
 				var outputURL = output.toDataURL();
