@@ -286,27 +286,29 @@ var reportData = (function() {
 		physObj = GetFilteredData(selectedPhysicians);
 		
 		reportViewer.GenerateCharts(
-				reportRules.ApplyRules(physObj.filteredData),
+				0, //selected Rule List
+				reportRules.ApplyRules(0, physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	GetDateArray()
 			 	);
 	};
 	
-	function ReCalculate(rV_selectedPhysicians) {
+	function ReCalculate(rV_currentRuleList, rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
 		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
 		
 		physObj = GetFilteredData(rV_selectedPhysicians);
 		
 		reportViewer.GenerateCharts(
-				reportRules.ApplyRules(physObj.filteredData),
+				rV_currentRuleList,
+				reportRules.ApplyRules(rV_currentRuleList, physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	GetDateArray());
 	};
 	
 	return {
 		ReadFiles: ReadFiles,
-		ReCalculate: ReCalculate,
+		ReCalculate: ReCalculate
 	};
 	
 })();

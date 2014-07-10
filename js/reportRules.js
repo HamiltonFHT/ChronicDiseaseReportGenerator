@@ -255,6 +255,49 @@ var reportRules =  (function(){
 			}
 		}
 	};
+	
+	var ruleBaselineBP = {
+		desc: function(){return "BP measured in last " + this.months + " for adults over " + this.age; },
+		long_desc: function() { "% of patients who are coded as current smokers"; },
+		col: ["Current Date", "Date Systolic BP", "Age"],
+		age: 40,
+		months: 12,
+		rule: function(currentDate, measuredDate, value) {
+			try {
+				if (parseInt(value) < 40) {
+					return NaN;
+				} else {
+					return (WithinDateRange(currentDate, this.months, measuredDate) && (parseInt(value) >= this.age));
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
+
+	var ruleElevatedBPRegularVisit = {
+		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
+		long_desc: function() { "% of patients who are coded as current smokers"; },
+		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diatolic BP"],
+		sysTarget: 140,
+		diasTarget: 90,
+		months: 9,
+		rule: function(currentDate, measuredDate, sysValue, diasValue) {
+			try {
+				if (parseInt(sysValue) < this.sysTarget && parseInt(diasValue) < this.diasTarget) {
+					return NaN;
+				} else {
+					return WithinDateRange(currentDate, this.months, measuredDate);
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
 
 	var diabetesRules = [ruleDMPastNMonths,
 						 ruleA1cPastNMonths, 
@@ -269,14 +312,23 @@ var reportRules =  (function(){
 						 ruleEGFRMeasuredPastNMonths, 
 						 ruleEGFRGreaterThanXPastNMonths,
 						 ruleCurrentSmokers];
+						 
+	var hypertensionRules = [ruleBaselineBP,
+							 ruleElevatedBPRegularVisit,
+							 ruleBPLessThanS_DLastNMonths];
 
-	function ApplyRules(filteredData) {
+	var ruleList = [{name:"Diabetes", rules:diabetesRules},
+					{name:"Hypertension", rules:hypertensionRules}];
+
+	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file
 		var results = [];
 		
+		currentRuleList = ruleList[ruleListIndex];
+		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
-			results.push(CheckRules(filteredData[i], diabetesRules));
+			results.push(CheckRules(filteredData[i], currentRuleList.rules));
 		}
 		
 		return results;
@@ -348,6 +400,7 @@ var reportRules =  (function(){
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
 		ApplyRules: ApplyRules,
+		ruleList: ruleList
 	};
 	
 })();

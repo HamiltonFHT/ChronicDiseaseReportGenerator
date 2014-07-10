@@ -22,6 +22,7 @@ var reportViewer = (function() {
 	var g_calculatedData = null;
 	var g_selectedPhysicians = null;
 	var g_arrayDates = null;
+	var g_currentRuleList = 0;
 	
 	var g_reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
@@ -78,22 +79,41 @@ var reportViewer = (function() {
 		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 		// physicianSection, measuresSection, settingsSection
 		if (document.getElementById("physicianSection")) {
-			console.log("Removing old physician panel...");
 			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
 		}
 		
 		if (document.getElementById("measuresSection")) {
-			console.log("Removing old measures panel...");
 			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
 		}
 		
 		if (document.getElementById("settingsSection")) {
-			console.log("Removing old sections panel...");
 			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
 		}
 		
-		console.log("Adding side panels...");
-	
+		if (document.getElementById("rulesSection")) {
+			document.getElementById("sidePanel").removeChild(document.getElementById("rulesSection"));
+		}
+
+		d3.select("#sidePanel").append("div")
+		.attr("class", "sidePanelSection")
+		.attr("id", "rulesSection");
+		
+		d3.select("#rulesSection").append("select")
+			.attr("id", "dropdownRules")
+			.on("change", function() {
+				g_currentRuleList = chosen_colour = this.selectedIndex;
+				reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
+			});
+			
+		for (var i=0; i<reportRules.ruleList.length;i++) {
+			d3.select("#dropdownRules").append("option")
+					.text(reportRules.ruleList[i].name)
+					.attr("id", "optionDiabeticAssessment");
+		}
+
+		document.getElementById("dropdownRules").selectedIndex = g_currentRuleList;
+		
+		
 		// Adding a panel section for selecting physicians
 		d3.select("#sidePanel").append("div")
 			.attr("class", "sidePanelSection")
@@ -121,8 +141,7 @@ var reportViewer = (function() {
 		
 		// Retrieve an array of all physician list items
 		var physicianListItems = document.getElementsByClassName("physicianListItem");
-		console.log("Populating physicians...");
-		
+	
 		// Looping through the array of physician list items
 		for (var i = 0; i < physicianListItems.length; i++) {
 		
@@ -281,12 +300,13 @@ var reportViewer = (function() {
 			.on("click", ToggleDataLabels);
 	};
 	
-	function GenerateCharts(rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
+	function GenerateCharts(rd_currentRuleList, rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
 		
 		g_mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";
 		g_calculatedData = rd_calculatedData;
 		g_selectedPhysicians = rd_selectedPhysicians;
 		g_arrayDates = rd_arrayDates;
+		g_currentRuleList = chosen_colour = rd_currentRuleList;
 				
 		ClearCanvas();
 		AddUserInterface();
@@ -306,8 +326,6 @@ var reportViewer = (function() {
 	};
 	
 	function GenerateSnapshot(selectedDate){
-		console.log("Generating visualization for Snapshot Mode...");
-
 		var snapshotData = g_calculatedData[selectedDate];
 
 		// Add rectangles for percentage of patients within criteria
@@ -882,7 +900,7 @@ var reportViewer = (function() {
 			g_selectedPhysicians[doc] = !isSelected;
 		}
 		
-		reportData.ReCalculate(g_selectedPhysicians);
+		reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
 	};
 	
 	return {
