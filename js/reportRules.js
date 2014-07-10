@@ -24,7 +24,7 @@ var reportRules =  (function(){
 	
 	function RemoveMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
-	}
+	};
 
 	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
 	// Return true if it is in-date and false if it is out-of-date
@@ -36,7 +36,7 @@ var reportRules =  (function(){
 	 		targetDate = RemoveMonths(new Date(currentDate), maxMonthsAgo);
 	 	}
 	 	return (new Date(measuredDate) >= targetDate);	
-	}
+	};
 
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
@@ -62,7 +62,7 @@ var reportRules =  (function(){
 	 		} catch (err) {
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleA1cPastNMonths = {
@@ -76,7 +76,7 @@ var reportRules =  (function(){
 	 		} catch (err) {
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleA1cLessThanEqualToXPastNMonths = {
@@ -106,7 +106,7 @@ var reportRules =  (function(){
 	 		} catch (err) {
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleBPLessThanS_DLastNMonths = {
@@ -171,7 +171,7 @@ var reportRules =  (function(){
 	 			console.log("Error: " + err);
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleACRMaleLessThanXLastNMonths = {
@@ -190,7 +190,7 @@ var reportRules =  (function(){
 	 			console.log("Error: " + err);
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleACRFemaleLessThanXLastNMonths = {
@@ -209,7 +209,7 @@ var reportRules =  (function(){
 	 			console.log("Error: " + err);
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleEGFRMeasuredPastNMonths = {
@@ -223,7 +223,7 @@ var reportRules =  (function(){
 	 		} catch (err) {
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleEGFRGreaterThanXPastNMonths = {
@@ -239,7 +239,7 @@ var reportRules =  (function(){
 	 		} catch (err) {
 	 			return false;
 	 		}
-	 	},
+	 	}
 	};
 	
 	var ruleCurrentSmokers = {
@@ -253,7 +253,7 @@ var reportRules =  (function(){
 				console.log(err);
 				return false;
 			}
-		},
+		}
 	};
 
 	var diabetesRules = [ruleDMPastNMonths,
@@ -280,7 +280,7 @@ var reportRules =  (function(){
 		}
 		
 		return results;
-	}
+	};
 
 	function CheckRules(csvObject, ruleList) {
 	
@@ -343,7 +343,7 @@ var reportRules =  (function(){
 			});
 		}	
 		return results;
-	}
+	};
 	
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,

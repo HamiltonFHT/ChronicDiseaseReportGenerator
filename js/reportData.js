@@ -66,7 +66,7 @@ var reportData = (function() {
 			 }
 			 r.readAsText(f);
 		}
-	}
+	};
 
 	function ParseToObject(f, unparsed) {
 
@@ -106,7 +106,7 @@ var reportData = (function() {
 		}
 		
 		return csvObject;
-	}
+	};
 	
 	function CSVToArray( strData, strDelimiter ){
 	    // Check to see if the delimiter is defined. If not,
@@ -188,7 +188,7 @@ var reportData = (function() {
 	
 	    // Return the parsed data.
 	    return( arrData );
-	}
+	};
 		
 	function GetFilteredData(selectedPhysicians) {
 		
@@ -250,7 +250,7 @@ var reportData = (function() {
 		}
 
 		return {filteredData: filteredData, selectedPhysicians: selectedPhysicians};
-	}
+	};
 
 	function GetDateArray() {
 		
@@ -279,7 +279,7 @@ var reportData = (function() {
 			}
 		}
 		return arrayDates;
-	}
+	};
 
 	function Calculate() {
 		
@@ -290,7 +290,7 @@ var reportData = (function() {
 			 	physObj.selectedPhysicians,
 			 	GetDateArray()
 			 	);
-	}
+	};
 	
 	function ReCalculate(rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
@@ -302,7 +302,7 @@ var reportData = (function() {
 				reportRules.ApplyRules(physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	GetDateArray());
-	}
+	};
 	
 	return {
 		ReadFiles: ReadFiles,

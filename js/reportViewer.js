@@ -211,6 +211,7 @@ var reportViewer = (function() {
 				canvg(output, svgXML, { ignoreDimensions: true });
 				
 				var ctx = document.getElementById("outputCanvas").getContext('2d');
+				ctx.save();
 				ctx.globalCompositeOperation = "destination-over";
 				ctx.fillStyle = 'white';
 				ctx.fillRect(0, 0, output.width, output.height);
@@ -224,6 +225,7 @@ var reportViewer = (function() {
 				document.getElementById("outputA").download = reportTitle;
 				document.getElementById("outputA").href = outputURL;
 				document.getElementById("outputA").click();
+				ctx.restore();
 			});
 		
 		// Save to PDF
@@ -248,6 +250,7 @@ var reportViewer = (function() {
 				
 				// Create a white background
 				var ctx = document.getElementById("outputCanvas").getContext('2d');
+				ctx.save();
 				ctx.globalCompositeOperation = "destination-over";
 				ctx.fillStyle = 'white';
 				ctx.fillRect(0, 0, output.width, output.height);
@@ -267,6 +270,8 @@ var reportViewer = (function() {
 				// save() to download automatically, output() to open in a new tab
 				//doc.save(reportTitle);
 				doc.output('dataurlnewwindow');
+				ctx.restore();
+					
 			});
 		
 		// Toggle data labels
@@ -298,7 +303,7 @@ var reportViewer = (function() {
 			//By default, select first item in dropdown
 			GenerateTracking(0);
 		}
-	}
+	};
 	
 	function GenerateSnapshot(selectedDate){
 		console.log("Generating visualization for Snapshot Mode...");
