@@ -789,10 +789,15 @@ var reportViewer = (function() {
 				.style("font-size", "13px")
 				.style("font-family", "Arial")
 				.text(function(d, i) { 
-					if ((arrayData[i][selectedRule]) == 0)
-						return (arrayData[i][selectedRule]).toFixed(0) + "%";
-					else 
-					return (arrayData[i][selectedRule]).toFixed(1) + "%";
+					if (arrayData[i].length == 0) {
+						return "0%";
+					} else {
+						if (arrayData[i][selectedRule] == 0)
+							return (arrayData[i][selectedRule]).toFixed(0) + "%";
+						else 
+							return (arrayData[i][selectedRule]).toFixed(1) + "%";
+					}
+					
 				});
 	};
 	
