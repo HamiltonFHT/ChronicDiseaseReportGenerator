@@ -100,11 +100,10 @@
 	opacity: 0.3;
 }
 
-.onTargetBar:hover {
-	fill: lightcoral;
-}
-
 .offTargetBar:hover {
 	fill: white;
 }
 
+.onTargetBar {
+	pointer-events: all;
+}

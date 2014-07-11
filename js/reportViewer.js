@@ -51,9 +51,9 @@ var reportViewer = (function() {
 	var chosen_colour = 0;
 
 	function ClearCanvas() {
+		
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
-		
-		
+				
 		g_canvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					// Set the width and height of the canvas
@@ -61,6 +61,7 @@ var reportViewer = (function() {
 					.attr("height", DEFAULT_CANVAS_HEIGHT)
 					.style("border", "1px solid lightgray")
 						.append("g")
+							.attr("class", "g_main")
 							.attr("transform", function() {
 								switch (g_mode) {
 
@@ -71,8 +72,8 @@ var reportViewer = (function() {
 								case "tracking":
 									return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
 								break;
-						}	
-				});
+								}	
+							});
 	};
 	
 	function AddUserInterface() {
@@ -93,31 +94,11 @@ var reportViewer = (function() {
 			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
 		}
 		
-		if (document.getElementById("rulesSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("rulesSection"));
+		if (document.getElementById("dropdownRules")) {
+			document.getElementById("dropdownRules").remove();
 		}
 
-		d3.select("#sidePanel").append("div")
-		.attr("class", "sidePanelSection")
-		.attr("id", "rulesSection");
-		
-		d3.select("#rulesSection").append("select")
-			.attr("id", "dropdownRules")
-			.on("change", function() {
-				g_currentRuleList = chosen_colour = this.selectedIndex;
-				g_currentRuleName = reportRules.ruleList[this.selectedIndex].name;
-				reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
-			});
-			
-		for (var i=0; i<reportRules.ruleList.length;i++) {
-			d3.select("#dropdownRules").append("option")
-					.text(reportRules.ruleList[i].name)
-					.attr("id", "optionDiabeticAssessment");
-		}
-
-		document.getElementById("dropdownRules").selectedIndex = g_currentRuleList;
-		
-		
+	
 		// Adding a panel section for selecting physicians
 		d3.select("#sidePanel").append("div")
 			.attr("class", "sidePanelSection")
@@ -302,6 +283,24 @@ var reportViewer = (function() {
 			.attr("type", "button")
 			.attr("value", "Toggle data labels")
 			.on("click", ToggleDataLabels);
+			
+		
+		d3.select("#settingsSection").append("select")
+			.attr("id", "dropdownRules")
+			.on("change", function() {
+				g_currentRuleList = chosen_colour = this.selectedIndex;
+				g_currentRuleName = reportRules.ruleList[this.selectedIndex].name;
+				reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
+			});
+			
+		for (var i=0; i<reportRules.ruleList.length;i++) {
+			d3.select("#dropdownRules").append("option")
+					.text(reportRules.ruleList[i].name)
+					.attr("id", "optionDiabeticAssessment");
+		}
+
+		document.getElementById("dropdownRules").selectedIndex = g_currentRuleList;
+		
 	};
 	
 	function GenerateCharts(rd_currentRuleList, rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
@@ -476,16 +475,16 @@ var reportViewer = (function() {
 				.attr("height", yScale.rangeBand())
 				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
 				.attr("fill", DEFAULT_COLOURS[chosen_colour])
-				.on("mouseover", function(d) {
+				.on("click", function() {
+					d3.selectAll(".onTargetBar")
+						.style("fill", DEFAULT_COLOURS[chosen_colour]);
 					d3.select(this)
-						.attr("r", 7)
-						.attr("fill", HIGHLIGHT_COLOURS[chosen_colour]);
+						.style("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 				})
-				.on("mouseout", function(d) {
-					d3.select(this)
-						.attr("r", 5)
-						.attr("fill", DEFAULT_COLOURS[chosen_colour]);
-				})
+				//.on("mouseout", function() {
+				//	d3.select(this)
+				//		.style("fill", DEFAULT_COLOURS[chosen_colour]);
+				//})
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
 				.attr("shape-rendering", "crispEdges");
@@ -674,16 +673,19 @@ var reportViewer = (function() {
 				.on("mouseover", function(d) {
 					d3.select(this)
 						.attr("r", 7)
-						.attr("fill", HIGHLIGHT_COLOURS[chosen_colour]);
+						.style("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 				})
 				.on("mouseout", function(d) {
 					d3.select(this)
 						.attr("r", 5)
-						.attr("fill", DEFAULT_COLOURS[chosen_colour]);
+						.style("fill", DEFAULT_COLOURS[chosen_colour]);
 				})
 				.on("click", function(d, i) {
 					// To do: generate graph underneath for the date clicked
 					//document.getElementById("canvasContainer_extra").removeChild(document.getElementById("canvasSVG"));
+					d3.select(this)
+						.attr("r", 7)
+						.style("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 					g_mode = "snapshot";
 					ClearCanvas();
 					GenerateSnapshot(i);
