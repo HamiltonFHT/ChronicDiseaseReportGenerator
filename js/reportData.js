@@ -58,7 +58,15 @@ var reportData = (function() {
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
-					
+							function compare(a,b) {
+							  if (a.fileLastModified < b.fileLastModified)
+							     return -1;
+							  if (a.fileLastModified > b.fileLastModified)
+							    return 1;
+							  return 0;
+							}
+							
+							parsedData.sort(compare);
 							Calculate();
 			    		}
 			 		};

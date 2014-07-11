@@ -23,6 +23,7 @@ var reportViewer = (function() {
 	var g_selectedPhysicians = null;
 	var g_arrayDates = null;
 	var g_currentRuleList = 0;
+	var g_currentRuleName = "";
 	
 	var g_reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
@@ -45,6 +46,8 @@ var reportViewer = (function() {
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
 							"sandybrown", "slategray", "goldenrod", "darkslateblue", "palevioletred",
 							"forestgreen", "sienna", "bisque"];
+							
+	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#90B4D2"];
 	var chosen_colour = 0;
 
 	function ClearCanvas() {
@@ -102,6 +105,7 @@ var reportViewer = (function() {
 			.attr("id", "dropdownRules")
 			.on("change", function() {
 				g_currentRuleList = chosen_colour = this.selectedIndex;
+				g_currentRuleName = reportRules.ruleList[this.selectedIndex].name;
 				reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
 			});
 			
@@ -241,7 +245,7 @@ var reportViewer = (function() {
 				document.getElementById("outputImg").src = outputURL;
 				
 				// Modify attributes of hidden elements and simulate file download
-				document.getElementById("outputA").download = reportTitle;
+				document.getElementById("outputA").download = g_reportTitle;
 				document.getElementById("outputA").href = outputURL;
 				document.getElementById("outputA").click();
 				ctx.restore();
@@ -282,12 +286,12 @@ var reportViewer = (function() {
 
 				// Title
 				doc.setFontSize(20);
-				var splitTitle = doc.splitTextToSize(reportTitle, 180);
+				var splitTitle = doc.splitTextToSize(g_reportTitle, 180);
 				doc.text(15, 20, splitTitle);
 				doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
 				
 				// save() to download automatically, output() to open in a new tab
-				//doc.save(reportTitle);
+				//doc.save(g_reportTitle);
 				doc.output('dataurlnewwindow');
 				ctx.restore();
 					
@@ -307,6 +311,7 @@ var reportViewer = (function() {
 		g_selectedPhysicians = rd_selectedPhysicians;
 		g_arrayDates = rd_arrayDates;
 		g_currentRuleList = chosen_colour = rd_currentRuleList;
+		g_currentRuleName = reportRules.ruleList[rd_currentRuleList].name;
 				
 		ClearCanvas();
 		AddUserInterface();
@@ -388,7 +393,9 @@ var reportViewer = (function() {
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
-			.text("Diabetic Measure");
+			.text( (function() {
+				return reportRules.ruleList[g_currentRuleList].name + " Measure"; 
+			}));
 		
 		// Graph title text
 		g_canvas.append("text")
@@ -410,7 +417,7 @@ var reportViewer = (function() {
 					return "No Doctors Selected";
 				}
 				
-				var title = "Diabetes Report for Doctor";
+				var title = g_currentRuleName + " Report for Doctor";
 				
 				if (arraySelectedOnly.length > 1) title += "s ";
 				else title += " ";
@@ -423,7 +430,7 @@ var reportViewer = (function() {
 				}
 				title += " as of " + g_arrayDates[selectedDate].toString().substring(4, 15);
 				title += " (n = " + snapshotData[0]["total"] + ")";
-				reportTitle = title;
+				g_reportTitle = title;
 				return title;
 			});
 		
@@ -469,6 +476,16 @@ var reportViewer = (function() {
 				.attr("height", yScale.rangeBand())
 				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
 				.attr("fill", DEFAULT_COLOURS[chosen_colour])
+				.on("mouseover", function(d) {
+					d3.select(this)
+						.attr("r", 7)
+						.attr("fill", HIGHLIGHT_COLOURS[chosen_colour]);
+				})
+				.on("mouseout", function(d) {
+					d3.select(this)
+						.attr("r", 5)
+						.attr("fill", DEFAULT_COLOURS[chosen_colour]);
+				})
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
 				.attr("shape-rendering", "crispEdges");
@@ -505,7 +522,7 @@ var reportViewer = (function() {
 												if (d<5) { return "black"; } 
 												else { return "white";	} 
 											  })
-				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
+				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return "0%"; });
 		
 		g_canvas.selectAll("offTargetLabel")
 			.data(arrayData)
@@ -524,7 +541,6 @@ var reportViewer = (function() {
 	};
 	
 	function GenerateTracking(selectedRule) {
-		console.log("Generating visualization for Tracking Mode...");
 
 		var arrayDates = g_arrayDates;
 
@@ -658,7 +674,7 @@ var reportViewer = (function() {
 				.on("mouseover", function(d) {
 					d3.select(this)
 						.attr("r", 7)
-						.attr("fill", "lightcoral");
+						.attr("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 				})
 				.on("mouseout", function(d) {
 					d3.select(this)
@@ -724,7 +740,7 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";	
 				}
-				reportTitle = title;
+				g_reportTitle = title;
 				return title;
 			});
 		
@@ -818,7 +834,7 @@ var reportViewer = (function() {
 												if (d<5) { return "black"; } 
 												else { return "white";	} 
 											  })
-						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return ""; });
+						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return "0%"; });
 				
 				g_canvas.selectAll("offTargetLabel")
 					.data(arrayData)
@@ -831,7 +847,7 @@ var reportViewer = (function() {
 						.style("fill", "black")
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
-						.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
+						.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "0%"; })
 						// don't display off target labels
 						.attr("display", "none");
 			} else {

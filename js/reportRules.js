@@ -42,7 +42,7 @@ var reportRules =  (function(){
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
-	 	col: ["Current Date", "DM_months"],
+	 	col: ["Current Date", "DM Months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			// Old version output date of last assessment
