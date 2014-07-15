@@ -37,6 +37,20 @@ var reportRules =  (function(){
 	 	}
 	 	return (new Date(measuredDate) >= targetDate);	
 	};
+	
+	function mostRecentDate(dateArray) {
+		parsedDateArray = [];
+		for (var i=0; i < dateArray.length; i++) {
+			if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
+				parsedDate = dateArray[i].split("/");
+				parsedDateArray.push(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]));
+			} else {
+				parsedDateArray.push(new Date(dateArray[i]));
+			}
+		}
+		
+		return new Date(Math.max.apply(null,parsedDateArray));
+	}
 
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
@@ -297,7 +311,70 @@ var reportRules =  (function(){
 			}
 		}
 	};
+	
+	
 
+	var ruleAllInfantVaccinations = {
+		desc: function(){return "Infant immunization schedule up to date"; },
+		long_desc: function() { "Infant immunization schedule up to date"; },
+		col: ["Current Date", "Birthdate",
+			  "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis", "varicella", "rotavirus", "polio"],
+		age: 2,
+		diphtheria: 4,
+		tetanus: 4,
+		pertussis: 4,
+		polio: 4,
+		hib: 4,
+		pneuc: 3,
+		rot: 2,
+		mencc: 1,
+		measles: 1,
+		mumps: 1,
+		rubella: 1,
+		varicella: 1,
+		rule: function(currentDate, birthDate,
+						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+			try {
+				if (!WithinDateRange(currentDate, 24, birthDate)) {
+					return NaN;
+				} else {
+					return (parseInt(measles) >= this.measles &&
+							parseInt(mumps) >= this.mumps && 
+							parseInt(rubella) >= this.rubella &&  
+							parseInt(diphtheria) >= this.diphtheria && 
+							parseInt(tetanus) >= this.tetanus && 
+							parseInt(pertussis) >= this.pertussis && 
+							parseInt(varicella) >= this.varicella && 
+							parseInt(rotavirus) >= this.rotavirus && 
+							parseInt(polio) >= this.polio);
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
+
+	var ruleHeightWeightLastVaccination = {
+		desc: function(){return "Infant immunization schedule up to date"; },
+		long_desc: function() { "Infant immunization schedule up to date"; },
+		col: ["height date", "weight date",
+			  "measles date", "mumps date", "rubella date", "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date"],
+		rule: function(heightDate, weightDate,
+						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+			try {
+				if (heightDate != weightDate) {
+					return false;
+				} else {
+					return (new Date(heightDate) == mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
 
 	var diabetesRules = [ruleDMPastNMonths,
 						 ruleA1cPastNMonths, 
@@ -316,9 +393,13 @@ var reportRules =  (function(){
 	var hypertensionRules = [ruleBaselineBP,
 							 ruleElevatedBPRegularVisit,
 							 ruleBPLessThanS_DLastNMonths];
+							 
+	var immunizationRules = [ruleHeightWeightLastVaccination,
+							 ruleAllInfantVaccinations];
 
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
-					{name:"Hypertension", rules:hypertensionRules}];
+					{name:"Hypertension", rules:hypertensionRules},
+					{name:"Child Health", rules:immunizationRules}];
 
 	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file
@@ -355,36 +436,12 @@ var reportRules =  (function(){
 			num_items = csvObject[currentRule.col[0]].length;
 			var num_params = currentRule.col.length;
 			
-			//TODO: Make this intelligent
-			switch (num_params) {
-				case 1:
-					for (i = 0; i < num_items; i++) {
-						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i]));
-					}
-					break;
-				case 2:
-					for (i = 0; i < num_items; i++) {
-						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i], 
-													 csvObject[currentRule.col[1]][i]));
-					}
-					break;
-				case 3:
-					for (i = 0; i < num_items; i++) {
-						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i],
-													 csvObject[currentRule.col[1]][i],
-													 csvObject[currentRule.col[2]][i]));
-					}
-					break;
-				case 4:
-					for (i = 0; i < num_items; i++) {
-						passed.push(currentRule.rule(csvObject[currentRule.col[0]][i],
-													 csvObject[currentRule.col[1]][i],
-													 csvObject[currentRule.col[2]][i],
-													 csvObject[currentRule.col[3]][i]));
-					}
-					break;
-				default:
-					console.log("Does not support this many parameters yet");
+			for (var e = 0; e < num_items; e++) {
+				var arg_list = [];
+				for (var p=0; p<num_params;p++) {
+					arg_list.push(csvObject[currentRule.col[p]][e]);
+				}
+				passed.push(currentRule.rule.apply(currentRule, arg_list));
 			}
 			
 			//Count the number of cases that passed the test
