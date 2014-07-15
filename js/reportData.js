@@ -1,6 +1,6 @@
 /*
 	Chronic Disease Report Generator - Web based reports on quality of care standards
-    Copyright (C) 2014  Tom Sitter - Hamilton Family Health Team
+    Copyright (C) 2014  Brice Wong, Tom Sitter - Hamilton Family Health Team
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,10 +16,6 @@
 //Single Object that holds all data variables and data manipulation functions
 var reportData = (function() {
 	//var dataSource = [];
-	
-	var DEFAULT_DATE_FORMAT = d3.time.format("%b %d, %Y");
-	var DEFAULT_CURR_DATE_FORMAT = d3.time.format("%d/%m/%Y");
-
 	var physicianIndex = [];
 	var selectedPhysicians = [];
 	var parsedData = [];
