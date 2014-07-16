@@ -273,7 +273,7 @@ var reportViewer = (function() {
 				
 				// save() to download automatically, output() to open in a new tab
 				//doc.save(g_reportTitle);
-				doc.output('dataurlnewwindow');
+				doc.output('save', reportTitle);
 				ctx.restore();
 					
 			});
