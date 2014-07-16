@@ -229,6 +229,10 @@ var reportViewer = (function() {
 				document.getElementById("outputA").download = g_reportTitle;
 				document.getElementById("outputA").href = outputURL;
 				document.getElementById("outputA").click();
+				
+				output.toBlob(function(blob) {
+ 					saveAs(blob, g_reportTitle);
+ 				});
 				ctx.restore();
 			});
 		
@@ -273,7 +277,7 @@ var reportViewer = (function() {
 				
 				// save() to download automatically, output() to open in a new tab
 				//doc.save(g_reportTitle);
-				doc.output('save', reportTitle);
+				doc.output('save', g_reportTitle);
 				ctx.restore();
 					
 			});
