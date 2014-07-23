@@ -50,6 +50,17 @@ var reportRules =  (function(){
 		return new Date(Math.max.apply(null,parsedDateArray)).getTime();
 	}
 
+	function getAge(currentDate, birthDate) {
+	    var currentDate = new Date(currentDate);
+	    var birthDate = new Date(birthDate);
+	    var age = currentDate.getFullYear() - birthDate.getFullYear();
+	    var m = currentDate.getMonth() - birthDate.getMonth();
+	    if (m < 0 || (m === 0 && currentDate.getDate() < birthDate.getDate())) {
+	        age--;
+	    }
+	    return age;
+	}
+	
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
@@ -333,7 +344,7 @@ var reportRules =  (function(){
 		rule: function(currentDate, birthDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
 			try {
-				if (!WithinDateRange(currentDate, 24, birthDate)) {
+				if (getAge(currentDate, birthDate) > this.age) {
 					return NaN;
 				} else {
 					return (parseInt(measles) >= this.measles &&
@@ -380,8 +391,8 @@ var reportRules =  (function(){
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
 				//if younger than 18 than not included
-				if (RemoveMonths(new Date(currentDate), this.minAge*12) < new Date(birthDate) ||
-					RemoveMonths(new Date(currentDate), this.maxAge*12) >= new Date(birthDate)) {
+				if (getAge(currentDate, birthDate) < this.minAge ||
+					getAge(currentDate, birthDate) > this.maxAge) {
 					return NaN;
 				} else {
 					return (parseInt(measles) >= this.measles &&
@@ -415,6 +426,7 @@ var reportRules =  (function(){
 			  "varicella", "rotavirus", "polio",
 			  "hib conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
+		maxAge: 25,
 		diphtheria: 6,
 		tetanus: 6,
 		pertussis: 6,
@@ -431,7 +443,8 @@ var reportRules =  (function(){
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
 				//if younger than 18 than not included
-				if (RemoveMonths(new Date(currentDate), this.minAge*12) < new Date(birthDate)) {
+				if (getAge(currentDate, birthDate) < this.minAge ||
+					getAge(currentDate, birthDate) > this.maxAge) {
 					return NaN;
 				} else {
 					return (parseInt(measles) >= this.measles &&
@@ -475,6 +488,130 @@ var reportRules =  (function(){
 		}
 	};
 
+	var ruleSmokingStatusRecorded = {
+		desc: function(){return "Smoking Status Recorded"; },
+		long_desc: function() { "Smoking Status Recorded in Risk Factors"; },
+		col: ["Risk Factors"],
+		rule: function(factors) {
+			try {
+				if (factors.length == 0 || factors.toLowerCase().indexOf('smok') == -1) {
+					return false;
+				} else {
+					return true;
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
+	var ruleSmokingCessation = {
+		desc: function(){return "Smoking Cessation Attempted"; },
+		long_desc: function() { "Smoking Cessation form in patient chart"; },
+		col: ["Risk Factors", "Smoking Cessation Form"],
+		rule: function(factors, form) {
+			try {
+				if (factors.length == 0 || !ruleSmokingStatusRecorded.rule(factors)) {
+					return NaN;
+				} else if (form == "" ){
+					return false;
+				} else {
+					return true;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	var ruleLungHealthForm = {
+		desc: function(){return "Lung Health Recorded"; },
+		long_desc: function() { "Canadian Lung Health Form in patient chart"; },
+		col: ["Lung Health Form"],
+		rule: function(form) {
+			try {
+				if (form == "") {
+					return false;
+				} else {
+					return true;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	var ruleSeniorsPneumovax = {
+		desc: function(){return "Seniors Recieving Pneumovax"; },
+		long_desc: function() { "Patients over the age of 65 vaccinated for pneumonia"; },
+		col: ["Current Date", "Birthdate", "pneumococcal polysaccharide"],
+		minAge: 65,
+		rule: function(currentDate, birthDate, pneuc) {
+			try {
+				//Only people older than 65 qualify
+				if (getAge(currentDate, birthDate) <= this.minAge) {
+					return NaN;
+				} else if (parseInt(pneuc) > 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	var ruleAdultSmokersPneumovax = {
+		desc: function(){return "Adult Smokers Recieving Pneumovax"; },
+		long_desc: function() { "Patients over the age of 19 who smoke vaccinated for pneumonia"; },
+		col: ["Current Date", "Birthdate", "Risk Factors", "pneumococcal polysaccharide"],
+		minAge: 19,
+		rule: function(currentDate, birthDate, pneuc) {
+			try {
+				//Only people older than 65 qualify
+				if (getAge(currentDate, birthDate) >= this.minAge) {
+					return NaN;
+				} else if (parseInt(pneuc) > 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	var ruleLungDiseasePneumovax = {
+		desc: function(){return "Adults with COPD or Asthma Recieving Pneumovax"; },
+		long_desc: function() { "Patients over the age of 19 who have COPD or asthma vaccinated for pneumonia"; },
+		col: ["Current Date", "Birthdate", "Problem List", "pneumococcal polysaccharide"],
+		minAge: 19,
+		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "495", "496"],
+		rule: function(currentDate, birthDate, problemList, pneuc) {
+			try {
+				//Only people older than 65 qualify
+				if (getAge(currentDate, birthDate) >= this.minAge) {
+					return NaN;
+				}
+				problemList = problemList.toLowerCase();
+				if (new RegExp(this.diseaseList.join("|")).test(problemList)) {
+					return (parseInt(pneuc) > 0 ?  true : false);
+				} else {
+					return NaN;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonths,
@@ -499,11 +636,21 @@ var reportRules =  (function(){
 							 ruleInfantVaccinations,
 							 ruleChildVaccinations,
 							 ruleTeenagerVaccinations];
+							 
+	var smokingCessationRules = [ruleSmokingStatusRecorded,
+								 ruleSmokingCessation];
+	
+	var lungHealthRules = [ruleAdultSmokersPneumovax,
+						   ruleSeniorsPneumovax,
+						   ruleLungDiseasePneumovax,
+						   ruleLungHealthForm];
 
 	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
-					{name:"Immunizations", rules:immunizationRules}];
+					{name:"Immunizations", rules:immunizationRules},
+					{name:"Smoking Cessation", rules:smokingCessationRules},
+					{name:"Lung Health", rules:lungHealthRules}];
 
 	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file
