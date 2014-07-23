@@ -19,9 +19,6 @@ var reportRules =  (function(){
 	// their clinical judgement and what they want to track.
 	// TO CHANGE: Other chronic conditions will have other constant values
 	
-	var DEFAULT_DATE_FORMAT = d3.time.format("%b %d, %Y");
-	var DEFAULT_CURR_DATE_FORMAT = d3.time.format("%d/%m/%Y");
-	
 	function RemoveMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
 	};
@@ -38,6 +35,7 @@ var reportRules =  (function(){
 	 	return (new Date(measuredDate) >= targetDate);	
 	};
 	
+	//Returns time String of the most recent date from an array of dates
 	function mostRecentDate(dateArray) {
 		parsedDateArray = [];
 		for (var i=0; i < dateArray.length; i++) {
@@ -49,7 +47,7 @@ var reportRules =  (function(){
 			}
 		}
 		
-		return new Date(Math.max.apply(null,parsedDateArray));
+		return new Date(Math.max.apply(null,parsedDateArray)).getTime();
 	}
 
 	var ruleDMPastNMonths = {
@@ -314,7 +312,7 @@ var reportRules =  (function(){
 	
 	
 
-	var ruleAllInfantVaccinations = {
+	var ruleInfantVaccinations = {
 		desc: function(){return "Infant immunization schedule up to date"; },
 		long_desc: function() { "Infant immunization schedule up to date"; },
 		col: ["Current Date", "Birthdate",
@@ -354,20 +352,50 @@ var reportRules =  (function(){
 			}
 		}
 	};
-
-
-	var ruleHeightWeightLastVaccination = {
-		desc: function(){return "Infant immunization schedule up to date"; },
-		long_desc: function() { "Infant immunization schedule up to date"; },
-		col: ["height date", "weight date",
-			  "measles date", "mumps date", "rubella date", "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date"],
-		rule: function(heightDate, weightDate,
-						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+	
+	//Does not account for boosters
+	var ruleChildVaccinations = {
+		desc: function(){return "Children with all immunizations"; },
+		long_desc: function() { "Children with all immunizations"; },
+		col: ["Current Date", "Birthdate",
+			  "measles", "mumps", "rubella",
+			  "diphtheria", "tetanus", "pertussis",
+			  "varicella", "rotavirus", "polio",
+			  "hib conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+		minAge: 7,
+		maxAge: 13,
+		diphtheria: 5,
+		tetanus: 5,
+		pertussis: 5,
+		polio: 5,
+		hib: 4,
+		pneuc: 3,
+		rotavirus: 2,
+		mencc: 1,
+		measles: 2,
+		mumps: 2,
+		rubella: 2,
+		varicella: 2,
+		rule: function(currentDate, birthDate,
+						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
-				if (heightDate != weightDate) {
-					return false;
+				//if younger than 18 than not included
+				if (RemoveMonths(new Date(currentDate), this.minAge*12) < new Date(birthDate) ||
+					RemoveMonths(new Date(currentDate), this.maxAge*12) >= new Date(birthDate)) {
+					return NaN;
 				} else {
-					return (new Date(heightDate) == mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
+					return (parseInt(measles) >= this.measles &&
+							parseInt(mumps) >= this.mumps && 
+							parseInt(rubella) >= this.rubella &&  
+							parseInt(diphtheria) >= this.diphtheria && 
+							parseInt(tetanus) >= this.tetanus && 
+							parseInt(pertussis) >= this.pertussis &&
+							parseInt(varicella) >= this.varicella &&
+							parseInt(rotavirus) >= this.rotavirus &&
+							parseInt(polio) >= this.polio &&
+							parseInt(hib) >= this.hib &&
+							parseInt(pneuc) >= this.pneuc &&
+							parseInt(mencc) >= this.mencc);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -376,6 +404,79 @@ var reportRules =  (function(){
 		}
 	};
 
+
+	//Does not account for boosters
+	var ruleTeenagerVaccinations = {
+		desc: function(){return "Adults with all immunizations"; },
+		long_desc: function() { "Adults with all immunizations"; },
+		col: ["Current Date", "Birthdate",
+			  "measles", "mumps", "rubella",
+			  "diphtheria", "tetanus", "pertussis",
+			  "varicella", "rotavirus", "polio",
+			  "hib conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+		minAge: 18,
+		diphtheria: 6,
+		tetanus: 6,
+		pertussis: 6,
+		polio: 5,
+		hib: 4,
+		pneuc: 3,
+		rotavirus: 2,
+		mencc: 2,
+		measles: 2,
+		mumps: 2,
+		rubella: 2,
+		varicella: 2,
+		rule: function(currentDate, birthDate,
+						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
+			try {
+				//if younger than 18 than not included
+				if (RemoveMonths(new Date(currentDate), this.minAge*12) < new Date(birthDate)) {
+					return NaN;
+				} else {
+					return (parseInt(measles) >= this.measles &&
+							parseInt(mumps) >= this.mumps && 
+							parseInt(rubella) >= this.rubella &&  
+							parseInt(diphtheria) >= this.diphtheria && 
+							parseInt(tetanus) >= this.tetanus && 
+							parseInt(pertussis) >= this.pertussis &&
+							parseInt(varicella) >= this.varicella &&
+							parseInt(rotavirus) >= this.rotavirus &&
+							parseInt(polio) >= this.polio &&
+							parseInt(hib) >= this.hib &&
+							parseInt(pneuc) >= this.pneuc &&
+							parseInt(mencc) >= this.mencc);
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
+
+	var ruleHeightWeightLastVaccination = {
+		desc: function(){return "Height and Weight at last immunization"; },
+		long_desc: function() { "Height and Weight measured at last immunization"; },
+		col: ["height date", "weight date",
+			  "measles date", "mumps date", "rubella date", "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date"],
+		rule: function(heightDate, weightDate,
+						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+			try {
+				if (heightDate != weightDate) {
+					return false;
+				} else {
+					return (new Date(heightDate).getTime() == mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
+
+	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonths,
 						 ruleA1cPastNMonths, 
 						 ruleA1cLessThanEqualToXPastNMonths, 
@@ -395,11 +496,14 @@ var reportRules =  (function(){
 							 ruleBPLessThanS_DLastNMonths];
 							 
 	var immunizationRules = [ruleHeightWeightLastVaccination,
-							 ruleAllInfantVaccinations];
+							 ruleInfantVaccinations,
+							 ruleChildVaccinations,
+							 ruleTeenagerVaccinations];
 
+	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
-					{name:"Child Health", rules:immunizationRules}];
+					{name:"Immunizations", rules:immunizationRules}];
 
 	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file

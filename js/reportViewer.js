@@ -339,6 +339,9 @@ var reportViewer = (function() {
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
 		var arrayDesc = [];
+		if (typeof(snapshotData) === undefined || snapshotData.length == 0) {
+			return;
+		}
 		for (var i=0; i < snapshotData.length; i++) {
 			if (snapshotData[i]["total"] == 0) {
 				continue;
