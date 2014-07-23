@@ -271,7 +271,9 @@ var reportViewer = (function() {
 
 				// Title
 				doc.setFontSize(20);
-				var splitTitle = doc.splitTextToSize(g_reportTitle, 180);
+				doc.setFont('times');
+				var pdfFontSize= {'fontSize':20};
+				var splitTitle = doc.splitTextToSize(g_reportTitle, 180, pdfFontSize);
 				doc.text(15, 20, splitTitle);
 				doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
 				
