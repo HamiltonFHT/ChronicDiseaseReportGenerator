@@ -20,6 +20,7 @@ var reportData = (function() {
 	var selectedPhysicians = [];
 	var parsedData = [];
 	var mode = "";
+	var currentRuleSet;
 	
 	function ReadFiles(files) {
 
@@ -62,6 +63,21 @@ var reportData = (function() {
 							  return 0;
 							}
 							
+							//Check if patient records were found				
+							var empty = true;
+							for (var i=0; i < parsedData.length; i++) {
+								if (parsedData[i]["num_elements"] == 0) {
+								 	parsedData.splice(i, 1);
+								} else {
+									empty = false;
+								}
+							}
+							if (empty) {
+								alert("No patient records found in files");
+								reportViewer.ClearCanvas();
+								throw new Error("No patient records found in files");
+							}
+							
 							parsedData.sort(compare);
 							Calculate();
 			    		}
@@ -84,6 +100,8 @@ var reportData = (function() {
 			arrData.shift();
 		}
 		var csvHeaders = arrData.shift();
+		
+		currentRuleSet = GetCurrentRuleSet(csvHeaders);
 		
 		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
 			var rowArray = arrData[rowIndex];
@@ -116,31 +134,25 @@ var reportData = (function() {
 	    // Check to see if the delimiter is defined. If not,
 	    // then default to comma.
 	    strDelimiter = (strDelimiter || ",");
-	
 	    // Create a regular expression to parse the CSV values.
 	    var objPattern = new RegExp(
 	        (
 	            // Delimiters.
 	            "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-	
 	            // Quoted fields.
 	            "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-	
 	            // Standard fields.
 	            "([^\"\\" + strDelimiter + "\\r\\n]*))"
 	        ),
 	        "gi"
 	        );
 	
-	
 	    // Create an array to hold our data. Give the array
 	    // a default empty first row.
 	    var arrData = [[]];
-	
 	    // Create an array to hold our individual pattern
 	    // matching groups.
 	    var arrMatches = null;
-	
 	
 	    // Keep looping over the regular expression matches
 	    // until we can no longer find a match.
@@ -148,7 +160,6 @@ var reportData = (function() {
 	
 	        // Get the delimiter that was found.
 	        var strMatchedDelimiter = arrMatches[ 1 ];
-	
 	        // Check to see if the given delimiter has a length
 	        // (is not the start of string) and if it matches
 	        // field delimiter. If id does not, then we know
@@ -157,19 +168,15 @@ var reportData = (function() {
 	            strMatchedDelimiter.length &&
 	            (strMatchedDelimiter != strDelimiter)
 	            ){
-	
 	            // Since we have reached a new row of data,
 	            // add an empty row to our data array.
 	            arrData.push( [] );
-	
 	        }
-	
 	
 	        // Now that we have our delimiter out of the way,
 	        // let's check to see which kind of value we
 	        // captured (quoted or unquoted).
 	        if (arrMatches[ 2 ]){
-	
 	            // We found a quoted value. When we capture
 	            // this value, unescape any double quotes.
 	            var strMatchedValue = arrMatches[ 2 ].replace(
@@ -178,21 +185,49 @@ var reportData = (function() {
 	                );
 	
 	        } else {
-	
 	            // We found a non-quoted value.
 	            var strMatchedValue = arrMatches[ 3 ];
-	
 	        }
-	
-	
 	        // Now that we have our value string, let's add
 	        // it to the data array.
 	        arrData[ arrData.length - 1 ].push( strMatchedValue );
 	    }
-	
 	    // Return the parsed data.
 	    return( arrData );
 	};
+	
+	function GetCurrentRuleSet(header) {
+		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
+			alert("File does not contain necessary data element Patient # or Doctor Number");
+		}
+		
+		var rule = 0;
+		
+		//Diabetes
+		if (header.indexOf("Hb A1C") != -1) {
+			rule = 0;
+		//Hypertension
+		} else if (header.indexOf("Systolic BP") != -1) {
+			rule = 1;
+		//Immunizations
+		} else if (header.indexOf("height date") != -1) {
+			rule = 2;
+		//Smoking Cessation
+		} else if (header.indexOf("Smoking Cessation Form") != -1) {
+			rule = 3;
+		//Lung Health
+		} else if (header.indexOf("Lung Health Form") != -1) {
+			rule = 4;
+		//Depression
+		} else if (header.indexOf("PHQ9 Dates") != -1) {
+			rule = 5;
+		//Youth ADHD
+		} else {
+			rule = 6;
+		}
+		
+		return rule;
+	}
 		
 	function GetFilteredData(selectedPhysicians) {
 		
@@ -230,8 +265,7 @@ var reportData = (function() {
 			for (var key in parsedData[i]) {
 				
 				//If this is a data element (i.e. an array) and not a property element (i.e. a file name)
-				if (parsedData[i][key].length == parsedData[i]['num_elements'] &&
-					parsedData[i][key].length != undefined) {
+				if (parsedData[i][key] instanceof Array) {
 					
 					//array per column
 					//Add the key to filteredData if it doesn't have it
@@ -290,8 +324,8 @@ var reportData = (function() {
 		physObj = GetFilteredData(selectedPhysicians);
 		
 		reportViewer.GenerateCharts(
-				0, //selected Rule List
-				reportRules.ApplyRules(0, physObj.filteredData),
+				currentRuleSet, //selected Rule List
+				reportRules.ApplyRules(currentRuleSet, physObj.filteredData),
 			 	physObj.selectedPhysicians,
 			 	GetDateArray()
 			 	);

@@ -74,8 +74,28 @@ var reportViewer = (function() {
 								break;
 								}	
 							});
+							
+		ClearUserInterface();
 	};
 	
+	
+	function ClearUserInterface() {
+		if (document.getElementById("physicianSection")) {
+			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
+		}
+		
+		if (document.getElementById("measuresSection")) {
+			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
+		}
+		
+		if (document.getElementById("settingsSection")) {
+			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
+		}
+		
+		if (document.getElementById("dropdownRules")) {
+			document.getElementById("dropdownRules").remove();
+		}
+	}
 	function AddUserInterface() {
 		//reportData.physicianList contains 2 columns and n rows
 		//[Doctor number, boolean selected]
@@ -298,10 +318,11 @@ var reportViewer = (function() {
 				reportData.ReCalculate(g_currentRuleList, g_selectedPhysicians);
 			});
 			
+			
+		// Add dropdown to switch between rule sets
 		for (var i=0; i<reportRules.ruleList.length;i++) {
 			d3.select("#dropdownRules").append("option")
-					.text(reportRules.ruleList[i].name)
-					.attr("id", "optionDiabeticAssessment");
+					.text(reportRules.ruleList[i].name);
 		}
 
 		document.getElementById("dropdownRules").selectedIndex = g_currentRuleList;
@@ -474,7 +495,7 @@ var reportViewer = (function() {
 			return;
 		}
 		
-		//Labels for each bar
+		// Add bars for patients within criteria
 		g_canvas.selectAll("onTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
@@ -511,7 +532,7 @@ var reportViewer = (function() {
 				.style("stroke-width", "1px")
 				.attr("shape-rendering", "crispEdges");
 		
-		
+		//Labels for each bar
 		g_canvas.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
