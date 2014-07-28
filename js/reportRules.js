@@ -472,7 +472,9 @@ var reportRules =  (function(){
 		desc: function(){return "Height and Weight at last immunization"; },
 		long_desc: function() { "Height and Weight measured at last immunization"; },
 		col: ["height date", "weight date",
-			  "measles date", "mumps date", "rubella date", "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date"],
+			  "measles date", "mumps date", "rubella date",
+			  "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date",
+			  "pneumococcal conjugate date", "meningococcal conjugate date", "hib conjugate date"],
 		rule: function(heightDate, weightDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
 			try {
@@ -612,21 +614,61 @@ var reportRules =  (function(){
 			}
 		}
 	};
+	
+	var rulePHQ9 = {
+		desc: function(){return "Depressed patients with multiple PHQ9 forms"; },
+		long_desc: function() { ["Adult patients over have depression and have filled out at least one PHQ9 form",
+								 "have more than one PHQ9 form. This is an indication it is being used for follow-up"].join("\n"); },
+		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
+		months:6,
+		rule: function(currentDate, formDate, count) {
+			try {
+				//Only people older than 65 qualify
+				if (count == 0) {
+					return NaN;
+				} else if (count == 1 && !WithinDateRange(currentDate, this.months, formDate)) {
+					return false;
+				} else {
+					return true;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	var ruleADHDMedReview = {
+		desc: function(){return "Youth on ADHD meds annual year"; },
+		long_desc: function() { "Youth diagnosed with ADHD and on medications for ADHD have had an annual visit"; },
+		col: ["Current Date", "Last Seen Date"],
+		months:12,
+		rule: function(currentDate, lastSeenDate) {
+			try {
+				return WithinDateRange(currentDate, this.months, lastSeenDate);
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
 
 	//Assemble rules into sets
-	var diabetesRules = [ruleDMPastNMonths,
+	var diabetesRules = [//ruleBPPastNMonths, 
+						 //ruleBPLessThanS_DLastNMonths, 
+						 //ruleLDLLessThanEqualToXPastNMonths, 
+						 //ruleACRLastNMonths,
+						 //ruleACRFemaleLessThanXLastNMonths,
+						 //ruleACRMaleLessThanXLastNMonths,
+						 //ruleEGFRMeasuredPastNMonths, 
+						 //ruleEGFRGreaterThanXPastNMonths,
+						 //ruleCurrentSmokers,
+						 ruleDMPastNMonths,
 						 ruleA1cPastNMonths, 
-						 ruleA1cLessThanEqualToXPastNMonths, 
-						 ruleBPPastNMonths, 
-						 ruleBPLessThanS_DLastNMonths, 
-						 ruleLDLPastNMonths, 
-						 ruleLDLLessThanEqualToXPastNMonths, 
-						 ruleACRLastNMonths,
-						 ruleACRFemaleLessThanXLastNMonths,
-						 ruleACRMaleLessThanXLastNMonths,
-						 ruleEGFRMeasuredPastNMonths, 
-						 ruleEGFRGreaterThanXPastNMonths,
-						 ruleCurrentSmokers];
+						 ruleA1cLessThanEqualToXPastNMonths,
+						 ruleLDLPastNMonths
+						 ];
 						 
 	var hypertensionRules = [ruleBaselineBP,
 							 ruleElevatedBPRegularVisit,
@@ -644,13 +686,19 @@ var reportRules =  (function(){
 						   ruleSeniorsPneumovax,
 						   ruleLungDiseasePneumovax,
 						   ruleLungHealthForm];
-
+						   
+	var adultMentalHealthRules = [rulePHQ9];
+	
+	var youthADHDRules = [ruleADHDMedReview];
+	
 	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
 					{name:"Immunizations", rules:immunizationRules},
 					{name:"Smoking Cessation", rules:smokingCessationRules},
-					{name:"Lung Health", rules:lungHealthRules}];
+					{name:"Lung Health", rules:lungHealthRules},
+					{name:"Depression", rules:adultMentalHealthRules},
+					{name:"ADHD", rules:youthADHDRules}];
 
 	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file

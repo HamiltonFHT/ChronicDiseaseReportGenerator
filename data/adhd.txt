@@ -1,0 +1,3 @@
+
+Patient #,Doctor Number,Age,Privacy,Last Seen Date,Current Date,
+187,1,17,,"Jan 1, 2007","Jul 24, 2014",

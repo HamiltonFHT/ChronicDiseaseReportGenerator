@@ -1,0 +1,70 @@
+--Diabetes--
+
+Current Date
+Hb A1C
+Date Hb A1C
+Date LDL
+
+--Hypertension--
+
+Current Date
+Last Seen Date
+Diastolic BP
+Systolic BP
+Date Systolic BP
+Age
+
+--Immunizations (Child Health)
+
+Current Date
+Birthdate
+height date
+weight date
+measles
+measles date
+mumps
+mumps date
+rubella
+rubella date
+diphtheria
+diphtheria date
+tetanus
+tetanus date
+pertussis
+pertussis date
+varicella
+varicella date
+rotavirus
+rotavirus date
+polio
+polio date
+hib conjugate
+hib conjugate date
+pneumococcal conjugate
+pneumococcal conjugate date
+meningococcal conjugate
+meningococcal conjugate date
+
+--Smoking Cessation--
+
+Risk Factors
+Smoking Cessation Form
+
+--Lung Health--
+
+Current Date
+Birthdate
+Risk Factors
+Problem List
+pneumococcal polysaccharide
+Lung Health Form
+
+--Adult Mental Health--
+
+Current Date
+PHQ9 Dates
+PHQ9 Occurences
+
+--Youth ADHD (Child and Youth Mental Health)--
+Current Date
+Last Seen Date
