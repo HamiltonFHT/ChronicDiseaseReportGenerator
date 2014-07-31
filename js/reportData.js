@@ -13,22 +13,31 @@
     GNU General Public License for more details.
 */
 
-//Single Object that holds all data variables and data manipulation functions
+/* reportData is a variable that handles the reading and parsing
+ * of text files into a useable format and also filters data elements
+ * based on user input in reportViewer. 
+ * This variable also calls reportRules and reportViewer in order to
+ * apply the indicator rules and display the results
+ * 
+*/
+
 var reportData = (function() {
 	//var dataSource = [];
 	var physicianIndex = [];
 	var selectedPhysicians = [];
 	var parsedData = [];
-	var mode = "";
 	var currentRuleSet;
 	
+	/*
+	 * Called by index.html when a file is uploaded by the user.
+	 * Parses files and sorts by date and the calls Calculate() to 
+	 * apply indicators and display chart
+	 */
 	function ReadFiles(files) {
 
 		physicianIndex = [];
 		selectedPhysicians = [];
 		parsedData = [];
-
-	   mode = (files.length == 1) ? "snapshot" : "tracking";
 	   
 	   filesLeftToRead = files.length;
 	   
@@ -88,6 +97,10 @@ var reportData = (function() {
 		}
 	};
 
+	/*
+	 * Takes a raw string and converts it to a JS object
+	 * that is easier to work with.
+	 */
 	function ParseToObject(f, unparsed) {
 
 		csvObject = {};
@@ -130,6 +143,9 @@ var reportData = (function() {
 		return csvObject;
 	};
 	
+	/* 
+	 * Converts a CSV formatted string into array of arrays
+	 */
 	function CSVToArray( strData, strDelimiter ){
 	    // Check to see if the delimiter is defined. If not,
 	    // then default to comma.
@@ -196,6 +212,10 @@ var reportData = (function() {
 	    return( arrData );
 	};
 	
+	/* 
+	 * Inspect header of text file to guess which indicator set is most appropriate
+	 * Indicator sets are listed in the ruleList variable in reportRules
+	 */
 	function GetCurrentRuleSet(header) {
 		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
 			alert("File does not contain necessary data element Patient # or Doctor Number");
@@ -229,6 +249,11 @@ var reportData = (function() {
 		return rule;
 	}
 		
+	/*
+	 * Filter all records from physicians that are not currently selected
+	 * If selectedPhysicians is undefined it creates the variable and defaults
+	 * to all physicians selected
+	 */
 	function GetFilteredData(selectedPhysicians) {
 		
 		
@@ -290,6 +315,9 @@ var reportData = (function() {
 		return {filteredData: filteredData, selectedPhysicians: selectedPhysicians};
 	};
 
+	/*
+	 * Return the date that each report was generated in an array
+	 */
 	function GetDateArray() {
 		
 		var arrayDates = [];
@@ -319,6 +347,11 @@ var reportData = (function() {
 		return arrayDates;
 	};
 
+	/*
+	 * Get filtered data
+	 * Apply indicator sets to filtered data
+	 * Pass necessary data to reportViewer to display chart
+	 */
 	function Calculate() {
 		
 		physObj = GetFilteredData(selectedPhysicians);
@@ -331,6 +364,10 @@ var reportData = (function() {
 			 	);
 	};
 	
+	/*
+	 * Same as Calculate above but passed updated information from reportViewer
+	 * based on user interaction
+	 */
 	function ReCalculate(rV_currentRuleList, rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
 		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
@@ -344,12 +381,19 @@ var reportData = (function() {
 			 	GetDateArray());
 	};
 	
+	/*
+	 * Expose ReadFiles to index.html
+	 * Expose ReCalculate to reportViewer when user makes changes 
+	 * 		to selectedPhysicians or current indicator set
+	 */
 	return {
 		ReadFiles: ReadFiles,
 		ReCalculate: ReCalculate
 	};
 	
 })();
+
+/*
 
 Array.prototype.indicesOfElementsInArrayIndex = function(arr) {
 	var index = [];
@@ -361,6 +405,14 @@ Array.prototype.indicesOfElementsInArrayIndex = function(arr) {
 	return index;
 };
 
+*/
+
+
+/*
+ * Repeat a value L times
+ * Used to populate an array of identical elements
+ * (Silly, I know)
+ */
 Array.prototype.repeat= function(what, L){
 	while(L) this[--L]= what;
 	return this;

@@ -1,0 +1,44 @@
+PSS Reminders
+
+DIABETES
+|		Rule				|			Existing			|			New			|
+-------------------------------------------------------------------------------------
+HbA1c last measured 		|	1Diabetic Lab				|	MDS-HbA1C Overdue
+HbA1c greater than 0.08 	|								|	MDS-HbA1C High
+LDL last measured			|	Rem DM LDL					|	MDS-LDL Overdue
+
+HYPERTENSION
+|		Rule				|			Existing			|			New			|
+-------------------------------------------------------------------------------------
+BP last measured			|	
+HTN BP high					|
+HTN last visit				|
+
+CHILD HEALTH
+|		Rule				|			Existing			|			New			|
+-------------------------------------------------------------------------------------
+Well baby visit				|
+H&W at last immu			|
+Immu complete 23 mnths		|
+Immu complete 7 years		|
+Immu complete 17 years		|
+
+LUNG HEALTH
+Rule						|	Existing					|			New			|				Notes
+-----------------------------------------------------------------------------------------------------------------------------------------
+Canada Lung Health Form		|
+Pneumovax over 65			|
+Pneumovax 19-65 smoker		|
+Pneumovac 19-65 COPD/asthma	|
+Smoking status recorded		|								|	MDS-Smoking Status   |
+Smoking intervention		|	Smoking cessation initial 	|	MDS-Smoking Cessation|  Using form LUNG-Smoking_Initial_Assessment_MOHLTC
+							|	and follow up reminder		|
+							
+
+CHILD AND YOUTH MENTAL HEALTH
+
+
+ADULT MENTAL HEALTH
+
+
+

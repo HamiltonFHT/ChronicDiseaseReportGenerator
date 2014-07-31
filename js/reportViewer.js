@@ -13,8 +13,13 @@
     GNU General Public License for more details.
 */
 
+/* 
+ * Generates and displays chart and user controls
+ * Handles user interaction
+ */
 var reportViewer = (function() {
 
+	//Variables to store data and state
 	var g_canvas = d3.select("#canvasContainer").select("#canvasSVG");
 	
 	var g_mode = "";
@@ -28,6 +33,8 @@ var reportViewer = (function() {
 	var g_reportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
 	
+	
+	//Static variables to handle graph dimensions and colors
 	var DEFAULT_CANVAS_WIDTH = 960;  		// pixels
 	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
 	
@@ -50,6 +57,10 @@ var reportViewer = (function() {
 	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0", "#FAD2B0", "#90C590"];
 	var chosen_colour = 0;
 
+	/*
+	 * Remove graph and user interface elements
+	 * Called when chart needs to be refreshed or cleared
+	 */
 	function ClearCanvas() {
 		
 		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
@@ -78,7 +89,9 @@ var reportViewer = (function() {
 		ClearUserInterface();
 	};
 	
-	
+	/*
+	 * Removes user interface elements other than the chart
+	 */
 	function ClearUserInterface() {
 		if (document.getElementById("physicianSection")) {
 			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
@@ -96,6 +109,14 @@ var reportViewer = (function() {
 			document.getElementById("dropdownRules").remove();
 		}
 	}
+	
+	/*
+	 * Adds and initializes user interface elements, namely
+	 * Physician Selection
+	 * Indicator Set dropdown
+	 * Individual indicator dropdown (in tracking mode)
+	 * Download buttons
+	 */
 	function AddUserInterface() {
 		//reportData.physicianList contains 2 columns and n rows
 		//[Doctor number, boolean selected]
@@ -329,6 +350,12 @@ var reportViewer = (function() {
 		
 	};
 	
+	
+	/* 
+	 * Called by reportData
+	 * Removes and reinitializes UI elements and chart
+	 * Calls appropriate graphing function based on mode
+	 */
 	function GenerateCharts(rd_currentRuleList, rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
 		
 		g_mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";

@@ -508,6 +508,7 @@ var reportRules =  (function(){
 		}
 	};
 
+	//Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
 	var ruleSmokingCessation = {
 		desc: function(){return "Smoking Cessation Attempted"; },
 		long_desc: function() { "Smoking Cessation form in patient chart"; },
