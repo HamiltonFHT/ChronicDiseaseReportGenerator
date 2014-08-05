@@ -656,20 +656,28 @@ var reportRules =  (function(){
 	
 
 	//Assemble rules into sets
-	var diabetesRules = [//ruleBPPastNMonths, 
-						 //ruleBPLessThanS_DLastNMonths, 
-						 //ruleLDLLessThanEqualToXPastNMonths, 
-						 //ruleACRLastNMonths,
-						 //ruleACRFemaleLessThanXLastNMonths,
-						 //ruleACRMaleLessThanXLastNMonths,
-						 //ruleEGFRMeasuredPastNMonths, 
-						 //ruleEGFRGreaterThanXPastNMonths,
-						 //ruleCurrentSmokers,
+	var diabetesRules = [ruleDMPastNMonths,
+						 ruleA1cPastNMonths, 
+						 ruleA1cLessThanEqualToXPastNMonths,
+						 ruleLDLPastNMonths
+						 ];
+						 
+		//Assemble rules into sets
+	var diabetesExtendedRules = [ruleBPPastNMonths, 
+						 ruleBPLessThanS_DLastNMonths, 
+						 ruleLDLLessThanEqualToXPastNMonths, 
+						 ruleACRLastNMonths,
+						 ruleACRFemaleLessThanXLastNMonths,
+						 ruleACRMaleLessThanXLastNMonths,
+						 ruleEGFRMeasuredPastNMonths, 
+						 ruleEGFRGreaterThanXPastNMonths,
+						 ruleCurrentSmokers,
 						 ruleDMPastNMonths,
 						 ruleA1cPastNMonths, 
 						 ruleA1cLessThanEqualToXPastNMonths,
 						 ruleLDLPastNMonths
 						 ];
+						 
 						 
 	var hypertensionRules = [ruleBaselineBP,
 							 ruleElevatedBPRegularVisit,
@@ -699,7 +707,8 @@ var reportRules =  (function(){
 					{name:"Smoking Cessation", rules:smokingCessationRules},
 					{name:"Lung Health", rules:lungHealthRules},
 					{name:"Depression", rules:adultMentalHealthRules},
-					{name:"ADHD", rules:youthADHDRules}];
+					{name:"ADHD", rules:youthADHDRules},
+					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
 	function ApplyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file

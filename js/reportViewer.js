@@ -51,10 +51,10 @@ var reportViewer = (function() {
 	var DEFAULT_GRAPH_HEIGHT_TRACKING_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_TRACKING_MODE;
 	
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
-							"sandybrown", "forestgreen", "slategray", "goldenrod", "darkslateblue", "palevioletred",
+							"sandybrown", "forestgreen", "firebrick", "goldenrod", "darkslateblue", "palevioletred",
 							"sienna", "bisque"];
 							
-	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0", "#FAD2B0", "#90C590"];
+	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0", "#FAD2B0", "#90C590", "lightcoral"];
 	var chosen_colour = 0;
 
 	/*
