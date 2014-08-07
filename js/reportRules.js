@@ -65,6 +65,7 @@ var reportRules =  (function(){
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
+	 	modifiable: ["months"],
 	 	col: ["Current Date", "DM Months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
@@ -92,6 +93,10 @@ var reportRules =  (function(){
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
 		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
+		modifiable: ["months"],
+		reset: function() {
+			this.months = 6;
+		},
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
@@ -108,6 +113,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date Hb A1C", "Hb A1C"],
 		target: 0.08,
 		months: 6,
+		modifiable: ["months", "target"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
@@ -123,6 +129,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of patients with BP measured in past " + this.months + " months";},
 	 	col: ["Current Date", "Date Systolic BP"],
 	 	months: 6,
+	 	modifiable: ["months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate);
@@ -139,6 +146,7 @@ var reportRules =  (function(){
 	 	diasTarget: 80,
 	 	sysTarget: 130,
 	 	months: 6,
+	 	modifiable: ["months", "sysTarget", "diasTarget"],
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (WithinDateRange(currentDate, this.months, measuredDate) &&
@@ -154,6 +162,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of diabetic patients with LDL measured within the past " + this.months + " months";},
 		col: ["Current Date", "Date LDL"],
 		months: 12,
+		modifiable: ["months"],
 		rule: function(currentDate, measuredDate) {
 			 try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate);
@@ -170,6 +179,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Date LDL", "LDL"],
 		months: 12,
 		target: 2.0,
+		modifiable: ["months", "target"],
 		rule: function(currentDate, measuredDate, value) {
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
@@ -186,6 +196,7 @@ var reportRules =  (function(){
 		desc: function(){return "ACR measured in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with ACR measured in past " + this.months + " months";},
 		months: 12,
+		modifiable: ["months"],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
@@ -202,6 +213,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of male patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
 		months: 12,
 		target: 2.0,
+		modifiable: ["months", "target"],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
 	 	rule: function(currentDate, measuredDate, value, sex) {
 	 		if (sex != "M") {
@@ -221,6 +233,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of female patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
 		months: 12,
 		target: 2.8,
+		modifiable: ["months", "target"],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
 	 	rule: function(currentDate, measuredDate, value, sex) {
 	 		if (sex != "F") {
@@ -237,6 +250,7 @@ var reportRules =  (function(){
 	
 	var ruleEGFRMeasuredPastNMonths = {
 		months: 12,
+		modifiable: ["months"],
 		desc: function(){return "EGFR measured in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with EGFR measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date eGFR"],
@@ -255,6 +269,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date eGFR", "eGFR"],
 		target: 60,
 		months: 12,
+		modifiable: ["months", "target"],
 	 	rule: function(currentDate, measuredDate, value) {
 			try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
@@ -285,6 +300,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		age: 40,
 		months: 12,
+		modifiable: ["months", "age"],
 		rule: function(currentDate, measuredDate, value) {
 			try {
 				if (parseInt(value) < 40) {
@@ -307,6 +323,7 @@ var reportRules =  (function(){
 		sysTarget: 140,
 		diasTarget: 90,
 		months: 9,
+		modifiable: ["months", "sysTarget", "diasTarget"],
 		rule: function(currentDate, measuredDate, sysValue, diasValue) {
 			try {
 				if (parseInt(sysValue) < this.sysTarget && parseInt(diasValue) < this.diasTarget) {
@@ -341,6 +358,7 @@ var reportRules =  (function(){
 		mumps: 1,
 		rubella: 1,
 		varicella: 1,
+		modifiable: ["age"],
 		rule: function(currentDate, birthDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
 			try {
@@ -387,6 +405,7 @@ var reportRules =  (function(){
 		mumps: 2,
 		rubella: 2,
 		varicella: 2,
+		modifiable: ["age"],
 		rule: function(currentDate, birthDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
@@ -439,6 +458,7 @@ var reportRules =  (function(){
 		mumps: 2,
 		rubella: 2,
 		varicella: 2,
+		modifiable: ["age"],
 		rule: function(currentDate, birthDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
@@ -551,11 +571,12 @@ var reportRules =  (function(){
 		desc: function(){return "Seniors Recieving Pneumovax"; },
 		long_desc: function() { "Patients over the age of 65 vaccinated for pneumonia"; },
 		col: ["Current Date", "Birthdate", "pneumococcal polysaccharide"],
-		minAge: 65,
+		age: 65,
+		modifiable: ["age"],
 		rule: function(currentDate, birthDate, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (getAge(currentDate, birthDate) <= this.minAge) {
+				if (getAge(currentDate, birthDate) <= this.age) {
 					return NaN;
 				} else if (parseInt(pneuc) > 0) {
 					return true;
@@ -573,11 +594,12 @@ var reportRules =  (function(){
 		desc: function(){return "Adult Smokers Recieving Pneumovax"; },
 		long_desc: function() { "Patients over the age of 19 who smoke vaccinated for pneumonia"; },
 		col: ["Current Date", "Birthdate", "Risk Factors", "pneumococcal polysaccharide"],
-		minAge: 19,
+		age: 19,
+		modifiable: ["age"],
 		rule: function(currentDate, birthDate, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (getAge(currentDate, birthDate) >= this.minAge) {
+				if (getAge(currentDate, birthDate) >= this.age) {
 					return NaN;
 				} else if (parseInt(pneuc) > 0) {
 					return true;
@@ -595,7 +617,8 @@ var reportRules =  (function(){
 		desc: function(){return "Adults with COPD or Asthma Recieving Pneumovax"; },
 		long_desc: function() { "Patients over the age of 19 who have COPD or asthma vaccinated for pneumonia"; },
 		col: ["Current Date", "Birthdate", "Problem List", "pneumococcal polysaccharide"],
-		minAge: 19,
+		age: 19,
+		modifiable: ["age"],
 		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "495", "496"],
 		rule: function(currentDate, birthDate, problemList, pneuc) {
 			try {
@@ -622,6 +645,7 @@ var reportRules =  (function(){
 								 "have more than one PHQ9 form. This is an indication it is being used for follow-up"].join("\n"); },
 		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
 		months:6,
+		modifiable: ["months"],
 		rule: function(currentDate, formDate, count) {
 			try {
 				//Only people older than 65 qualify
@@ -644,6 +668,7 @@ var reportRules =  (function(){
 		long_desc: function() { "Youth diagnosed with ADHD and on medications for ADHD have had an annual visit"; },
 		col: ["Current Date", "Last Seen Date"],
 		months:12,
+		modifiable: ["months"],
 		rule: function(currentDate, lastSeenDate) {
 			try {
 				return WithinDateRange(currentDate, this.months, lastSeenDate);
@@ -660,7 +685,7 @@ var reportRules =  (function(){
 						 ruleA1cPastNMonths, 
 						 ruleA1cLessThanEqualToXPastNMonths,
 						 ruleLDLPastNMonths
-						 ];
+					     ];
 						 
 		//Assemble rules into sets
 	var diabetesExtendedRules = [ruleBPPastNMonths, 
@@ -755,6 +780,7 @@ var reportRules =  (function(){
 			
 			//Count the number of cases that passed the test
 			results.push({	
+					index: r,
 					desc: currentRule.desc(),
 				  	passed: passed.filter(function(e) { return (e == true); }).length,
 				  	total: num_items - passed.filter(function(e) { return (isNaN(e).length); })
