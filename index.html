@@ -9,7 +9,6 @@
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 	
 	<!-- jsPDF -->
-	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
 	<script type="text/javascript" src="js/jsPDF/jspdf.js"></script>
 	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script>
 	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.split_text_to_size.js"></script>               
@@ -24,28 +23,17 @@
 	<div id="wrap">
 		
 		<div id="header">
-			<span style="font-size: 24px; min-width: 1000px;">Diabetes Report Generator v1.1</span><br />
-			<span style="font-size: 16px; min-width: 1000px;">
-				This tool allows you to upload files containing search results for patients with lab results and generates graphs based on the selected filters.
+			<h1>Diabetes Report Generator v1.2</h1>
+			<p>
+					This tool allows you to upload files containing search results for patients with lab results and generates graphs based on the selected filters.
 				When a single file is uploaded a report is generated that represents the performance of the practice for that point in time.
 				It shows the percentage of patients that meet the target clinical values. 
 				When multiple files are uploaded at once the performance of a particular clinical measure is plotted over time, based on the date the report was created.
 				Filters allow you to select and deselect the physicians in your practice, to include or exclude them from your visualization.
 				Images of the generated graphs can be saved by clicking on the "Save to PNG" button and a report can be created from clicking on the "Save to PDF" button.
-			</span> 
+			</p> 
 			<br />
 		</div>
-		
-		<br />
-		
-		<!-- 	
-		<div id="navButtons">
-			<input type="button" class="buttonNav buttonNotSelected" id="buttonSnapshot" onclick="initializeReportGenerator('snapshot')" value="Snapshot Mode" />
-			<input type="button" class="buttonNav buttonNotSelected" id="buttonTracking" onclick="initializeReportGenerator('tracking')" value="Tracking Mode" />
-		</div>
-	
-		<br />
-		-->
 		
 		<div id="sidePanel">
 			<div class="sidePanelImport" id="sectionImport">
@@ -61,24 +49,18 @@
 		<br />
 		<div id="canvasContainer_extra"> </div>
 		
-		<div id="indicatorParameters">
-		</div>
+		<div id="indicatorParameters"> </div>
 		
 		<div id="hidden">
 			<a href="" download="" id="outputA" style="display: none;">
 				<img src="" id="outputImg" style="display: none;" />
 			</a>
 		</div>
-		
-		
-		<script type="text/javascript" src = "js/reportData.js"> </script>
-		<script type="text/javascript" src = "js/reportViewer.js"> </script>
-		<script type="text/javascript" src = "js/reportRules.js"> </script>
-		
-		<br />
-		<br />
-		<br />
-		
 	</div>
 </body>
+
+	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src = "js/reportData.js"> </script>
+	<script type="text/javascript" src = "js/reportViewer.js"> </script>
+	<script type="text/javascript" src = "js/reportRules.js"> </script>
 </html>
