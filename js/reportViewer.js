@@ -394,10 +394,10 @@ var reportViewer = (function() {
 		//$saveChanges.appendTo($("#indicatorParameters"));
 		
 		$("#savebtn").unbind();
-		$("#savebtn").click( function() { updateIndicator(ruleIndex); } );
+		$("#savebtn").click( function() { updateIndicator(ruleIndex); return false; } );
 		
 		$("#resetbtn").unbind();
-		$("#resetbtn").click( function() { resetIndicator(ruleIndex); } );
+		$("#resetbtn").click( function() { resetIndicator(ruleIndex); return false; } );
 		
 		$("#indicatorBar").css("display", "block");
 	}
