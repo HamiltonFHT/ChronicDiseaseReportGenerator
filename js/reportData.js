@@ -35,26 +35,28 @@ var reportData = (function() {
 	 */
 	function ReadFiles(files) {
 
+	   filesLeftToRead = files.length;
+	   
+	   if (files.length == 0) {
+	   		//reportViewer.ClearCanvas();
+	   		return;
+	   }
+	   
 		physicianIndex = [];
 		selectedPhysicians = [];
 		parsedData = [];
 	   
-	   filesLeftToRead = files.length;
-	   
-	   if (files.length == 0) {
-	   		reportViewer.ClearCanvas();
-	   }
-	   
+
 	   
 		for (i = 0; i < files.length; i++) {
 			var f = files[i]; 
 			
 			if (!f) {
 			   alert("Failed to load file");
-			   reportViewer.ClearCanvas();
+			   //reportViewer.ClearCanvas();
 			} else if (!f.type.match(/^text*/)) {
 			    alert(f.name + " is not a valid text file.");
-			    reportViewer.ClearCanvas();
+			    //reportViewer.ClearCanvas();
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 

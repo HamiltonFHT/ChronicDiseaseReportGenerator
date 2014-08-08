@@ -61,11 +61,23 @@ var reportRules =  (function(){
 	    return age;
 	}
 	
+	function ResetToDefault(rule) {
+		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
+			fields = rule.modifiable;
+			defaults = rule.defaults;
+			for (var i = 0; i < fields.length; i++) {
+				rule[fields[i]] = defaults[i];
+			}
+		}
+	}
+	
+	
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
 	 	months: 12,
 	 	modifiable: ["months"],
+	 	defaults: [12],
 	 	col: ["Current Date", "DM Months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
@@ -94,6 +106,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
 		modifiable: ["months"],
+		defaults: [6],
 		reset: function() {
 			this.months = 6;
 		},
@@ -114,6 +127,7 @@ var reportRules =  (function(){
 		target: 0.08,
 		months: 6,
 		modifiable: ["months", "target"],
+		defaults: [6, 0.08],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
@@ -130,6 +144,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date Systolic BP"],
 	 	months: 6,
 	 	modifiable: ["months"],
+	 	defaults: [6],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate);
@@ -143,10 +158,11 @@ var reportRules =  (function(){
 		desc: function(){return "BP < " + this.sysTarget + "/" + this.diasTarget +" in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with LDL less than or equal to 2.0";},
 	 	col: ["Current Date", "Date Systolic BP", "Systolic BP", "Diastolic BP"],
-	 	diasTarget: 80,
-	 	sysTarget: 130,
 	 	months: 6,
+	 	sysTarget: 130,
+		diasTarget: 80,
 	 	modifiable: ["months", "sysTarget", "diasTarget"],
+	 	defaults: [6, 130, 80],
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (WithinDateRange(currentDate, this.months, measuredDate) &&
@@ -163,6 +179,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Date LDL"],
 		months: 12,
 		modifiable: ["months"],
+		defaults: [12],
 		rule: function(currentDate, measuredDate) {
 			 try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate);
@@ -180,6 +197,7 @@ var reportRules =  (function(){
 		months: 12,
 		target: 2.0,
 		modifiable: ["months", "target"],
+		defaults: [12, 2.0],
 		rule: function(currentDate, measuredDate, value) {
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
@@ -197,6 +215,7 @@ var reportRules =  (function(){
 		long_desc: function(){return "% of patients with ACR measured in past " + this.months + " months";},
 		months: 12,
 		modifiable: ["months"],
+		defaults: [12],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
@@ -214,6 +233,7 @@ var reportRules =  (function(){
 		months: 12,
 		target: 2.0,
 		modifiable: ["months", "target"],
+		defaults: [12, 2.0],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
 	 	rule: function(currentDate, measuredDate, value, sex) {
 	 		if (sex != "M") {
@@ -234,6 +254,7 @@ var reportRules =  (function(){
 		months: 12,
 		target: 2.8,
 		modifiable: ["months", "target"],
+		defaults: [12, 2.8],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
 	 	rule: function(currentDate, measuredDate, value, sex) {
 	 		if (sex != "F") {
@@ -249,10 +270,11 @@ var reportRules =  (function(){
 	};
 	
 	var ruleEGFRMeasuredPastNMonths = {
-		months: 12,
-		modifiable: ["months"],
 		desc: function(){return "EGFR measured in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with EGFR measured in the past " + this.months + " months";},
+		months: 12,
+		modifiable: ["months"],
+		defaults: [12],
 	 	col: ["Current Date", "Date eGFR"],
 	 	rule: function(currentDate, measuredDate) { 
 	 		try {
@@ -267,9 +289,10 @@ var reportRules =  (function(){
 		desc: function(){return "EGFR > " + this.target + " in past " + this.months + " months";},
 		long_desc: function(){return "% of patients with EGFR greater than " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date eGFR", "eGFR"],
-		target: 60,
 		months: 12,
+		target: 60,
 		modifiable: ["months", "target"],
+		defaults: [12, 60],
 	 	rule: function(currentDate, measuredDate, value) {
 			try {
 	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
@@ -298,9 +321,10 @@ var reportRules =  (function(){
 		desc: function(){return "BP measured in last " + this.months + " for adults over " + this.age; },
 		long_desc: function() { "% of patients who are coded as current smokers"; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
-		age: 40,
 		months: 12,
+		age: 40,
 		modifiable: ["months", "age"],
+		defaults: [12, 40],
 		rule: function(currentDate, measuredDate, value) {
 			try {
 				if (parseInt(value) < 40) {
@@ -320,10 +344,11 @@ var reportRules =  (function(){
 		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
 		long_desc: function() { "% of patients who are coded as current smokers"; },
 		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diatolic BP"],
+		months: 9,
 		sysTarget: 140,
 		diasTarget: 90,
-		months: 9,
 		modifiable: ["months", "sysTarget", "diasTarget"],
+		defaults: [9, 140, 90],
 		rule: function(currentDate, measuredDate, sysValue, diasValue) {
 			try {
 				if (parseInt(sysValue) < this.sysTarget && parseInt(diasValue) < this.diasTarget) {
@@ -573,6 +598,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Birthdate", "pneumococcal polysaccharide"],
 		age: 65,
 		modifiable: ["age"],
+		defaults: [65],
 		rule: function(currentDate, birthDate, pneuc) {
 			try {
 				//Only people older than 65 qualify
@@ -596,6 +622,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Birthdate", "Risk Factors", "pneumococcal polysaccharide"],
 		age: 19,
 		modifiable: ["age"],
+		defaults: [19],
 		rule: function(currentDate, birthDate, pneuc) {
 			try {
 				//Only people older than 65 qualify
@@ -619,6 +646,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Birthdate", "Problem List", "pneumococcal polysaccharide"],
 		age: 19,
 		modifiable: ["age"],
+		defaults: [19],
 		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "495", "496"],
 		rule: function(currentDate, birthDate, problemList, pneuc) {
 			try {
@@ -646,6 +674,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
 		months:6,
 		modifiable: ["months"],
+		defaults: [6],
 		rule: function(currentDate, formDate, count) {
 			try {
 				//Only people older than 65 qualify
@@ -669,6 +698,7 @@ var reportRules =  (function(){
 		col: ["Current Date", "Last Seen Date"],
 		months:12,
 		modifiable: ["months"],
+		defaults: [12],
 		rule: function(currentDate, lastSeenDate) {
 			try {
 				return WithinDateRange(currentDate, this.months, lastSeenDate);
@@ -792,7 +822,8 @@ var reportRules =  (function(){
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
 		ApplyRules: ApplyRules,
-		ruleList: ruleList
+		ruleList: ruleList,
+		ResetToDefault: ResetToDefault
 	};
 	
 })();

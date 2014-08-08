@@ -36,7 +36,7 @@ var reportViewer = (function() {
 	
 	
 	//Static variables to handle graph dimensions and colors
-	var DEFAULT_CANVAS_WIDTH = 960;  		// pixels
+	var DEFAULT_CANVAS_WIDTH = 940;  		// pixels
 	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
 	
 	var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300;
@@ -95,15 +95,15 @@ var reportViewer = (function() {
 	 */
 	function ClearUserInterface() {
 		if (document.getElementById("physicianSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("physicianSection"));
 		}
 		
 		if (document.getElementById("measuresSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("measuresSection"));
 		}
 		
 		if (document.getElementById("settingsSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("settingsSection"));
 		}
 		
 		if (document.getElementById("dropdownRules")) {
@@ -125,15 +125,15 @@ var reportViewer = (function() {
 		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 		// physicianSection, measuresSection, settingsSection
 		if (document.getElementById("physicianSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("physicianSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("physicianSection"));
 		}
 		
 		if (document.getElementById("measuresSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("measuresSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("measuresSection"));
 		}
 		
 		if (document.getElementById("settingsSection")) {
-			document.getElementById("sidePanel").removeChild(document.getElementById("settingsSection"));
+			document.getElementById("actionBar").removeChild(document.getElementById("settingsSection"));
 		}
 		
 		if (document.getElementById("dropdownRules")) {
@@ -142,8 +142,8 @@ var reportViewer = (function() {
 
 	
 		// Adding a panel section for selecting physicians
-		d3.select("#sidePanel").append("div")
-			.attr("class", "sidePanelSection")
+		d3.select("#actionBar").append("div")
+			.attr("class", "actionBarSection")
 			.attr("id", "physicianSection");
 		
 		// Adding a div within 'physicianSection' for the legend
@@ -209,8 +209,8 @@ var reportViewer = (function() {
 		// Add a section in the sidebar for the diabetic measures
 		if (g_mode == "tracking") {
 		
-			d3.select("#sidePanel").append("div")
-				.attr("class", "sidePanelSection")
+			d3.select("#actionBar").append("div")
+				.attr("class", "actionBarSection")
 				.attr("id", "measuresSection");
 				
 			// Add a drop down menu for the diabetic measures	
@@ -233,14 +233,15 @@ var reportViewer = (function() {
 		}
 		
 		// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
-		d3.select("#sidePanel").append("div")
-			.attr("class", "sidePanelSection")
+		d3.select("#actionBar").append("div")
+			.attr("class", "actionBarSection")
 			.attr("id", "settingsSection");
 		
 		// Save to PNG	
 		d3.select("#settingsSection").append("input")
 			.attr("type", "button")
 			.attr("value", "Save as image")
+			.attr("class", "actionButton")
 			.on("click", function () {
 	
 				// Append canvas to the document
@@ -282,6 +283,7 @@ var reportViewer = (function() {
 		d3.select("#settingsSection").append("input")
 			.attr("type", "button")
 			.attr("value", "Save as PDF")
+			.attr("class", "actionButton")
 			.on("click", function () {
 			
 				// Append canvas to the document
@@ -329,11 +331,13 @@ var reportViewer = (function() {
 		d3.select("#settingsSection").append("input")
 			.attr("type", "button")
 			.attr("value", "Toggle data labels")
+			.attr("class", "actionButton")
 			.on("click", ToggleDataLabels);
 			
 		
 		d3.select("#settingsSection").append("select")
 			.attr("id", "dropdownRules")
+			.attr("class", "actionButton")
 			.on("change", function() {
 				g_currentRuleListIndex = chosen_colour = this.selectedIndex;
 				g_currentRuleListName = reportRules.ruleList[this.selectedIndex].name;
@@ -352,44 +356,76 @@ var reportViewer = (function() {
 	};
 	
 	function AddIndicatorEditor(ruleIndex) {
-		$("#indicatorParameters").empty();
-		$("#indicatorParameters").append("<ul id='indList'></ul>");
+		
+		function capitalize(s){
+			return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
+		};
+		
+		
+		
+		//Reset indicator editor bar
+		RemoveIndicatorEditor();
+
 		var items = [];
 		
-		$.each(g_currentRule.modifiable, function(i, item) { 
-			items.push("<li>" + item + ': <input type="text" class="target" id="' + item + '" value="' + g_currentRule[item] + '" /></li>'); 
+		items.push('<div class="pure-g">');
+		items.push('<div class="pure-u-1" style="margin-left:1em">Modify Indicator Targets</div>');
+		
+		
+		$.each(g_currentRule.modifiable, function(i, item) {
+			items.push('<div class="pure-u-1 indicator"><label for="' + item + '">' + capitalize(item) + '</label>');
+			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + g_currentRule[item] + '"></div>'); 
 		});
 		
-		$("#indList").append(items.join(''));
+		items.push('</div><button type="submit" id="savebtn" class="pure-button pure-button-active">Apply Changes</button');
+		items.push('</div><button type="submit" id="resetbtn" class="pure-button pure-button-active">Reset</button');
 		
-		$("#indList .target").bind('keypress', function(e) {
+		$("#indicatorBar").append(items.join(''));
+		
+		
+		$("#indicatorBar .indicatorValue").bind('keypress', function(e) {
 			var code = e.keyCode || e.which;
 			if(code == 13) {
 				updateIndicator(ruleIndex);
 			}
 		});
+				
+		//var $saveChanges = $('<input type="button" id="savebtn" value="Save Changes" />');
+		//$saveChanges.appendTo($("#indicatorParameters"));
 		
-		var $saveChanges = $('<input type="button" id="savebtn" value="Save Changes" />');
-		$saveChanges.appendTo($("#indicatorParameters"));
-		
+		$("#savebtn").unbind();
 		$("#savebtn").click( function() { updateIndicator(ruleIndex); } );
+		
+		$("#resetbtn").unbind();
+		$("#resetbtn").click( function() { resetIndicator(ruleIndex); } );
+		
+		$("#indicatorBar").css("display", "block");
 	}
 	
 	function updateIndicator(ruleIndex) {
 		var params_updated = 0;
 		
-		$('#indList li input[type=text]').each(function() {
+		$('.indicatorValue').each(function() {
 			reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex][this.id] = this.value;
 			params_updated++;
 		});
 		
-		if (params_updated === $('#indList li input[type=text]').length) {
+		if (params_updated === $('.indicatorValue').length) {
 			reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 		}
 	}
 	
+	function resetIndicator(ruleIndex) {
+		reportRules.ResetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex]);
+		
+		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+		
+		AddIndicatorEditor(ruleIndex);
+	}
+	
 	function RemoveIndicatorEditor(ruleIndex) {
-		$("#indicatorParameters").empty();
+		$("#indicatorBar").empty();
+		$("#indicatorBar").css("display", "none");
 	}
 	
 	/* 
@@ -407,6 +443,7 @@ var reportViewer = (function() {
 		g_currentRuleListName = reportRules.ruleList[rd_currentRuleListIndex].name;
 				
 		ClearCanvas();
+		//RemoveIndicatorEditor();
 		AddUserInterface();
 		
 		if (g_calculatedData == undefined) {
