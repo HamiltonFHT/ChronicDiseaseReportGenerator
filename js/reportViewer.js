@@ -361,8 +361,6 @@ var reportViewer = (function() {
 			return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
 		};
 		
-		
-		
 		//Reset indicator editor bar
 		RemoveIndicatorEditor();
 
@@ -373,20 +371,26 @@ var reportViewer = (function() {
 		
 		
 		$.each(g_currentRule.modifiable, function(i, item) {
-			items.push('<div class="pure-u-1 indicator"><label for="' + item + '">' + capitalize(item) + '</label>');
+			var itemName = reportRules.lookupVarNameTable[item];
+			if (typeof itemName === 'undefined') {
+				itemName = item;
+			}
+			
+			items.push('<div class="pure-u-1 indicator"><label for="' + item + '">' + itemName + '</label>');
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + g_currentRule[item] + '"></div>'); 
 		});
 		
-		items.push('</div><button type="submit" id="savebtn" class="pure-button pure-button-active">Apply Changes</button');
-		items.push('</div><button type="submit" id="resetbtn" class="pure-button pure-button-active">Reset</button');
-		
+		items.push('<div class="pure-u-1-2"><button id="savebtn" class="pure-button">Apply Changes</button></div>');
+		items.push('<div class="pure-u-1-2"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
+		items.push('<div class="pure-u-1 indicator"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
+		items.push('</div>');
 		$("#indicatorBar").append(items.join(''));
 		
 		
 		$("#indicatorBar .indicatorValue").bind('keypress', function(e) {
 			var code = e.keyCode || e.which;
 			if(code == 13) {
-				updateIndicator(ruleIndex);
+				UpdateIndicator(ruleIndex);
 			}
 		});
 				
@@ -394,15 +398,18 @@ var reportViewer = (function() {
 		//$saveChanges.appendTo($("#indicatorParameters"));
 		
 		$("#savebtn").unbind();
-		$("#savebtn").click( function() { updateIndicator(ruleIndex); return false; } );
+		$("#savebtn").click( function() { UpdateIndicator(ruleIndex); return false; } );
 		
 		$("#resetbtn").unbind();
-		$("#resetbtn").click( function() { resetIndicator(ruleIndex); return false; } );
+		$("#resetbtn").click( function() { ResetIndicator(ruleIndex); return false; } );
 		
+		$("#resetallbtn").unbind();
+		$("#resetallbtn").click( function() { ResetAllIndicators(ruleIndex); return false; } );
+			
 		$("#indicatorBar").css("display", "block");
 	}
 	
-	function updateIndicator(ruleIndex) {
+	function UpdateIndicator(ruleIndex) {
 		var params_updated = 0;
 		
 		$('.indicatorValue').each(function() {
@@ -415,8 +422,22 @@ var reportViewer = (function() {
 		}
 	}
 	
-	function resetIndicator(ruleIndex) {
+	function ResetIndicator(ruleIndex) {
 		reportRules.ResetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex]);
+		
+		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+		
+		AddIndicatorEditor(ruleIndex);
+	}
+	
+	function ResetAllIndicators(ruleIndex) {
+		
+		//Loop through all rules and Reset if they have a 'defaults' property			
+		for (var i = 0; i < reportRules.ruleList[g_currentRuleListIndex].rules.length; i++){
+			if (reportRules.ruleList[g_currentRuleListIndex].rules[i].hasOwnProperty('defaults')) {
+				reportRules.ResetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[i]);
+			}
+		}
 		
 		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 		

@@ -58,7 +58,16 @@ var reportRules =  (function(){
 	    if (m < 0 || (m === 0 && currentDate.getDate() < birthDate.getDate())) {
 	        age--;
 	    }
+
 	    return age;
+	}
+	
+	//Approximate -- each month assumed to have 30 days
+	function getAgeInMonths(currentDate, birthDate) {
+		var currentDate = new Date(currentDate);
+	    var birthDate = new Date(birthDate);
+	    var msToMonths = 1000*60*60*24*30;
+	    return Math.round((currentDate - birthDate) / msToMonths);
 	}
 	
 	function ResetToDefault(rule) {
@@ -71,6 +80,15 @@ var reportRules =  (function(){
 		}
 	}
 	
+	var lookupVarNameTable = {
+		'minAge': 'Minimum Age',
+		'maxAge': 'Maximum Age',
+		'months': 'Months Since',
+		'minAgeMonths': 'Minimum Age (months)',
+		'maxAgeMonths': 'Maximum Age (months)',
+		'sysTarget': 'Systolic BP Target',
+		'diasTarget': 'Diastolic BP Target'
+	};
 	
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
@@ -305,7 +323,7 @@ var reportRules =  (function(){
 	
 	var ruleCurrentSmokers = {
 		desc: function(){return "Current Smokers"; },
-		long_desc: function() { "% of patients who are coded as current smokers"; },
+		long_desc: function() { return "% of patients who are coded as current smokers"; },
 		col: ["Risk Factors"],
 		rule: function(factors) {
 			try {
@@ -319,7 +337,7 @@ var reportRules =  (function(){
 	
 	var ruleBaselineBP = {
 		desc: function(){return "BP measured in last " + this.months + " for adults over " + this.age; },
-		long_desc: function() { "% of patients who are coded as current smokers"; },
+		long_desc: function() { return "% of patients who are coded as current smokers"; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,
 		age: 40,
@@ -342,7 +360,7 @@ var reportRules =  (function(){
 
 	var ruleElevatedBPRegularVisit = {
 		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
-		long_desc: function() { "% of patients who are coded as current smokers"; },
+		long_desc: function() { return "% of patients who are coded as current smokers"; },
 		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diatolic BP"],
 		months: 9,
 		sysTarget: 140,
@@ -367,7 +385,7 @@ var reportRules =  (function(){
 
 	var ruleInfantVaccinations = {
 		desc: function(){return "Infant immunization schedule up to date"; },
-		long_desc: function() { "Infant immunization schedule up to date"; },
+		long_desc: function() { return "Infant immunization schedule up to date"; },
 		col: ["Current Date", "Birthdate",
 			  "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis", "varicella", "rotavirus", "polio"],
 		age: 2,
@@ -410,7 +428,7 @@ var reportRules =  (function(){
 	//Does not account for boosters
 	var ruleChildVaccinations = {
 		desc: function(){return "Children with all immunizations"; },
-		long_desc: function() { "Children with all immunizations"; },
+		long_desc: function() { return "Children with all immunizations"; },
 		col: ["Current Date", "Birthdate",
 			  "measles", "mumps", "rubella",
 			  "diphtheria", "tetanus", "pertussis",
@@ -463,7 +481,7 @@ var reportRules =  (function(){
 	//Does not account for boosters
 	var ruleTeenagerVaccinations = {
 		desc: function(){return "Adults with all immunizations"; },
-		long_desc: function() { "Adults with all immunizations"; },
+		long_desc: function() { return "Adults with all immunizations"; },
 		col: ["Current Date", "Birthdate",
 			  "measles", "mumps", "rubella",
 			  "diphtheria", "tetanus", "pertussis",
@@ -483,7 +501,8 @@ var reportRules =  (function(){
 		mumps: 2,
 		rubella: 2,
 		varicella: 2,
-		modifiable: ["age"],
+		modifiable: ["minAge"],
+		dafaults: [18],
 		rule: function(currentDate, birthDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
@@ -515,7 +534,7 @@ var reportRules =  (function(){
 
 	var ruleHeightWeightLastVaccination = {
 		desc: function(){return "Height and Weight at last immunization"; },
-		long_desc: function() { "Height and Weight measured at last immunization"; },
+		long_desc: function() { return "Height and Weight measured at last immunization"; },
 		col: ["height date", "weight date",
 			  "measles date", "mumps date", "rubella date",
 			  "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date",
@@ -537,7 +556,7 @@ var reportRules =  (function(){
 
 	var ruleSmokingStatusRecorded = {
 		desc: function(){return "Smoking Status Recorded"; },
-		long_desc: function() { "Smoking Status Recorded in Risk Factors"; },
+		long_desc: function() { return "Smoking Status Recorded in Risk Factors"; },
 		col: ["Risk Factors"],
 		rule: function(factors) {
 			try {
@@ -552,11 +571,36 @@ var reportRules =  (function(){
 			}
 		}
 	};
+	
+	var ruleWellBabyVisit = {
+		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge; },
+		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
+		col: ["Current Date", "Birthdate", "A002", "A268", "Rourke IV"],
+		minAgeMonths: 17,
+		maxAgeMonths: 24,
+		modifiable: ['minAgeMonths', 'maxAgeMonths'],
+		defaults: [17, 24],
+		rule: function(currentDate, birthDate, A002, A268, rourke) {
+			try {
+				var age = getAgeInMonths(currentDate, birthDate);
+				if (age >= this.minAgeMonths && age <= this.maxAgeMonths &&
+					(A002 != 0 || A268 != 0 || rourke != 0)) {
+						return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+		
+	};
 
 	//Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
 	var ruleSmokingCessation = {
 		desc: function(){return "Smoking Cessation Attempted"; },
-		long_desc: function() { "Smoking Cessation form in patient chart"; },
+		long_desc: function() { return "Smoking Cessation form in patient chart"; },
 		col: ["Risk Factors", "Smoking Cessation Form"],
 		rule: function(factors, form) {
 			try {
@@ -576,7 +620,7 @@ var reportRules =  (function(){
 	
 	var ruleLungHealthForm = {
 		desc: function(){return "Lung Health Recorded"; },
-		long_desc: function() { "Canadian Lung Health Form in patient chart"; },
+		long_desc: function() { return "Canadian Lung Health Form in patient chart"; },
 		col: ["Lung Health Form"],
 		rule: function(form) {
 			try {
@@ -594,15 +638,15 @@ var reportRules =  (function(){
 	
 	var ruleSeniorsPneumovax = {
 		desc: function(){return "Seniors Recieving Pneumovax"; },
-		long_desc: function() { "Patients over the age of 65 vaccinated for pneumonia"; },
-		col: ["Current Date", "Birthdate", "pneumococcal polysaccharide"],
+		long_desc: function() { return "Patients over the age of 65 vaccinated for pneumonia"; },
+		col: ["Current Date", "Age", "pneumococcal polysaccharide"],
 		age: 65,
 		modifiable: ["age"],
 		defaults: [65],
-		rule: function(currentDate, birthDate, pneuc) {
+		rule: function(currentDate, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (getAge(currentDate, birthDate) <= this.age) {
+				if (parseInt(age) <= this.age) {
 					return NaN;
 				} else if (parseInt(pneuc) > 0) {
 					return true;
@@ -618,15 +662,15 @@ var reportRules =  (function(){
 	
 	var ruleAdultSmokersPneumovax = {
 		desc: function(){return "Adult Smokers Recieving Pneumovax"; },
-		long_desc: function() { "Patients over the age of 19 who smoke vaccinated for pneumonia"; },
-		col: ["Current Date", "Birthdate", "Risk Factors", "pneumococcal polysaccharide"],
+		long_desc: function() { return "Patients over the age of 19 who smoke vaccinated for pneumonia"; },
+		col: ["Current Date", "Age", "Risk Factors", "pneumococcal polysaccharide"],
 		age: 19,
 		modifiable: ["age"],
 		defaults: [19],
-		rule: function(currentDate, birthDate, pneuc) {
+		rule: function(currentDate, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (getAge(currentDate, birthDate) >= this.age) {
+				if (parseInt(age) >= this.age) {
 					return NaN;
 				} else if (parseInt(pneuc) > 0) {
 					return true;
@@ -642,16 +686,16 @@ var reportRules =  (function(){
 	
 	var ruleLungDiseasePneumovax = {
 		desc: function(){return "Adults with COPD or Asthma Recieving Pneumovax"; },
-		long_desc: function() { "Patients over the age of 19 who have COPD or asthma vaccinated for pneumonia"; },
-		col: ["Current Date", "Birthdate", "Problem List", "pneumococcal polysaccharide"],
+		long_desc: function() { return "Patients over the age of 19 who have COPD or asthma vaccinated for pneumonia"; },
+		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
 		age: 19,
 		modifiable: ["age"],
 		defaults: [19],
-		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "495", "496"],
-		rule: function(currentDate, birthDate, problemList, pneuc) {
+		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "496"],
+		rule: function(currentDate, age, problemList, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (getAge(currentDate, birthDate) >= this.minAge) {
+				if (parseInt(age) >= this.minAge) {
 					return NaN;
 				}
 				problemList = problemList.toLowerCase();
@@ -668,8 +712,8 @@ var reportRules =  (function(){
 	};
 	
 	var rulePHQ9 = {
-		desc: function(){return "Depressed patients with multiple PHQ9 forms"; },
-		long_desc: function() { ["Adult patients over have depression and have filled out at least one PHQ9 form",
+		desc: function(){return "Patients with multiple PHQ9 forms"; },
+		long_desc: function() { return ["Adult patients over have depression and have filled out at least one PHQ9 form",
 								 "have more than one PHQ9 form. This is an indication it is being used for follow-up"].join("\n"); },
 		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
 		months:6,
@@ -677,7 +721,6 @@ var reportRules =  (function(){
 		defaults: [6],
 		rule: function(currentDate, formDate, count) {
 			try {
-				//Only people older than 65 qualify
 				if (count == 0) {
 					return NaN;
 				} else if (count == 1 && !WithinDateRange(currentDate, this.months, formDate)) {
@@ -694,7 +737,7 @@ var reportRules =  (function(){
 	
 	var ruleADHDMedReview = {
 		desc: function(){return "Youth on ADHD meds annual year"; },
-		long_desc: function() { "Youth diagnosed with ADHD and on medications for ADHD have had an annual visit"; },
+		long_desc: function() { return "Youth diagnosed with ADHD and on medications for ADHD have had an annual visit"; },
 		col: ["Current Date", "Last Seen Date"],
 		months:12,
 		modifiable: ["months"],
@@ -709,6 +752,97 @@ var reportRules =  (function(){
 		}
 	};
 	
+	var ruleBreastCancer = {
+		desc: function(){return "Up-to-date on breast cancer screening"; },
+		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a mammogram in the past " + months + " months"; },
+		col: ["Current Date", "Age", "Mammogram"],
+		months:3*12,
+		minAge:50,
+		maxAge:69,
+		modifiable: ["months", "minAge", "maxAge"],
+		defaults: [3*12, 50 , 69],
+		rule: function(currentDate, age, mammDate) {
+			try {
+				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
+					WithinDateRange(currentDate, this.months, mammDate)){
+						return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	}
+	
+	var ruleCervicalCancer = {
+		desc: function(){return "Up-to-date on cervical cancer screening"; },
+		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + months + " months"; },
+		col: ["Current Date", "Age", "Pap Test Report"],
+		months:3*12,
+		minAge:25,
+		maxAge:69,
+		modifiable: ["months", "minAge", "maxAge"],
+		defaults: [3*12, 25, 69],
+		rule: function(currentDate, age, papDate) {
+			try {
+				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
+					WithinDateRange(currentDate, this.months, papDate)){
+						return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	}
+	
+	var ruleColorectalCancer = {
+		desc: function(){return "Up-to-date on colorectal cancer screening"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " who performed an FOBT in the past " + months + " months"; },
+		col: ["Current Date", "Age", "FOBT"],
+		months:2*12,
+		minAge:50,
+		modifiable: ["months", "minAge"],
+		defaults: [2*12, 50],
+		rule: function(currentDate, age, fobtDate) {
+			try {
+				if (parseInt(age) > this.minAge && WithinDateRange(currentDate, this.months, fobtDate)){
+						return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	}
+	
+	var ruleFluVaccine = {
+		desc: function(){return "Up-to-date on Influenza Vaccine"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " who received a flu vaccine in the past " + months + " months"; },
+		col: ["Current Date", "Age", "influenza date"],
+		months:12,
+		minAge:65,
+		modifiable: ["months", "minAge"],
+		defaults: [12, 65],
+		rule: function(currentDate, age, fluDate) {
+			try {
+				if (parseInt(age) >= this.minAge && WithinDateRange(currentDate, this.months, fluDate)){
+						return true;
+				} else {
+					return false;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	}
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonths,
@@ -755,6 +889,10 @@ var reportRules =  (function(){
 	
 	var youthADHDRules = [ruleADHDMedReview];
 	
+	var cancerScreeningRules = [ruleBreastCancer,
+								ruleCervicalCancer,
+								ruleColorectalCancer,
+								ruleFluVaccine]
 	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
@@ -762,6 +900,7 @@ var reportRules =  (function(){
 					{name:"Smoking Cessation", rules:smokingCessationRules},
 					{name:"Lung Health", rules:lungHealthRules},
 					{name:"Depression", rules:adultMentalHealthRules},
+					{name: "Adult Preventative Care", rules:cancerScreeningRules},
 					{name:"ADHD", rules:youthADHDRules},
 					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
@@ -819,11 +958,53 @@ var reportRules =  (function(){
 		return results;
 	};
 	
+		/* 
+	 * Inspect header of text file to guess which indicator set is most appropriate
+	 * Indicator sets are listed in the ruleList variable in reportRules
+	 */
+	function GetCurrentRuleSet(header) {
+		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
+			alert("File does not contain necessary data element Patient # or Doctor Number");
+		}
+		
+		var rule = 0;
+		
+		//Diabetes
+		if (header.indexOf("Hb A1C") != -1) {
+			rule = 0;
+		//Hypertension
+		} else if (header.indexOf("Systolic BP") != -1) {
+			rule = 1;
+		//Immunizations
+		} else if (header.indexOf("height date") != -1) {
+			rule = 2;
+		//Smoking Cessation
+		} else if (header.indexOf("Smoking Cessation Form") != -1) {
+			rule = 3;
+		//Lung Health
+		} else if (header.indexOf("Lung Health Form") != -1) {
+			rule = 4;
+		//Depression
+		} else if (header.indexOf("PHQ9 Dates") != -1) {
+			rule = 5;
+		//Cancer Screening
+		} else if (header.indexOf("Mammogram") != -1) {
+			rule = 6;
+		//Youth ADHD
+		} else {
+			rule = 7;
+		}
+		
+		return rule;
+	}
+	
 	return {
 		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
 		ApplyRules: ApplyRules,
 		ruleList: ruleList,
-		ResetToDefault: ResetToDefault
+		ResetToDefault: ResetToDefault,
+		GetCurrentRuleSet: GetCurrentRuleSet,
+		lookupVarNameTable: lookupVarNameTable
 	};
 	
 })();

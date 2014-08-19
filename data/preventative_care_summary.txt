@@ -1,0 +1,30 @@
+Preventive Care Summary
+Year End Mar 31, 2014
+<html>&nbsp;<br/>&nbsp</html>,Population,Exclusion,Done,Not Done,%,<html>Needs<br/>First Letter</html>,<html>Needs<br/>Second Letter</html>,<html>Needs<br/>Phone Call</html>,
+Other Doctor:,
+Mammograms,0,0,0,0,-,0,0,0,
+Flu Shots,0,0,0,0,-,0,
+Immunizations,0,0,0,0,-,0,0,0,
+Paps,0,0,0,0,-,0,0,0,
+Stool Occult Blood,0,0,0,0,-,0,0,0,
+
+James Kavanagh:,
+Mammograms,0,0,0,0,-,0,0,0,
+Flu Shots,0,0,0,0,-,0,
+Immunizations,0,0,0,0,-,0,0,0,
+Paps,2,0,1,1,50.0,1,0,0,
+Stool Occult Blood,2,0,0,2,0,1,1,0,
+
+Michael Pray:,
+Mammograms,0,0,0,0,-,0,0,0,
+Flu Shots,0,0,0,0,-,0,
+Immunizations,0,0,0,0,-,0,0,0,
+Paps,0,0,0,0,-,0,0,0,
+Stool Occult Blood,0,0,0,0,-,0,0,0,
+
+Monique Prudhomme:,
+Mammograms,0,0,0,0,-,0,0,0,
+Flu Shots,0,0,0,0,-,0,
+Immunizations,0,0,0,0,-,0,0,0,
+Paps,0,0,0,0,-,0,0,0,
+Stool Occult Blood,0,0,0,0,-,0,0,0,

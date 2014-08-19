@@ -116,7 +116,7 @@ var reportData = (function() {
 		}
 		var csvHeaders = arrData.shift();
 		
-		currentRuleSet = GetCurrentRuleSet(csvHeaders);
+		currentRuleSet = reportRules.GetCurrentRuleSet(csvHeaders);
 		
 		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
 			var rowArray = arrData[rowIndex];
@@ -214,42 +214,6 @@ var reportData = (function() {
 	    return( arrData );
 	};
 	
-	/* 
-	 * Inspect header of text file to guess which indicator set is most appropriate
-	 * Indicator sets are listed in the ruleList variable in reportRules
-	 */
-	function GetCurrentRuleSet(header) {
-		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
-			alert("File does not contain necessary data element Patient # or Doctor Number");
-		}
-		
-		var rule = 0;
-		
-		//Diabetes
-		if (header.indexOf("Hb A1C") != -1) {
-			rule = 0;
-		//Hypertension
-		} else if (header.indexOf("Systolic BP") != -1) {
-			rule = 1;
-		//Immunizations
-		} else if (header.indexOf("height date") != -1) {
-			rule = 2;
-		//Smoking Cessation
-		} else if (header.indexOf("Smoking Cessation Form") != -1) {
-			rule = 3;
-		//Lung Health
-		} else if (header.indexOf("Lung Health Form") != -1) {
-			rule = 4;
-		//Depression
-		} else if (header.indexOf("PHQ9 Dates") != -1) {
-			rule = 5;
-		//Youth ADHD
-		} else {
-			rule = 6;
-		}
-		
-		return rule;
-	}
 		
 	/*
 	 * Filter all records from physicians that are not currently selected
