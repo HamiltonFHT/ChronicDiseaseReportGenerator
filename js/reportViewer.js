@@ -62,13 +62,12 @@ var reportViewer = (function() {
 	 * Remove graph and user interface elements
 	 * Called when chart needs to be refreshed or cleared
 	 */
-	function ClearCanvas() {
+	function clearCanvas() {
 		
-		document.getElementById("canvasContainer").removeChild(document.getElementById("canvasSVG"));
+		$("#canvasContainer").empty();
 				
 		g_canvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
-					// Set the width and height of the canvas
 					.attr("width", DEFAULT_CANVAS_WIDTH)
 					.attr("height", DEFAULT_CANVAS_HEIGHT)
 					.style("border", "1px solid lightgray")
@@ -87,28 +86,16 @@ var reportViewer = (function() {
 								}	
 							});
 							
-		ClearUserInterface();
 	};
 	
 	/*
 	 * Removes user interface elements other than the chart
 	 */
-	function ClearUserInterface() {
-		if (document.getElementById("physicianSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("physicianSection"));
-		}
-		
-		if (document.getElementById("measuresSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("measuresSection"));
-		}
-		
-		if (document.getElementById("settingsSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("settingsSection"));
-		}
-		
-		if (document.getElementById("dropdownRules")) {
-			document.getElementById("dropdownRules").remove();
-		}
+	function clearUserInterface() {
+		$("#physicianSection").remove();
+		$("#measuresSection").remove();
+		$("#settingsSection").remove();
+		$("#dropdownRules").remove();
 	}
 	
 	/*
@@ -118,63 +105,63 @@ var reportViewer = (function() {
 	 * Individual indicator dropdown (in tracking mode)
 	 * Download buttons
 	 */
-	function AddUserInterface() {
-		//reportData.physicianList contains 2 columns and n rows
-		//[Doctor number, boolean selected]
-		
+	function addUserInterface() {
 		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 		// physicianSection, measuresSection, settingsSection
-		if (document.getElementById("physicianSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("physicianSection"));
-		}
-		
-		if (document.getElementById("measuresSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("measuresSection"));
-		}
-		
-		if (document.getElementById("settingsSection")) {
-			document.getElementById("actionBar").removeChild(document.getElementById("settingsSection"));
-		}
-		
-		if (document.getElementById("dropdownRules")) {
-			document.getElementById("dropdownRules").remove();
-		}
-
+		clearUserInterface();
 	
 		// Adding a panel section for selecting physicians
-		d3.select("#actionBar").append("div")
-			.attr("class", "actionBarSection")
-			.attr("id", "physicianSection");
-		
-		// Adding a div within 'physicianSection' for the legend
-		d3.select("#physicianSection").append("div")
-			.attr("id", "physicianLegend");
-			
-		// Adding an unordered list within 'physicianLegend'. This unordered list will contain one list item for each option in the filter.
-		// One for each unique physician through all imported files, and one for selecting all physicians
-		d3.select("#physicianLegend").append("ul")
-			.attr("id", "physicianLegendList");
+		$("#actionBar").append('<div class="actionBarSection" id="physicianSection">' +
+								'<div id="physicianLegend"></div>' +
+								'<ul id="physicianLegendList"></ul>' +
+								'</div>');
 		
 		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 		// panel. There will also be a filter for "All Selected Physicians"
 		for (var i = 0; i < Object.keys(g_selectedPhysicians).length+1; i++) {
-			
 			// Append a list item to the unordered list 'physicianLegendList'. Set its classes to be 'legendListItem', 'physicianListItem', 'selected'
 			// Selected by default
-			d3.select("#physicianLegendList").append("li")
-				.attr("class", "legendListItem physicianListItem")
-				.on("click", ToggleSelectedPhysicians);
+			$("#physicianLegendList").append('<li class="legendListItem physicianListItem"></li>');
 		}
 		
+		$(".physicianListItem").click( function(){ 
+			if (g_calculatedData == undefined) { 
+				console.log("Calculated data undefined");
+				return false;
+			}
+	
+			var isSelected = (this.className.indexOf("selected") != -1);
+	
+			// If clicked on "Select All"
+			if (this.innerHTML.indexOf("Select All") != -1) {
+				// If class has 'selected', it currently is selected and must be unselected
+					
+				for (doc in g_selectedPhysicians) {
+					if (g_selectedPhysicians.hasOwnProperty(doc)) {
+						//negate the isSelected status to select/deselect the option
+						g_selectedPhysicians[doc] = !isSelected;
+					}
+				}
+			}	
+			// Otherwise, clicked on an individual doctor
+			else {
+				var doc = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
+				g_selectedPhysicians[doc] = !isSelected;
+			}
+			
+			reportData.reCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+			return false; 
+	  });
+
 		// Retrieve an array of all physician list items
-		var physicianListItems = document.getElementsByClassName("physicianListItem");
+		var physicianListItems = $(".physicianListItem");
 	
 		// Looping through the array of physician list items
 		for (var i = 0; i < physicianListItems.length; i++) {
 		
 			// First item, i.e. "Select All Doctors"
 			if (i == 0) {
-				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>";
+				physicianListItems.eq(i).html("<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Select All</span>");
 				
 				var all_selected = true;
 				for (doc in g_selectedPhysicians) {
@@ -184,9 +171,9 @@ var reportViewer = (function() {
 					} 
 				}
 				if (all_selected) {
-					physicianListItems[i].classList.add("selected");				
+					physicianListItems.eq(i).addClass("selected");				
 				} else {
-					physicianListItems[i].classList.add("notSelected");
+					physicianListItems.eq(i).addClass("notSelected");
 				}
 			}
 			
@@ -194,14 +181,12 @@ var reportViewer = (function() {
 			else {
 				//arraySelectedPhysicians[i - 1] = true;
 				var doc = Object.keys(g_selectedPhysicians)[i-1];
-				physicianListItems[i].innerHTML += "<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + doc + "</span>";
+				physicianListItems.eq(i).html("<span class='physicianItemLabel'><span class='checkmark'>\u2714</span> Doctor Number " + doc + "</span>");
 				if (g_selectedPhysicians[doc] == true) {
-					physicianListItems[i].classList.add("selected");
+					physicianListItems.eq(i).addClass("selected");
 				} else {
-					physicianListItems[i].classList.add("notSelected");
+					physicianListItems.eq(i).addClass("notSelected");
 				}
-				
-				
 			}
 		}
 		
@@ -209,165 +194,132 @@ var reportViewer = (function() {
 		// Add a section in the sidebar for the diabetic measures
 		if (g_mode == "tracking") {
 		
-			d3.select("#actionBar").append("div")
-				.attr("class", "actionBarSection")
-				.attr("id", "measuresSection");
+			$("#actionBar").append('<div class="actionBarSection" id="measuresSection"> </div>');
 				
 			// Add a drop down menu for the diabetic measures	
-			d3.select("#measuresSection").append("select")
-				.attr("id", "dropdownIndicators")
-				.on("change", function() { 
-					g_mode = "tracking";
-					ClearCanvas();
-					GenerateTracking(this.selectedIndex); 
-				});
+			$("#measuresSection").append('<select id="dropdownIndicators"></select>');
+			$("#dropdownIndicators").change(function() {
+				g_mode = "tracking";
+				clearCanvas();
+				generateTracking(this.selectedIndex);
+			});
 					
 			// Add the options for the different diabetic measures in the drop down menu
 			// Created dynamically based on default values
 			// To do: variables to store user input values
 			for (var i = 0; i < g_calculatedData[0].length; i++) {
-				d3.select("#dropdownIndicators").append("option")
-					.text(g_calculatedData[0][i]["desc"])
-					.attr("id", "optionDiabeticAssessment");
+				$("#dropdownIndicators").append('<option id="optionDiabeticAssessment">' + g_calculatedData[0][i]["desc"] + '</option>');
 			}
 		}
 		
 		// Add a section in the side bar for the buttons for settings, save-to-PDF, etc.
-		d3.select("#actionBar").append("div")
-			.attr("class", "actionBarSection")
-			.attr("id", "settingsSection");
+		$("#actionBar").append('<div id="settingsSection" class="actionBarSection"></div>');
 		
-		// Save to PNG	
-		d3.select("#settingsSection").append("input")
-			.attr("type", "button")
-			.attr("value", "Save as image")
-			.attr("class", "actionButton")
-			.on("click", function () {
-	
-				// Append canvas to the document
-				d3.select("body").append("canvas")
-					.attr("id", "outputCanvas")
-					.attr("width", DEFAULT_CANVAS_WIDTH)
-					.attr("height", DEFAULT_CANVAS_HEIGHT)
-					.style("border", "1px solid black")
-					.style("display", "none");
-					
-				// Retrieve output canvas and copy the current visualization into the canvas
-				var output = document.getElementById("outputCanvas");
-				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
-				canvg(output, svgXML, { ignoreDimensions: true });
-				
-				var ctx = document.getElementById("outputCanvas").getContext('2d');
-				ctx.save();
-				ctx.globalCompositeOperation = "destination-over";
-				ctx.fillStyle = 'white';
-				ctx.fillRect(0, 0, output.width, output.height);
-				
-				
-				// Retrieve data string of the canvas and append to the hidden img element
-				var outputURL = output.toDataURL();
-				document.getElementById("outputImg").src = outputURL;
-				
-				// Modify attributes of hidden elements and simulate file download
-				document.getElementById("outputA").download = g_reportTitle;
-				document.getElementById("outputA").href = outputURL;
-				document.getElementById("outputA").click();
-				
-				output.toBlob(function(blob) {
- 					saveAs(blob, g_reportTitle);
- 				});
-				ctx.restore();
-			});
+		// Save to PNG
+		var btnSaveImage = '<button class="pure-button actionButton" id="btnSaveImage"><i class="fa fa-file-image-o"></i> Save as image</button>';
+		$("#settingsSection").append(btnSaveImage);
+		$("#btnSaveImage").unbind();
+		$("#btnSaveImage").click(function() { saveFile('image'); });
 		
-		// Save to PDF
-		d3.select("#settingsSection").append("input")
-			.attr("type", "button")
-			.attr("value", "Save as PDF")
-			.attr("class", "actionButton")
-			.on("click", function () {
-			
-				// Append canvas to the document
-				d3.select("body").append("canvas")
-					.attr("id", "outputCanvas")
-					.attr("width", DEFAULT_CANVAS_WIDTH)
-					.attr("height", DEFAULT_CANVAS_HEIGHT)
-					.style("border", "1px solid black")
-					.style("display", "none");
-				
-					
-				// Retrieve output canvas and copy the current visualization into the canvas
-				var output = document.getElementById("outputCanvas");
-				var svgXML = (new XMLSerializer()).serializeToString(document.getElementById("canvasSVG"));	
-				canvg(output, svgXML, { ignoreDimensions: true });
-				
-				// Create a white background
-				var ctx = document.getElementById("outputCanvas").getContext('2d');
-				ctx.save();
-				ctx.globalCompositeOperation = "destination-over";
-				ctx.fillStyle = 'white';
-				ctx.fillRect(0, 0, output.width, output.height);
-				
-				// Retrieve data URL of the graph
-				var outputURL = output.toDataURL('image/jpeg');
-				
-				// Create portrait PDF object
-				var doc = new jsPDF();
 
-				// Title
-				doc.setFontSize(20);
-				doc.setFont('times');
-				var splitTitle = doc.splitTextToSize(g_reportTitle, 180);
-				doc.text(15, 20, splitTitle);
-				doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
+		var btnSavePDF = '<button class="pure-button actionButton" id="btnSavePDF"><i class="fa fa-file-pdf-o"></i> Save as PDF</button>';
+		$("#settingsSection").append(btnSavePDF);
+		$("#btnSavePDF").unbind();
+		$("#btnSavePDF").click(function() {	saveFile('pdf'); });
 				
-				// save() to download automatically, output() to open in a new tab
-				//doc.save(g_reportTitle);
-				doc.output('save', g_reportTitle);
-				ctx.restore();
-					
-			});
-		
 		// Toggle data labels
-		d3.select("#settingsSection").append("input")
-			.attr("type", "button")
-			.attr("value", "Toggle data labels")
-			.attr("class", "actionButton")
-			.on("click", ToggleDataLabels);
-			
+		var btnToggleLabels = '<button class="pure-button actionButton" id="btnToggleLabels"><i class="fa fa-check-square-o"></i> Toggle data labels</button>';
+		$("#settingsSection").append(btnToggleLabels);
+		$("#btnToggleLabels").unbind();
+		$("#btnToggleLabels").click(function() {
+			toggleDataLabels();
+			$(this).find("i").toggleClass("fa-check-square-o fa-square-o");
+			return false;
+		});
 		
-		d3.select("#settingsSection").append("select")
-			.attr("id", "dropdownRules")
-			.attr("class", "actionButton")
-			.on("change", function() {
-				g_currentRuleListIndex = chosen_colour = this.selectedIndex;
-				g_currentRuleListName = reportRules.ruleList[this.selectedIndex].name;
-				reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
-			});
-			
-			
+		$("#settingsSection").append('<select id="dropdownRules" class="pure-menu">');
+		$("#dropdownRules").change(function() {
+			g_currentRuleListIndex = chosen_colour = this.selectedIndex;
+			g_currentRuleListName = this.value;
+			reportData.reCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+		});
+	
 		// Add dropdown to switch between rule sets
 		for (var i=0; i<reportRules.ruleList.length;i++) {
-			d3.select("#dropdownRules").append("option")
-					.text(reportRules.ruleList[i].name);
+			$("#dropdownRules").append('<option>' + reportRules.ruleList[i].name + '</option>');
 		}
-
-		document.getElementById("dropdownRules").selectedIndex = g_currentRuleListIndex;
 		
+		$("#dropdownRules").val(reportRules.ruleList[g_currentRuleListIndex].name);
 	};
 	
-	function AddIndicatorEditor(ruleIndex) {
+	function saveFile(fileType) {
+		
+			// Append canvas to the document
+			var canvasString = '<canvas id="outputCanvas" width="' + DEFAULT_CANVAS_WIDTH + '" height="' + DEFAULT_CANVAS_HEIGHT +
+								'" style="border: 1px solid black; display:none;"></canvas>';
+					
+			$("body").append(canvasString);
+
+			// Retrieve output canvas and copy the current visualization into the canvas
+			var output = $("#outputCanvas")[0];
+			var svgXML = (new XMLSerializer()).serializeToString($("#canvasSVG")[0]);	
+			canvg(output, svgXML, { ignoreDimensions: true });
+			
+			var ctx = output.getContext('2d');
+			ctx.save();
+			ctx.globalCompositeOperation = "destination-over";
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, output.width, output.height);
+								
+		if (fileType === 'pdf') {
+			// Retrieve data URL of the graph
+			var outputURL = output.toDataURL('image/jpeg');
+			
+			// Create portrait PDF object
+			var doc = new jsPDF();
+
+			// Title
+			doc.setFontSize(20);
+			doc.setFont('times');
+			var splitTitle = doc.splitTextToSize(g_reportTitle, 180);
+			doc.text(15, 20, splitTitle);
+			doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
+			
+			// save() to download automatically, output() to open in a new tab
+			//doc.save(g_reportTitle);
+			doc.output('save', g_reportTitle);
+		} else {
+			// Retrieve data string of the canvas and append to the hidden img element
+			var outputURL = output.toDataURL();
+			$("#outputImg").src = outputURL;
+			// Modify attributes of hidden elements and simulate file download
+			$("#outputA").download = g_reportTitle;
+			$("#outputA").href = outputURL;
+			$("#outputA").click();
+			
+			output.toBlob(function(blob) {
+				saveAs(blob, g_reportTitle);
+			});
+		}
+		ctx.restore();
+		
+		//For jQuery callback
+		return false;
+	}
+	
+	function addIndicatorEditor(ruleIndex) {
 		
 		function capitalize(s){
 			return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
 		};
 		
 		//Reset indicator editor bar
-		RemoveIndicatorEditor();
+		removeIndicatorEditor();
 
 		var items = [];
 		
 		items.push('<div class="pure-g">');
-		items.push('<div class="pure-u-1" style="margin-left:1em">Modify Indicator Targets</div>');
+		items.push('<div class="pure-u-1 indicatorTitle">Modify Indicator Targets</div>');
 		
 		
 		$.each(g_currentRule.modifiable, function(i, item) {
@@ -380,7 +332,7 @@ var reportViewer = (function() {
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + g_currentRule[item] + '"></div>'); 
 		});
 		
-		items.push('<div class="pure-u-1-2"><button id="savebtn" class="pure-button">Apply Changes</button></div>');
+		items.push('<div class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
 		items.push('<div class="pure-u-1-2"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
 		items.push('<div class="pure-u-1 indicator"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
 		items.push('</div>');
@@ -390,61 +342,61 @@ var reportViewer = (function() {
 		$("#indicatorBar .indicatorValue").bind('keypress', function(e) {
 			var code = e.keyCode || e.which;
 			if(code == 13) {
-				UpdateIndicator(ruleIndex);
+				updateIndicator(ruleIndex);
 			}
 		});
 				
-		//var $saveChanges = $('<input type="button" id="savebtn" value="Save Changes" />');
+		//var $saveChanges = $('<input type="button" id="applybtn" value="Save Changes" />');
 		//$saveChanges.appendTo($("#indicatorParameters"));
 		
-		$("#savebtn").unbind();
-		$("#savebtn").click( function() { UpdateIndicator(ruleIndex); return false; } );
+		$("#applybtn").unbind();
+		$("#applybtn").click( function() { updateIndicator(ruleIndex); return false; } );
 		
 		$("#resetbtn").unbind();
-		$("#resetbtn").click( function() { ResetIndicator(ruleIndex); return false; } );
+		$("#resetbtn").click( function() { resetIndicator(ruleIndex); return false; } );
 		
 		$("#resetallbtn").unbind();
-		$("#resetallbtn").click( function() { ResetAllIndicators(ruleIndex); return false; } );
+		$("#resetallbtn").click( function() { resetAllIndicators(ruleIndex); return false; } );
 			
 		$("#indicatorBar").css("display", "block");
 	}
 	
-	function UpdateIndicator(ruleIndex) {
+	function updateIndicator(ruleIndex) {
 		var params_updated = 0;
 		
 		$('.indicatorValue').each(function() {
-			reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex][this.id] = this.value;
+			reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex][this.id] = this.value || 0;
 			params_updated++;
 		});
 		
 		if (params_updated === $('.indicatorValue').length) {
-			reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+			reportData.reCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 		}
 	}
 	
-	function ResetIndicator(ruleIndex) {
-		reportRules.ResetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex]);
+	function resetIndicator(ruleIndex) {
+		reportRules.resetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[ruleIndex]);
 		
-		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+		reportData.reCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 		
-		AddIndicatorEditor(ruleIndex);
+		addIndicatorEditor(ruleIndex);
 	}
 	
-	function ResetAllIndicators(ruleIndex) {
+	function resetAllIndicators(ruleIndex) {
 		
 		//Loop through all rules and Reset if they have a 'defaults' property			
 		for (var i = 0; i < reportRules.ruleList[g_currentRuleListIndex].rules.length; i++){
 			if (reportRules.ruleList[g_currentRuleListIndex].rules[i].hasOwnProperty('defaults')) {
-				reportRules.ResetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[i]);
+				reportRules.resetToDefault(reportRules.ruleList[g_currentRuleListIndex].rules[i]);
 			}
 		}
 		
-		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
+		reportData.reCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 		
-		AddIndicatorEditor(ruleIndex);
+		addIndicatorEditor(ruleIndex);
 	}
 	
-	function RemoveIndicatorEditor(ruleIndex) {
+	function removeIndicatorEditor(ruleIndex) {
 		$("#indicatorBar").empty();
 		$("#indicatorBar").css("display", "none");
 	}
@@ -454,7 +406,7 @@ var reportViewer = (function() {
 	 * Removes and reinitializes UI elements and chart
 	 * Calls appropriate graphing function based on mode
 	 */
-	function GenerateCharts(rd_currentRuleListIndex, rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
+	function generateCharts(rd_currentRuleListIndex, rd_calculatedData, rd_selectedPhysicians, rd_arrayDates) {
 		
 		g_mode = rd_arrayDates.length > 1 ? "tracking" : "snapshot";
 		g_calculatedData = rd_calculatedData;
@@ -463,9 +415,10 @@ var reportViewer = (function() {
 		g_currentRuleListIndex = chosen_colour = rd_currentRuleListIndex;
 		g_currentRuleListName = reportRules.ruleList[rd_currentRuleListIndex].name;
 				
-		ClearCanvas();
-		//RemoveIndicatorEditor();
-		AddUserInterface();
+		clearCanvas();
+		clearUserInterface();
+		//removeIndicatorEditor();
+		addUserInterface();
 		
 		if (g_calculatedData == undefined) {
 			console.log("no calculated data!");
@@ -474,14 +427,14 @@ var reportViewer = (function() {
 		
 		if (g_mode == "snapshot") {
 			//calculatedData = calculatedData[0];
-			GenerateSnapshot(0);
+			generateSnapshot(0);
 		} else {
 			//By default, select first item in dropdown
-			GenerateTracking(0);
+			generateTracking(0);
 		}
 	};
 	
-	function GenerateSnapshot(selectedDate){
+	function generateSnapshot(selectedDate){
 		var snapshotData = g_calculatedData[selectedDate];
 
 		// Add rectangles for percentage of patients within criteria
@@ -630,19 +583,19 @@ var reportViewer = (function() {
 				.attr("height", yScale.rangeBand())
 				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
 				.attr("fill", DEFAULT_COLOURS[chosen_colour])
-				.attr("ruleIndex", function (d, i) { return i.toString(); }) //used to select/modify current rule
+				.attr("data-ruleindex", function (d, i) { return i.toString(); }) //used to select/modify current rule
 				.on("click", function() {
 					d3.selectAll(".onTargetBar")
 						.style("fill", DEFAULT_COLOURS[chosen_colour]);
 					d3.select(this)
 						.style("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 						
-					origRuleIndex = g_calculatedData[0][d3.select(this).attr("ruleIndex")].index;
+					origRuleIndex = g_calculatedData[0][d3.select(this).attr("data-ruleindex")].index;
 					g_currentRule = reportRules.ruleList[g_currentRuleListIndex].rules[origRuleIndex];
 					if (g_currentRule.hasOwnProperty("modifiable")) {
-						AddIndicatorEditor(origRuleIndex);
+						addIndicatorEditor(origRuleIndex);
 					} else {
-						RemoveIndicatorEditor(origRuleIndex);
+						removeIndicatorEditor(origRuleIndex);
 					}
 				})
 				//.on("mouseout", function() {
@@ -665,7 +618,11 @@ var reportViewer = (function() {
 				.attr("fill", "white")
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
-				.attr("shape-rendering", "crispEdges");
+				.attr("shape-rendering", "crispEdges")
+				.on("click", function() {
+					handleBarClick(this.getAttribute("y"));
+					return false;
+				});
 		
 		//Labels for each bar
 		g_canvas.selectAll("onTargetLabel")
@@ -703,7 +660,22 @@ var reportViewer = (function() {
 				.attr("display", "none");
 	};
 	
-	function GenerateTracking(selectedRule) {
+	function handleBarClick(y) {
+					$(".onTargetBar")
+						.attr("fill", DEFAULT_COLOURS[chosen_colour]);
+					var thisBar = $(".onTargetBar[y="+y+"]");
+					thisBar.attr("fill", HIGHLIGHT_COLOURS[chosen_colour]);
+						
+					origRuleIndex = g_calculatedData[0][thisBar.attr("data-ruleindex")].index;
+					g_currentRule = reportRules.ruleList[g_currentRuleListIndex].rules[origRuleIndex];
+					if (g_currentRule.hasOwnProperty("modifiable")) {
+						addIndicatorEditor(origRuleIndex);
+					} else {
+						removeIndicatorEditor(origRuleIndex);
+					}
+	}
+	
+	function generateTracking(selectedRule) {
 
 		var arrayDates = g_arrayDates;
 
@@ -851,8 +823,9 @@ var reportViewer = (function() {
 						.attr("r", 7)
 						.style("fill", HIGHLIGHT_COLOURS[chosen_colour]);
 					g_mode = "snapshot";
-					ClearCanvas();
-					GenerateSnapshot(i);
+					clearCanvas();
+					clearUserInterface();
+					generateSnapshot(i);
 				});
 				
 		// Add x axis label
@@ -965,7 +938,7 @@ var reportViewer = (function() {
 				});
 	};
 	
-	function ToggleDataLabels(selectedDate) {
+	function toggleDataLabels(selectedDate) {
 			// Find data labels
 		if (d3.selectAll(".dataLabel")[0].length > 0) 
 			d3.selectAll(".dataLabel").remove();
@@ -1038,7 +1011,7 @@ var reportViewer = (function() {
 					return;
 				}
 				
-				var selectedRule = document.getElementById("dropdownIndicators").selectedIndex;
+				var selectedRule = $("#dropdownRules option:selected").index();
 				
 				g_canvas.selectAll(".dataLabel")
 					.data(arrayData)
@@ -1056,43 +1029,13 @@ var reportViewer = (function() {
 							else 
 							return (arrayData[i][selectedRule]).toFixed(1) + "%";
 						});
-			
 			}
 		}
-	};
-		
-	function ToggleSelectedPhysicians() {
-
-		if (g_calculatedData == undefined) { 
-			console.log("Calculated data undefined");
-			return;
-		}
-
-		var isSelected = (this.className.indexOf("selected") != -1);
-
-		// If clicked on "Select All"
-		if (this.innerHTML.indexOf("Select All") != -1) {
-			// If class has 'selected', it currently is selected and must be unselected
-				
-			for (doc in g_selectedPhysicians) {
-				if (g_selectedPhysicians.hasOwnProperty(doc)) {
-					//negate the isSelected status to select/deselect the option
-					g_selectedPhysicians[doc] = !isSelected;
-				}
-			}
-		}	
-		// Otherwise, clicked on an individual doctor
-		else {
-			var doc = this.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-			g_selectedPhysicians[doc] = !isSelected;
-		}
-		
-		reportData.ReCalculate(g_currentRuleListIndex, g_selectedPhysicians);
 	};
 	
 	return {
-		GenerateCharts: GenerateCharts,
-		ClearCanvas: ClearCanvas
+		generateCharts: generateCharts,
+		clearCanvas: clearCanvas
 	};
 	
 })();

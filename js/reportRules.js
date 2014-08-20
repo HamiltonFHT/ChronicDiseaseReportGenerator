@@ -19,18 +19,18 @@ var reportRules =  (function(){
 	// their clinical judgement and what they want to track.
 	// TO CHANGE: Other chronic conditions will have other constant values
 	
-	function RemoveMonths(date, months) {
+	function removeMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
 	};
 
 	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
 	// Return true if it is in-date and false if it is out-of-date
-	function WithinDateRange(currentDate, maxMonthsAgo, measuredDate) {
+	function withinDateRange(currentDate, maxMonthsAgo, measuredDate) {
 		if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/) ){
 	 		parsedDate = currentDate.split("/");
-	 		targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
+	 		targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
 	 	} else {
-	 		targetDate = RemoveMonths(new Date(currentDate), maxMonthsAgo);
+	 		targetDate = removeMonths(new Date(currentDate), maxMonthsAgo);
 	 	}
 	 	return (new Date(measuredDate) >= targetDate);	
 	};
@@ -70,7 +70,7 @@ var reportRules =  (function(){
 	    return Math.round((currentDate - birthDate) / msToMonths);
 	}
 	
-	function ResetToDefault(rule) {
+	function resetToDefault(rule) {
 		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
 			fields = rule.modifiable;
 			defaults = rule.defaults;
@@ -105,9 +105,9 @@ var reportRules =  (function(){
 		 		if (isNaN(parseInt(measuredDate)) && measuredDate != "") {
 		 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 		 				parsedDate = currentDate.split("/");
-		 				targetDate = RemoveMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+		 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
 			 		} else {
-			 			targetDate = RemoveMonths(new Date(currentDate), this.months);
+			 			targetDate = removeMonths(new Date(currentDate), this.months);
 			 		}
 			 		return (new Date(measuredDate) >= targetDate);
 			 	} else {
@@ -131,7 +131,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate);
+	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -148,7 +148,7 @@ var reportRules =  (function(){
 		defaults: [6, 0.08],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
-	 			return (WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
+	 			return (withinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -165,7 +165,7 @@ var reportRules =  (function(){
 	 	defaults: [6],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate);
+	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -183,7 +183,7 @@ var reportRules =  (function(){
 	 	defaults: [6, 130, 80],
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
-	 			return (WithinDateRange(currentDate, this.months, measuredDate) &&
+	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
 	 				   (parseInt(diasValue) < this.diasTarget || parseInt(sysValue) < this.sysTarget));
 	 		} catch (err) {
 	 			return false;
@@ -200,7 +200,7 @@ var reportRules =  (function(){
 		defaults: [12],
 		rule: function(currentDate, measuredDate) {
 			 try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate);
+	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			// Field is likely blank
 	 			return false;
@@ -219,7 +219,7 @@ var reportRules =  (function(){
 		rule: function(currentDate, measuredDate, value) {
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
-	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
+	 			return withinDateRange(currentDate, this.months, measuredDate) && 
 	 				   (parseFloat(value) <= this.target || value == "<1.00");
 	 		} catch (err) {
 	 			// Field is likely blank
@@ -237,7 +237,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) != NaN;
+	 			return withinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) != NaN;
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -258,7 +258,7 @@ var reportRules =  (function(){
 	 			return NaN;
 	 		}
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.0");
+	 			return withinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.0");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -279,7 +279,7 @@ var reportRules =  (function(){
 	 			return NaN;
 	 		}	 		
 	 		try {
-	  			return WithinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.8");
+	  			return withinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.8");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -296,7 +296,7 @@ var reportRules =  (function(){
 	 	col: ["Current Date", "Date eGFR"],
 	 	rule: function(currentDate, measuredDate) { 
 	 		try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate);
+	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -313,7 +313,7 @@ var reportRules =  (function(){
 		defaults: [12, 60],
 	 	rule: function(currentDate, measuredDate, value) {
 			try {
-	 			return WithinDateRange(currentDate, this.months, measuredDate) && 
+	 			return withinDateRange(currentDate, this.months, measuredDate) && 
 	 					(parseInt(value) > this.target || value == ">=90" || value == ">120");
 	 		} catch (err) {
 	 			return false;
@@ -348,7 +348,7 @@ var reportRules =  (function(){
 				if (parseInt(value) < 40) {
 					return NaN;
 				} else {
-					return (WithinDateRange(currentDate, this.months, measuredDate) && (parseInt(value) >= this.age));
+					return (withinDateRange(currentDate, this.months, measuredDate) && (parseInt(value) >= this.age));
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -372,7 +372,7 @@ var reportRules =  (function(){
 				if (parseInt(sysValue) < this.sysTarget && parseInt(diasValue) < this.diasTarget) {
 					return NaN;
 				} else {
-					return WithinDateRange(currentDate, this.months, measuredDate);
+					return withinDateRange(currentDate, this.months, measuredDate);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -723,7 +723,7 @@ var reportRules =  (function(){
 			try {
 				if (count == 0) {
 					return NaN;
-				} else if (count == 1 && !WithinDateRange(currentDate, this.months, formDate)) {
+				} else if (count == 1 && !withinDateRange(currentDate, this.months, formDate)) {
 					return false;
 				} else {
 					return true;
@@ -744,7 +744,7 @@ var reportRules =  (function(){
 		defaults: [12],
 		rule: function(currentDate, lastSeenDate) {
 			try {
-				return WithinDateRange(currentDate, this.months, lastSeenDate);
+				return withinDateRange(currentDate, this.months, lastSeenDate);
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -764,7 +764,7 @@ var reportRules =  (function(){
 		rule: function(currentDate, age, mammDate) {
 			try {
 				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
-					WithinDateRange(currentDate, this.months, mammDate)){
+					withinDateRange(currentDate, this.months, mammDate)){
 						return true;
 				} else {
 					return false;
@@ -788,7 +788,7 @@ var reportRules =  (function(){
 		rule: function(currentDate, age, papDate) {
 			try {
 				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
-					WithinDateRange(currentDate, this.months, papDate)){
+					withinDateRange(currentDate, this.months, papDate)){
 						return true;
 				} else {
 					return false;
@@ -810,7 +810,7 @@ var reportRules =  (function(){
 		defaults: [2*12, 50],
 		rule: function(currentDate, age, fobtDate) {
 			try {
-				if (parseInt(age) > this.minAge && WithinDateRange(currentDate, this.months, fobtDate)){
+				if (parseInt(age) > this.minAge && withinDateRange(currentDate, this.months, fobtDate)){
 						return true;
 				} else {
 					return false;
@@ -832,7 +832,7 @@ var reportRules =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (parseInt(age) >= this.minAge && WithinDateRange(currentDate, this.months, fluDate)){
+				if (parseInt(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate)){
 						return true;
 				} else {
 					return false;
@@ -904,7 +904,7 @@ var reportRules =  (function(){
 					{name:"ADHD", rules:youthADHDRules},
 					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
-	function ApplyRules(ruleListIndex, filteredData) {
+	function applyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file
 		var results = [];
 		
@@ -912,13 +912,13 @@ var reportRules =  (function(){
 		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
-			results.push(CheckRules(filteredData[i], currentRuleList.rules));
+			results.push(checkRules(filteredData[i], currentRuleList.rules));
 		}
 		
 		return results;
 	};
 
-	function CheckRules(csvObject, ruleList) {
+	function checkRules(csvObject, ruleList) {
 	
 		var results = [];
 		
@@ -962,7 +962,7 @@ var reportRules =  (function(){
 	 * Inspect header of text file to guess which indicator set is most appropriate
 	 * Indicator sets are listed in the ruleList variable in reportRules
 	 */
-	function GetCurrentRuleSet(header) {
+	function getCurrentRuleSet(header) {
 		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
 			alert("File does not contain necessary data element Patient # or Doctor Number");
 		}
@@ -999,11 +999,10 @@ var reportRules =  (function(){
 	}
 	
 	return {
-		//calculateCountDiabeticMeasure: calculateCountDiabeticMeasure,
-		ApplyRules: ApplyRules,
+		applyRules: applyRules,
 		ruleList: ruleList,
-		ResetToDefault: ResetToDefault,
-		GetCurrentRuleSet: GetCurrentRuleSet,
+		resetToDefault: resetToDefault,
+		getCurrentRuleSet: getCurrentRuleSet,
 		lookupVarNameTable: lookupVarNameTable
 	};
 	

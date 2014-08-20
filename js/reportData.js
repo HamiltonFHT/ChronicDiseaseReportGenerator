@@ -30,15 +30,14 @@ var reportData = (function() {
 	
 	/*
 	 * Called by index.html when a file is uploaded by the user.
-	 * Parses files and sorts by date and the calls Calculate() to 
+	 * Parses files and sorts by date and the calls calculate() to 
 	 * apply indicators and display chart
 	 */
-	function ReadFiles(files) {
+	function readFiles(files) {
 
 	   filesLeftToRead = files.length;
 	   
 	   if (files.length == 0) {
-	   		//reportViewer.ClearCanvas();
 	   		return;
 	   }
 	   
@@ -53,16 +52,14 @@ var reportData = (function() {
 			
 			if (!f) {
 			   alert("Failed to load file");
-			   //reportViewer.ClearCanvas();
 			} else if (!f.type.match(/^text*/)) {
 			    alert(f.name + " is not a valid text file.");
-			    //reportViewer.ClearCanvas();
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 
 			  		return function(e) { 
 			    		var contents = e.target.result;
-			    		parsedData.push(ParseToObject(f, contents));
+			    		parsedData.push(parseToObject(f, contents));
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
@@ -85,12 +82,12 @@ var reportData = (function() {
 							}
 							if (empty) {
 								alert("No patient records found in files");
-								reportViewer.ClearCanvas();
+								reportViewer.clearCanvas();
 								throw new Error("No patient records found in files");
 							}
 							
 							parsedData.sort(compare);
-							Calculate();
+							calculate();
 			    		}
 			 		};
 			 	})(f);
@@ -103,7 +100,7 @@ var reportData = (function() {
 	 * Takes a raw string and converts it to a JS object
 	 * that is easier to work with.
 	 */
-	function ParseToObject(f, unparsed) {
+	function parseToObject(f, unparsed) {
 
 		csvObject = {};
 		csvObject['fileName'] = f.name;
@@ -116,7 +113,7 @@ var reportData = (function() {
 		}
 		var csvHeaders = arrData.shift();
 		
-		currentRuleSet = reportRules.GetCurrentRuleSet(csvHeaders);
+		currentRuleSet = reportRules.getCurrentRuleSet(csvHeaders);
 		
 		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
 			var rowArray = arrData[rowIndex];
@@ -220,7 +217,7 @@ var reportData = (function() {
 	 * If selectedPhysicians is undefined it creates the variable and defaults
 	 * to all physicians selected
 	 */
-	function GetFilteredData(selectedPhysicians) {
+	function getFilteredData(selectedPhysicians) {
 		
 		
 		function uniqueDocs(value, pos, self) {
@@ -284,7 +281,7 @@ var reportData = (function() {
 	/*
 	 * Return the date that each report was generated in an array
 	 */
-	function GetDateArray() {
+	function getDateArray() {
 		
 		var arrayDates = [];
 		
@@ -318,43 +315,43 @@ var reportData = (function() {
 	 * Apply indicator sets to filtered data
 	 * Pass necessary data to reportViewer to display chart
 	 */
-	function Calculate() {
+	function calculate() {
 		
-		physObj = GetFilteredData(selectedPhysicians);
+		physObj = getFilteredData(selectedPhysicians);
 		
-		reportViewer.GenerateCharts(
+		reportViewer.generateCharts(
 				currentRuleSet, //selected Rule List
-				reportRules.ApplyRules(currentRuleSet, physObj.filteredData),
+				reportRules.applyRules(currentRuleSet, physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	GetDateArray()
+			 	getDateArray()
 			 	);
 	};
 	
 	/*
-	 * Same as Calculate above but passed updated information from reportViewer
+	 * Same as calculate above but passed updated information from reportViewer
 	 * based on user interaction
 	 */
-	function ReCalculate(rV_currentRuleList, rV_selectedPhysicians) {
+	function reCalculate(rV_currentRuleList, rV_selectedPhysicians) {
 		//This function is called from reportViewer when the user deselects/reselects
 		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
 		
-		physObj = GetFilteredData(rV_selectedPhysicians);
+		physObj = getFilteredData(rV_selectedPhysicians);
 		
-		reportViewer.GenerateCharts(
+		reportViewer.generateCharts(
 				rV_currentRuleList,
-				reportRules.ApplyRules(rV_currentRuleList, physObj.filteredData),
+				reportRules.applyRules(rV_currentRuleList, physObj.filteredData),
 			 	physObj.selectedPhysicians,
-			 	GetDateArray());
+			 	getDateArray());
 	};
 	
 	/*
-	 * Expose ReadFiles to index.html
-	 * Expose ReCalculate to reportViewer when user makes changes 
+	 * Expose readFiles to index.html
+	 * Expose reCalculate to reportViewer when user makes changes 
 	 * 		to selectedPhysicians or current indicator set
 	 */
 	return {
-		ReadFiles: ReadFiles,
-		ReCalculate: ReCalculate
+		readFiles: readFiles,
+		reCalculate: reCalculate
 	};
 	
 })();

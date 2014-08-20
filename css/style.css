@@ -8,8 +8,6 @@ body {
 	width: 940px;
 	margin-right: 5px;
 	float:left;
-	font-size: 16px;
-	font-family: Arial;
 }
 
 #description {
@@ -36,8 +34,6 @@ body {
 }
 
 #actionBar {
-	font-size: 16px;
-	font-family: Arial;
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
@@ -64,6 +60,7 @@ body {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+	margin-top:5px;
 	
 }
 
@@ -122,12 +119,17 @@ body {
 	display: none;
 }
 
+.indicatorTitle {
+	margin-left:1em; 
+	font-weight:bold;
+}
+
 .indicator {
 	padding: 1em;
 }
 
 
-#savebtn {
+#applybtn {
 	margin-left:1em;
 	margin-bottom:5px;
 }
