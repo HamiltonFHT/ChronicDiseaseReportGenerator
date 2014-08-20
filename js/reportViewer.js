@@ -325,7 +325,7 @@ var reportViewer = (function() {
 		$.each(g_currentRule.modifiable, function(i, item) {
 			var itemName = reportRules.lookupVarNameTable[item];
 			if (typeof itemName === 'undefined') {
-				itemName = item;
+				itemName = capitalize(item);
 			}
 			
 			items.push('<div class="pure-u-1 indicator"><label for="' + item + '">' + itemName + '</label>');
@@ -429,8 +429,22 @@ var reportViewer = (function() {
 			//calculatedData = calculatedData[0];
 			generateSnapshot(0);
 		} else {
-			//By default, select first item in dropdown
-			generateTracking(0);
+			var isEmpty = true;
+			for (var i = 0; i < g_calculatedData.length; i++) {
+				if (g_calculatedData[i].length>0) {
+					isEmpty = false;
+				} else {
+					g_calculatedData.splice(i, 1);
+					g_arrayDates.splice(i, 1);
+				}
+			}
+			
+			if (!isEmpty) {
+				//By default, select first item in dropdown
+				generateTracking(0);
+			} else {
+				alert("No data found in these files for the " + $("#dropdownRules").val() + " rule set");
+			}
 		}
 	};
 	

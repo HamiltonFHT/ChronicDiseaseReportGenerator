@@ -102,7 +102,7 @@ var reportRules =  (function(){
 	 			// Old version output date of last assessment
 	 			// New version outputs number of months since last assessment,
 	 			// have to check which case and handle appropriately
-		 		if (isNaN(parseInt(measuredDate)) && measuredDate != "") {
+		 		if (isNaN(Number(measuredDate)) && measuredDate != "") {
 		 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
 		 				parsedDate = currentDate.split("/");
 		 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
@@ -111,7 +111,7 @@ var reportRules =  (function(){
 			 		}
 			 		return (new Date(measuredDate) >= targetDate);
 			 	} else {
-			 		return (parseInt(measuredDate) <= this.months);
+			 		return (Number(measuredDate) <= this.months);
 			 	}
 	 		} catch (err) {
 	 			return false;
@@ -119,7 +119,7 @@ var reportRules =  (function(){
 	 	}
 	};
 	
-	var ruleA1cPastNMonths = {
+	var ruleA1CPastNMonths = {
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
 		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
@@ -138,7 +138,7 @@ var reportRules =  (function(){
 	 	}
 	};
 	
-	var ruleA1cLessThanEqualToXPastNMonths = {
+	var ruleA1CLessThanEqualToXPastNMonths = {
 		desc: function(){ return "A1C \u2264 " + this.target + " in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients with A1C less than or equal to " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date Hb A1C", "Hb A1C"],
@@ -184,7 +184,7 @@ var reportRules =  (function(){
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
-	 				   (parseInt(diasValue) < this.diasTarget || parseInt(sysValue) < this.sysTarget));
+	 				   (Number(diasValue) < this.diasTarget || Number(sysValue) < this.sysTarget));
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -314,7 +314,7 @@ var reportRules =  (function(){
 	 	rule: function(currentDate, measuredDate, value) {
 			try {
 	 			return withinDateRange(currentDate, this.months, measuredDate) && 
-	 					(parseInt(value) > this.target || value == ">=90" || value == ">120");
+	 					(Number(value) > this.target || value == ">=90" || value == ">120");
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -345,10 +345,10 @@ var reportRules =  (function(){
 		defaults: [12, 40],
 		rule: function(currentDate, measuredDate, value) {
 			try {
-				if (parseInt(value) < 40) {
+				if (Number(value) < 40) {
 					return NaN;
 				} else {
-					return (withinDateRange(currentDate, this.months, measuredDate) && (parseInt(value) >= this.age));
+					return (withinDateRange(currentDate, this.months, measuredDate) && (Number(value) >= this.age));
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -369,7 +369,7 @@ var reportRules =  (function(){
 		defaults: [9, 140, 90],
 		rule: function(currentDate, measuredDate, sysValue, diasValue) {
 			try {
-				if (parseInt(sysValue) < this.sysTarget && parseInt(diasValue) < this.diasTarget) {
+				if (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, measuredDate);
@@ -408,15 +408,15 @@ var reportRules =  (function(){
 				if (getAge(currentDate, birthDate) > this.age) {
 					return NaN;
 				} else {
-					return (parseInt(measles) >= this.measles &&
-							parseInt(mumps) >= this.mumps && 
-							parseInt(rubella) >= this.rubella &&  
-							parseInt(diphtheria) >= this.diphtheria && 
-							parseInt(tetanus) >= this.tetanus && 
-							parseInt(pertussis) >= this.pertussis && 
-							parseInt(varicella) >= this.varicella && 
-							parseInt(rotavirus) >= this.rotavirus && 
-							parseInt(polio) >= this.polio);
+					return (Number(measles) >= this.measles &&
+							Number(mumps) >= this.mumps && 
+							Number(rubella) >= this.rubella &&  
+							Number(diphtheria) >= this.diphtheria && 
+							Number(tetanus) >= this.tetanus && 
+							Number(pertussis) >= this.pertussis && 
+							Number(varicella) >= this.varicella && 
+							Number(rotavirus) >= this.rotavirus && 
+							Number(polio) >= this.polio);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -457,18 +457,18 @@ var reportRules =  (function(){
 					getAge(currentDate, birthDate) > this.maxAge) {
 					return NaN;
 				} else {
-					return (parseInt(measles) >= this.measles &&
-							parseInt(mumps) >= this.mumps && 
-							parseInt(rubella) >= this.rubella &&  
-							parseInt(diphtheria) >= this.diphtheria && 
-							parseInt(tetanus) >= this.tetanus && 
-							parseInt(pertussis) >= this.pertussis &&
-							parseInt(varicella) >= this.varicella &&
-							parseInt(rotavirus) >= this.rotavirus &&
-							parseInt(polio) >= this.polio &&
-							parseInt(hib) >= this.hib &&
-							parseInt(pneuc) >= this.pneuc &&
-							parseInt(mencc) >= this.mencc);
+					return (Number(measles) >= this.measles &&
+							Number(mumps) >= this.mumps && 
+							Number(rubella) >= this.rubella &&  
+							Number(diphtheria) >= this.diphtheria && 
+							Number(tetanus) >= this.tetanus && 
+							Number(pertussis) >= this.pertussis &&
+							Number(varicella) >= this.varicella &&
+							Number(rotavirus) >= this.rotavirus &&
+							Number(polio) >= this.polio &&
+							Number(hib) >= this.hib &&
+							Number(pneuc) >= this.pneuc &&
+							Number(mencc) >= this.mencc);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -511,18 +511,18 @@ var reportRules =  (function(){
 					getAge(currentDate, birthDate) > this.maxAge) {
 					return NaN;
 				} else {
-					return (parseInt(measles) >= this.measles &&
-							parseInt(mumps) >= this.mumps && 
-							parseInt(rubella) >= this.rubella &&  
-							parseInt(diphtheria) >= this.diphtheria && 
-							parseInt(tetanus) >= this.tetanus && 
-							parseInt(pertussis) >= this.pertussis &&
-							parseInt(varicella) >= this.varicella &&
-							parseInt(rotavirus) >= this.rotavirus &&
-							parseInt(polio) >= this.polio &&
-							parseInt(hib) >= this.hib &&
-							parseInt(pneuc) >= this.pneuc &&
-							parseInt(mencc) >= this.mencc);
+					return (Number(measles) >= this.measles &&
+							Number(mumps) >= this.mumps && 
+							Number(rubella) >= this.rubella &&  
+							Number(diphtheria) >= this.diphtheria && 
+							Number(tetanus) >= this.tetanus && 
+							Number(pertussis) >= this.pertussis &&
+							Number(varicella) >= this.varicella &&
+							Number(rotavirus) >= this.rotavirus &&
+							Number(polio) >= this.polio &&
+							Number(hib) >= this.hib &&
+							Number(pneuc) >= this.pneuc &&
+							Number(mencc) >= this.mencc);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -646,9 +646,9 @@ var reportRules =  (function(){
 		rule: function(currentDate, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (parseInt(age) <= this.age) {
+				if (Number(age) <= this.age) {
 					return NaN;
-				} else if (parseInt(pneuc) > 0) {
+				} else if (Number(pneuc) > 0) {
 					return true;
 				} else {
 					return false;
@@ -670,9 +670,9 @@ var reportRules =  (function(){
 		rule: function(currentDate, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (parseInt(age) >= this.age) {
+				if (Number(age) >= this.age) {
 					return NaN;
-				} else if (parseInt(pneuc) > 0) {
+				} else if (Number(pneuc) > 0) {
 					return true;
 				} else {
 					return false;
@@ -695,12 +695,12 @@ var reportRules =  (function(){
 		rule: function(currentDate, age, problemList, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (parseInt(age) >= this.minAge) {
+				if (Number(age) >= this.minAge) {
 					return NaN;
 				}
 				problemList = problemList.toLowerCase();
 				if (new RegExp(this.diseaseList.join("|")).test(problemList)) {
-					return (parseInt(pneuc) > 0 ?  true : false);
+					return (Number(pneuc) > 0 ?  true : false);
 				} else {
 					return NaN;
 				}
@@ -763,7 +763,7 @@ var reportRules =  (function(){
 		defaults: [3*12, 50 , 69],
 		rule: function(currentDate, age, mammDate) {
 			try {
-				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
+				if (Number(age) > this.minAge && Number(age) < this.maxAge &&
 					withinDateRange(currentDate, this.months, mammDate)){
 						return true;
 				} else {
@@ -787,7 +787,7 @@ var reportRules =  (function(){
 		defaults: [3*12, 25, 69],
 		rule: function(currentDate, age, papDate) {
 			try {
-				if (parseInt(age) > this.minAge && parseInt(age) < this.maxAge &&
+				if (Number(age) > this.minAge && Number(age) < this.maxAge &&
 					withinDateRange(currentDate, this.months, papDate)){
 						return true;
 				} else {
@@ -810,7 +810,7 @@ var reportRules =  (function(){
 		defaults: [2*12, 50],
 		rule: function(currentDate, age, fobtDate) {
 			try {
-				if (parseInt(age) > this.minAge && withinDateRange(currentDate, this.months, fobtDate)){
+				if (Number(age) > this.minAge && withinDateRange(currentDate, this.months, fobtDate)){
 						return true;
 				} else {
 					return false;
@@ -832,7 +832,7 @@ var reportRules =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (parseInt(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate)){
+				if (Number(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate)){
 						return true;
 				} else {
 					return false;
@@ -846,8 +846,8 @@ var reportRules =  (function(){
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonths,
-						 ruleA1cPastNMonths, 
-						 ruleA1cLessThanEqualToXPastNMonths,
+						 ruleA1CPastNMonths, 
+						 ruleA1CLessThanEqualToXPastNMonths,
 						 ruleLDLPastNMonths
 					     ];
 						 
@@ -862,8 +862,8 @@ var reportRules =  (function(){
 						 ruleEGFRGreaterThanXPastNMonths,
 						 ruleCurrentSmokers,
 						 ruleDMPastNMonths,
-						 ruleA1cPastNMonths, 
-						 ruleA1cLessThanEqualToXPastNMonths,
+						 ruleA1CPastNMonths, 
+						 ruleA1CLessThanEqualToXPastNMonths,
 						 ruleLDLPastNMonths
 						 ];
 						 
