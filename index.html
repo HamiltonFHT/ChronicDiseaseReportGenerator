@@ -26,25 +26,28 @@
 			<br />
 		</div>
 	
-		<div id="actionBar">
-			<div class="actionBarImport" id="sectionImport">
+		<div id="actions">
+			<div class="actionImport" id="importFiles">
 				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="reportData.readFiles(this.files);" multiple="multiple">
 			</div>
+			<div id="settings"></div>
+			<div id="save"></div>
 		</div>
 	
 		<div id="canvasContainer">
 			<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211);"> </svg>
 		</div>
-	</div>
-
-	<div id="indicatorBar"> </div>
-
-	<div id="canvasContainer_extra"> </div>
 	
-	<div id="hidden">
-		<a href="" download="" id="outputA" style="display: none;">
-			<img src="" id="outputImg" style="display: none;" />
-		</a>
+
+		<div id="indicatorBar"> </div>
+	
+		<div id="canvasContainer_extra"> </div>
+		
+		<div id="hidden">
+			<a href="" download="" id="outputA" style="display: none;">
+				<img src="" id="outputImg" style="display: none;" />
+			</a>
+		</div>
 	</div>
 </body>
 

@@ -24,7 +24,7 @@
 var reportData = (function() {
 	//var dataSource = [];
 	var physicianIndex = [];
-	var selectedPhysicians = [];
+	var selectedPhysicians = {};
 	var parsedData = [];
 	var currentRuleSet;
 	
@@ -42,7 +42,7 @@ var reportData = (function() {
 	   }
 	   
 		physicianIndex = [];
-		selectedPhysicians = [];
+		selectedPhysicians = {};
 		parsedData = [];
 	   
 
@@ -136,7 +136,7 @@ var reportData = (function() {
 			delete csvObject[""];
 		}
 		if (!csvObject.hasOwnProperty("Current Date")) {
-			csvObject["Current Date"] = [].repeat(csvObject["fileLastModified"], arrData.length);
+			csvObject["Current Date"] = repeat(csvObject["fileLastModified"], arrData.length);
 		}
 		
 		return csvObject;
@@ -234,7 +234,7 @@ var reportData = (function() {
 		}
 		
 		//If selectedPhysicians is uninitialized, add all physicians and set to true
-		if (selectedPhysicians.length == 0) {
+		if (Object.keys(selectedPhysicians).length == 0) {
 			//Flatten and filter for only unique docs
 			//array of all unique physicians
 			flatUniquePhysicians = [].concat.apply([], uniquePhysicians).filter(uniqueDocs);
@@ -271,7 +271,7 @@ var reportData = (function() {
 				}
 			}
 			if (!("Current Date" in filteredData[i])) {
-				filteredData[i]["Current Date"] = [].repeat(parsedData[i]["fileLastModified"], filteredData[i][0].length);
+				filteredData[i]["Current Date"] = repeat(parsedData[i]["fileLastModified"], filteredData[i][0].length);
 			}
 		}
 
@@ -376,7 +376,8 @@ Array.prototype.indicesOfElementsInArrayIndex = function(arr) {
  * Used to populate an array of identical elements
  * (Silly, I know)
  */
-Array.prototype.repeat= function(what, L){
-	while(L) this[--L]= what;
-	return this;
+repeat = function(what, L){
+	var arr = [];
+	while(L) arr[--L]= what;
+	return arr;
 };
