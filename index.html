@@ -15,13 +15,14 @@
 	<div id="main">
 		<div id="description">
 			<h1>Diabetes Report Generator v1.3</h1>
+			<!-- TODO: This needs to be updated -->
 			<p>
 					This tool allows you to upload files containing search results for patients with lab results and generates graphs based on the selected filters.
 				When a single file is uploaded a report is generated that represents the performance of the practice for that point in time.
 				It shows the percentage of patients that meet the target clinical values. 
 				When multiple files are uploaded at once the performance of a particular clinical measure is plotted over time, based on the date the report was created.
 				Filters allow you to select and deselect the physicians in your practice, to include or exclude them from your visualization.
-				Images of the generated graphs can be saved by clicking on the "Save to PNG" button and a report can be created from clicking on the "Save to PDF" button.
+				Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created from clicking on the "Save to PDF" button.
 			</p> 
 			<br />
 		</div>
@@ -30,8 +31,8 @@
 			<div class="actionImport" id="importFiles">
 				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="reportData.readFiles(this.files);" multiple="multiple">
 			</div>
-			<div id="settings"></div>
-			<div id="save"></div>
+			<div id="settings"> </div>
+			<div id="save"> </div>
 		</div>
 	
 		<div id="canvasContainer">
