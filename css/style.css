@@ -112,9 +112,10 @@ body {
 }
 
 #dropdownIndicators {
-	width:inherit;
+	width:215px;
 	margin-bottom:10px;
 	margin-left:1em;
+	margin-top:10px;
 }
 
 .indicatorTitle {

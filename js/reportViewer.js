@@ -340,8 +340,9 @@ var reportViewer = (function() {
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentRule[item] + '"></div>'); 
 		});
 		
-		items.push('<div class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
-		items.push('<div class="pure-u-1-2"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
+		//items.push('<div style="line-height:200px;">&nbsp;</div>');
+		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
+		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
 		items.push('<div class="pure-u-1 indicator"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
 		items.push('</div>');
 		$("#indicatorBar").append(items.join(''));
@@ -590,7 +591,7 @@ var reportViewer = (function() {
 		// Graph title text
 		gCanvas.append("text")
 			.attr("class", "graphTitle")
-			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
+			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 3.5)
 			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
 			.attr("text-anchor", "middle")
 			.style("font-size", "14px")
