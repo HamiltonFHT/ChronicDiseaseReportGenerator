@@ -61,8 +61,7 @@ var reportViewer = (function() {
 	//Used when displaying axis titles
 	String.prototype.replaceAt=function(index, character) {
 	    return this.substr(0, index) + character + this.substr(index+character.length);
-	}
-
+	};
 
 	/*
 	 * Remove graph and user interface elements
@@ -217,6 +216,13 @@ var reportViewer = (function() {
 			gMode = $(this).find(':selected').data('mode');
 			updateCharts();
 		});
+		
+		if (gArrayDates.length == 1) {
+			$("#dropdownMode").prop("disabled", true);
+		} else {
+			$("#dropdownMode").prop("disabled", false);
+		}
+		
 		/*
 		 * Rule set dropdown
 		 */
@@ -492,6 +498,12 @@ var reportViewer = (function() {
 		
 		if ($("#settings").children().length === 0) {
 			addUserInterface();
+		}
+		
+		if (gArrayDates.length == 1 && $('#dropdownMode').length) {
+			$("#dropdownMode").prop("disabled", true);
+		} else {
+			$("#dropdownMode").prop("disabled", false);
 		}
 		
 		if (gMode === "snapshot") {
@@ -907,7 +919,9 @@ var reportViewer = (function() {
 					d3.select(".selectedPoint")
 						.attr("r", 5)
 						.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])
-						.on("mouseout", function(d) {d3.select(this).attr("r", 5).style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])})
+						.on("mouseout", function(d) { d3.select(this)
+														.attr("r", 5)
+														.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex]); })
 						.attr("class", "dataPoint");
 					d3.select(this)
 						.on("mouseout", null)
