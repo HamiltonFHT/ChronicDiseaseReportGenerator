@@ -415,7 +415,11 @@ var reportViewer = (function() {
 		var currentIndicator = getInternalRuleIndex();
 		
 		$('.indicatorValue').each(function() {
-			reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator][this.id] = this.value || 0;
+			if (isNaN(Number(this.value))) {
+				reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator][this.id] = 0;
+			} else {
+				reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator][this.id] = this.value; 
+			}
 			params_updated++;
 		});
 		
