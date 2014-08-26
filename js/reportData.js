@@ -36,6 +36,7 @@ var reportData = (function() {
 	function readFiles(files) {
 
 	   filesLeftToRead = files.length;
+	   reportViewer.mode = "";
 	   
 	   if (files.length == 0) {
 	   		return;
