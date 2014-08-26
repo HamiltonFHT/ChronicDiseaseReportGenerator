@@ -1,0 +1,6 @@
+
+Patient #,Doctor Number,Age,PHQ9 Occurrences,PHQ9 Dates,PHQ9 Scores,Privacy,Current Date,
+101,1,50,2,"Aug 5, 2014",1618,,"Aug 26, 2014",
+261,1,74,1,"Jul 24, 2014",,,"Aug 26, 2014",
+315,1,28,3,"Jul 24, 2014",22014,,"Aug 26, 2014",
+319,1,32,3,"Jul 24, 2014",70,,"Aug 26, 2014",

@@ -50,6 +50,7 @@ var reportRules =  (function(){
 		return new Date(Math.max.apply(null,parsedDateArray)).getTime();
 	}
 
+	/*
 	function getAge(currentDate, birthDate) {
 	    var currentDate = new Date(currentDate);
 	    var birthDate = new Date(birthDate);
@@ -61,13 +62,31 @@ var reportRules =  (function(){
 
 	    return age;
 	}
+	*/
+	
+	function getAgeFromMonths(age){
+		if (age.indexOf('mo') > 0) {
+			return Math.floor(parseInt(age, 10) / 12);
+		} else {
+			return Number(age);
+		}
+	}
 	
 	//Approximate -- each month assumed to have 30 days
+	/*
 	function getAgeInMonths(currentDate, birthDate) {
 		var currentDate = new Date(currentDate);
 	    var birthDate = new Date(birthDate);
 	    var msToMonths = 1000*60*60*24*30;
 	    return Math.round((currentDate - birthDate) / msToMonths);
+	}
+	*/
+	function getAgeInMonths(age) {
+		if (age.indexOf('mo') > 0) {
+			return Math.floor(parseInt(age, 10) / 12);
+		} else {
+			return; // return undefined
+		}
 	}
 	
 	function resetToDefault(rule) {
@@ -87,7 +106,8 @@ var reportRules =  (function(){
 		'minAgeMonths': 'Minimum Age (months)',
 		'maxAgeMonths': 'Maximum Age (months)',
 		'sysTarget': 'Systolic BP Target',
-		'diasTarget': 'Diastolic BP Target'
+		'diasTarget': 'Diastolic BP Target',
+		'age': 'Age'
 	};
 	
 	var ruleDMPastNMonths = {
@@ -385,10 +405,11 @@ var reportRules =  (function(){
 
 	var ruleInfantVaccinations = {
 		desc: function(){return "Infant immunization schedule up to date"; },
-		long_desc: function() { return "Infant immunization schedule up to date"; },
-		col: ["Current Date", "Birthdate",
-			  "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis", "varicella", "rotavirus", "polio"],
-		age: 2,
+		long_desc: function() { return "Infants " + this.age + " months and under with immunization schedule up to date"; },
+		col: ["Age", "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis",
+		      "varicella", "rotavirus", "polio"],
+		minAge: 2,
+		maxAge: 3,
 		diphtheria: 4,
 		tetanus: 4,
 		pertussis: 4,
@@ -401,14 +422,15 @@ var reportRules =  (function(){
 		mumps: 1,
 		rubella: 1,
 		varicella: 1,
-		modifiable: ["age"],
-		rule: function(currentDate, birthDate,
-						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+		modifiable: ["minAge", "maxAge"],
+		defaults: [2, 3],
+		rule: function(ageStr, measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+			           varicella, rotavirus, polio) {
 			try {
-				if (getAge(currentDate, birthDate) > this.age) {
-					return NaN;
-				} else {
-					return (Number(measles) >= this.measles &&
+				age = getAgeFromMonths(ageStr);
+				if (typeof age === "number") {
+					if (age <= this.maxAge && age >= this.minAge) {
+						return (Number(measles) >= this.measles &&
 							Number(mumps) >= this.mumps && 
 							Number(rubella) >= this.rubella &&  
 							Number(diphtheria) >= this.diphtheria && 
@@ -417,7 +439,9 @@ var reportRules =  (function(){
 							Number(varicella) >= this.varicella && 
 							Number(rotavirus) >= this.rotavirus && 
 							Number(polio) >= this.polio);
-	 			}
+					}
+				}
+				return NaN	
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -428,12 +452,12 @@ var reportRules =  (function(){
 	//Does not account for boosters
 	var ruleChildVaccinations = {
 		desc: function(){return "Children with all immunizations"; },
-		long_desc: function() { return "Children with all immunizations"; },
-		col: ["Current Date", "Birthdate",
+		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
+		col: ["Current Date", "Age",
 			  "measles", "mumps", "rubella",
 			  "diphtheria", "tetanus", "pertussis",
 			  "varicella", "rotavirus", "polio",
-			  "hib conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+			  "haemophilus b conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
@@ -448,13 +472,14 @@ var reportRules =  (function(){
 		mumps: 2,
 		rubella: 2,
 		varicella: 2,
-		modifiable: ["age"],
-		rule: function(currentDate, birthDate,
-						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
+		modifiable: ["minAge", "maxAge"],
+		defaults: [7, 13],
+		rule: function(ageStr,	measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+					   varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
+				age = getAgeFromMonths(ageStr);
 				//if younger than 18 than not included
-				if (getAge(currentDate, birthDate) < this.minAge ||
-					getAge(currentDate, birthDate) > this.maxAge) {
+				if (age < this.minAge || age > this.maxAge) {
 					return NaN;
 				} else {
 					return (Number(measles) >= this.measles &&
@@ -481,12 +506,12 @@ var reportRules =  (function(){
 	//Does not account for boosters
 	var ruleTeenagerVaccinations = {
 		desc: function(){return "Adults with all immunizations"; },
-		long_desc: function() { return "Adults with all immunizations"; },
-		col: ["Current Date", "Birthdate",
+		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
+		col: ["Age",
 			  "measles", "mumps", "rubella",
 			  "diphtheria", "tetanus", "pertussis",
 			  "varicella", "rotavirus", "polio",
-			  "hib conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+			  "haemophilus b conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
 		maxAge: 25,
 		diphtheria: 6,
@@ -501,14 +526,14 @@ var reportRules =  (function(){
 		mumps: 2,
 		rubella: 2,
 		varicella: 2,
-		modifiable: ["minAge"],
-		dafaults: [18],
-		rule: function(currentDate, birthDate,
-						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio, hib, pneuc, mencc) {
+		modifiable: ["minAge", "maxAge"],
+		defaults: [18, 25],
+		rule: function(ageStr,	measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+					   varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
 				//if younger than 18 than not included
-				if (getAge(currentDate, birthDate) < this.minAge ||
-					getAge(currentDate, birthDate) > this.maxAge) {
+				age = getAgeFromMonths(ageStr);
+				if (age < this.minAge || age > this.maxAge) {
 					return NaN;
 				} else {
 					return (Number(measles) >= this.measles &&
@@ -538,7 +563,7 @@ var reportRules =  (function(){
 		col: ["height date", "weight date",
 			  "measles date", "mumps date", "rubella date",
 			  "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date",
-			  "pneumococcal conjugate date", "meningococcal conjugate date", "hib conjugate date"],
+			  "pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"],
 		rule: function(heightDate, weightDate,
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
 			try {
@@ -573,16 +598,17 @@ var reportRules =  (function(){
 	};
 	
 	var ruleWellBabyVisit = {
-		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge; },
-		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
-		col: ["Current Date", "Birthdate", "A002", "A268", "Rourke IV"],
+		desc: function() { return "Well Baby Visit for infants " + this.minAgeMonths + " to " + this.maxAgeMonths + " months"; },
+		long_desc: function() { return "Percent of children " + this.minAgeMonths + " to " + this.maxAgeMonths + " who have completed their 18 month well baby visit"; },
+		col: ["Current Date", "Age", "A002", "A268", "Rourke IV"],
 		minAgeMonths: 17,
 		maxAgeMonths: 24,
 		modifiable: ['minAgeMonths', 'maxAgeMonths'],
 		defaults: [17, 24],
-		rule: function(currentDate, birthDate, A002, A268, rourke) {
+		rule: function(ageStr, A002, A268, rourke) {
 			try {
-				var age = getAgeInMonths(currentDate, birthDate);
+				var age = getAgeInMonths(ageStr);
+				if (typeof age === "undefined") { return NaN; }
 				if (age >= this.minAgeMonths && age <= this.maxAgeMonths &&
 					(A002 != 0 || A268 != 0 || rourke != 0)) {
 						return true;
@@ -594,7 +620,6 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-		
 	};
 
 	//Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
@@ -889,10 +914,13 @@ var reportRules =  (function(){
 	
 	var youthADHDRules = [ruleADHDMedReview];
 	
+	var wellBabyRules = [ruleWellBabyVisit];
+	
 	var cancerScreeningRules = [ruleBreastCancer,
 								ruleCervicalCancer,
 								ruleColorectalCancer,
-								ruleFluVaccine]
+								ruleFluVaccine];
+								
 	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
@@ -901,6 +929,7 @@ var reportRules =  (function(){
 					{name:"Lung Health", rules:lungHealthRules},
 					{name:"Depression", rules:adultMentalHealthRules},
 					{name: "Adult Preventative Care", rules:cancerScreeningRules},
+					{name: "Well Baby", rules:wellBabyRules},
 					{name:"ADHD", rules:youthADHDRules},
 					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
@@ -990,9 +1019,11 @@ var reportRules =  (function(){
 		//Cancer Screening
 		} else if (header.indexOf("Mammogram") != -1) {
 			rule = 6;
+		} else if (header.indexOf("Rourke IV") != -1) {
+			rule = 7;
 		//Youth ADHD
 		} else {
-			rule = 7;
+			rule = 8;
 		}
 		
 		return rule;

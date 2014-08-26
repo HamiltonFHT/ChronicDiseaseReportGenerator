@@ -467,7 +467,11 @@ var reportViewer = (function() {
 	}
 	
 	function getInternalRuleIndex() {
-		return gCalculatedData[0][gCurrentIndicator].index;
+		if (gCalculatedData[0].length > 0) {
+			return gCalculatedData[0][gCurrentIndicator].index;
+		} else {
+			return 0;
+		}
 	}
 	
 	/* 
@@ -545,6 +549,8 @@ var reportViewer = (function() {
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
 		var arrayDesc = [];
+		var arrayLabels = [];
+		
 		if (typeof(snapshotData) === undefined || snapshotData.length == 0) {
 			return;
 		}
@@ -552,13 +558,17 @@ var reportViewer = (function() {
 			if (snapshotData[i]["total"] == 0) {
 				continue;
 			}
-			arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
-			
+			var percent = snapshotData[i]["passed"] / snapshotData[i]["total"] * 100;
+			var label = Math.round(percent) + "% (" + snapshotData[i]["passed"] + "/" + snapshotData[i]["total"]+ ")";
+			arrayData.push(percent);
+			arrayLabels.push(label);
 			//If the description is really long then insert a newline.
 			var desc = snapshotData[i]["desc"];
+			/*
 			if (desc.length > 32 && desc.substr(32).indexOf(" ") > -1) {
 				desc = desc.replaceAt(desc.substr(32).indexOf(" ")+32, "\n");
 			}
+			*/
 			arrayDesc.push(desc);
 		}
 
@@ -742,7 +752,7 @@ var reportViewer = (function() {
 												if (d<5) { return "black"; } 
 												else { return "white";	} 
 											  })
-				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return "0%"; });
+				.text(function(d, i) { return arrayLabels[i]; });
 		
 		gCanvasCurrent.selectAll("offTargetLabel")
 			.data(arrayData)
