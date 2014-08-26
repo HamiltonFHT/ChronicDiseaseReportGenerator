@@ -24,8 +24,8 @@ body {
 }
 
 .actionButton {
-	margin-right:5px;
-	margin-bottom:5px;
+	margin-right:0.5em;
+	margin-bottom:0.5em;
 }
 
 .sideBar {
@@ -41,27 +41,27 @@ body {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top:5px;
+	margin-top:0.5em;
 }
 
 #settings {
-	margin:5px;
+	margin:0.5em;
 }
 
 #selectPhysicians {
-	padding:0px;
+	padding:0em;
 }
 .physicianListItem {
 	display:inline;
 	list-style-type: none;
-	margin-top: 5px;
-	margin-bottom: 5px;
-	margin-left: 10px;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	margin-left: 1em;
 }
 
 .settingsDropdown {
-	margin-right:5px;
-	margin-bottom:5px;
+	margin-right:0.5em;
+	margin-bottom:0.5em;
 }
 
 
@@ -101,34 +101,26 @@ body {
 	pointer-events: all;
 }
 
-#indicatorBar {
+#indicatorEditor {
 	width:230px;
-	padding-right: 1em;
-	margin-top:5px;
 	float:left;
 	position:relative;
 	border:thin solid lightgrey;
+	padding:1em;
+	margin-top:0.5em;
 	display: none;
 }
 
 #dropdownIndicators {
-	width:215px;
-	margin-bottom:10px;
-	margin-left:1em;
-	margin-top:10px;
+	margin-bottom:1em;
+	width:inherit;
 }
 
-.indicatorTitle {
-	margin-left:1em; 
+.indicatorTitle { 
 	font-weight:bold;
+	margin-bottom:1em;
 }
-
-.indicator {
-	padding: 1em;
-}
-
 
 #applybtn {
-	margin-left:1em;
-	margin-bottom:5px;
+	margin-bottom:0.5em;
 }

@@ -336,7 +336,7 @@ var reportRules =  (function(){
 	};
 	
 	var ruleBaselineBP = {
-		desc: function(){return "BP measured in last " + this.months + " for adults over " + this.age; },
+		desc: function(){return "BP measured in last " + this.months + " months for adults over " + this.age; },
 		long_desc: function() { return "% of patients who are coded as current smokers"; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,

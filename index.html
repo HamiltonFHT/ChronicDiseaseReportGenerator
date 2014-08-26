@@ -9,6 +9,12 @@
 	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
 	<link rel="stylesheet" href="css/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<!--[if lte IE 8]>
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-old-ie-min.css">
+	<![endif]-->
+	<!--[if gt IE 8]><!-->
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css">
+	<!--<![endif]-->
 </head>
 
 <body>
@@ -17,13 +23,14 @@
 			<h1>Diabetes Report Generator v1.3</h1>
 			<!-- TODO: This needs to be updated -->
 			<p>
-					This tool allows you to upload files containing search results for patients with lab results and generates graphs based on the selected filters.
-				When a single file is uploaded a report is generated that represents the performance of the practice for that point in time.
-				It shows the percentage of patients that meet the target clinical values. 
-				When multiple files are uploaded at once the performance of a particular clinical measure is plotted over time, based on the date the report was created.
-				Filters allow you to select and deselect the physicians in your practice, to include or exclude them from your visualization.
-				Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created from clicking on the "Save to PDF" button.
-			</p> 
+					This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
+                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
+                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
+                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
+                    Each data point may be clicked to show the corresponding snapshot report.
+                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
+                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
+			</p>
 			<br />
 		</div>
 	
@@ -40,7 +47,7 @@
 		</div>
 	
 
-		<div id="indicatorBar"> </div>
+		<div id="indicatorEditor"> </div>
 	
 		<div id="canvasContainer_extra"> </div>
 		

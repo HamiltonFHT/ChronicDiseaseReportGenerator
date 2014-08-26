@@ -31,7 +31,6 @@ var reportViewer = (function() {
 	var gCurrentRuleSetName = ""; // current rule set name
 	var gCurrentIndicator = 0;       // current indicator
 	
-	var gReportTitle = "";
 	var xScale, yScale, xAxis, yAxis;
 	
 	
@@ -45,11 +44,11 @@ var reportViewer = (function() {
 	var DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT_MODE - 25;
 	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_SNAPSHOT_MODE;
 	
-	var DEFAULT_PADDING_LEFT_TRACKINgMode = 75;
-	var DEFAULT_PADDING_TOP_TRACKINgMode = 50;
+	var DEFAULT_PADDING_LEFT_TRACKING_MODE = 75;
+	var DEFAULT_PADDING_TOP_TRACKING_MODE = 50;
 	
-	var DEFAULT_GRAPH_WIDTH_TRACKINgMode = DEFAULT_CANVAS_WIDTH - 2 * DEFAULT_PADDING_LEFT_TRACKINgMode;
-	var DEFAULT_GRAPH_HEIGHT_TRACKINgMode = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_TRACKINgMode;
+	var DEFAULT_GRAPH_WIDTH_TRACKING_MODE = DEFAULT_CANVAS_WIDTH - 2 * DEFAULT_PADDING_LEFT_TRACKING_MODE;
+	var DEFAULT_GRAPH_HEIGHT_TRACKING_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_TRACKING_MODE;
 	
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
 							"sandybrown", "forestgreen", "firebrick", "goldenrod", "darkslateblue",
@@ -57,6 +56,12 @@ var reportViewer = (function() {
 							
 	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0",
 							 "#FAD2B0", "#90C590", "lightcoral"];
+
+	//Used when displaying axis titles
+	String.prototype.replaceAt=function(index, character) {
+	    return this.substr(0, index) + character + this.substr(index+character.length);
+	}
+
 
 	/*
 	 * Remove graph and user interface elements
@@ -75,17 +80,14 @@ var reportViewer = (function() {
 							.attr("class", "g_main")
 							.attr("transform", function() {
 								switch (gMode) {
-
-								case "snapshot":
-									return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
-								break;
-
-								case "tracking":
-									return "translate(" + DEFAULT_PADDING_LEFT_TRACKINgMode + ", " + DEFAULT_PADDING_TOP_TRACKINgMode + ")";
-								break;
+									case "snapshot":
+										return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
+									break;
+									case "tracking":
+										return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
+									break;
 								}	
-							});
-							
+							});		
 	};
 	
 	/*
@@ -204,7 +206,7 @@ var reportViewer = (function() {
 							'</select>';
 		$("#settings").append(dropdownMode);
 		
-		if(gMode==="snapshot") {
+		if(gMode === "snapshot") {
 			$("#dropdownMode").val("Snapshot");
 		} else {
 			$("#dropdownMode").val("Tracking");
@@ -245,7 +247,7 @@ var reportViewer = (function() {
 	};
 	
 		function updateDropdownMode() {
-		if(gMode==="snapshot") {
+		if(gMode === "snapshot") {
 			$("#dropdownMode").val("Snapshot");
 		} else {
 			$("#dropdownMode").val("Tracking");
@@ -325,30 +327,27 @@ var reportViewer = (function() {
 
 		var items = [];
 		
-		items.push('<div id="indicatorEditor" class="pure-g">');
+		//items.push('<div id="indicatorEditor" class="pure-g">');
 		items.push('<div class="pure-u-1 indicatorTitle">Modify Indicator Targets</div>');
-		
-		
-		
+				
 		$.each(currentRule.modifiable, function(i, item) {
 			var itemName = reportRules.lookupVarNameTable[item];
 			if (typeof itemName === 'undefined') {
 				itemName = capitalize(item);
 			}
 			
-			items.push('<div class="pure-u-1 indicator"><label for="' + item + '">' + itemName + '</label>');
+			items.push('<div class="pure-u-1"><label for="' + item + '">' + itemName + '</label>');
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentRule[item] + '"></div>'); 
 		});
 		
 		//items.push('<div style="line-height:200px;">&nbsp;</div>');
 		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
 		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
-		items.push('<div class="pure-u-1 indicator"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
-		items.push('</div>');
-		$("#indicatorBar").append(items.join(''));
+		items.push('<div class="pure-u-1"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
+		$("#indicatorEditor").append(items.join(''));
 		
 		
-		$("#indicatorBar .indicatorValue").bind('keypress', function(e) {
+		$("#indicatorEditor .indicatorValue").bind('keypress', function(e) {
 			var code = e.keyCode || e.which;
 			if(code == 13) {
 				updateIndicator();
@@ -367,7 +366,7 @@ var reportViewer = (function() {
 		$("#resetallbtn").unbind();
 		$("#resetallbtn").click( function() { resetAllIndicators(); return false; } );
 			
-		$("#indicatorBar").css("display", "block");
+		$("#indicatorEditor").css("display", "block");
 		
 		updateDropdownIndicators();
 	}
@@ -386,11 +385,11 @@ var reportViewer = (function() {
 		// Created dynamically based on default values
 		// To do: variables to store user input values
 		for (var i = 0; i < gCalculatedData[0].length; i++) {
-			dropdownIndicators.push('<option class="indicator">' + gCalculatedData[0][i]["desc"] + '</option>');
+			dropdownIndicators.push('<option>' + gCalculatedData[0][i]["desc"] + '</option>');
 		}
 		dropdownIndicators.push('</select>');
 		
-		$("#indicatorBar").prepend(dropdownIndicators.join('\n'));
+		$("#indicatorEditor").prepend(dropdownIndicators.join('\n'));
 		
 		$("#dropdownIndicators")[0].selectedIndex = gCurrentIndicator;
 		
@@ -444,8 +443,8 @@ var reportViewer = (function() {
 	}
 	
 	function removeIndicatorEditor(ruleIndex) {
-		$("#indicatorBar").empty();
-		$("#indicatorBar").css("display", "none");
+		$("#indicatorEditor").empty();
+		$("#indicatorEditor").css("display", "none");
 	}
 	
 	function updateCharts() {
@@ -488,7 +487,7 @@ var reportViewer = (function() {
 			addUserInterface();
 		}
 		
-		if (gMode == "snapshot") {
+		if (gMode === "snapshot") {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
 			generateSnapshot(0);
@@ -532,7 +531,13 @@ var reportViewer = (function() {
 				continue;
 			}
 			arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
-			arrayDesc.push(snapshotData[i]["desc"]);
+			
+			//If the description is really long then insert a newline.
+			var desc = snapshotData[i]["desc"];
+			if (desc.length > 32 && desc.substr(32).indexOf(" ") > -1) {
+				desc = desc.replaceAt(desc.substr(32).indexOf(" ")+32, "\n");
+			}
+			arrayDesc.push(desc);
 		}
 
 		xScale = d3.scale.linear()
@@ -780,7 +785,7 @@ var reportViewer = (function() {
 		// Creat the scale for the X axis
 		xScale = d3.time.scale()
 			.domain([minDate, maxDate])
-			.range([0, DEFAULT_GRAPH_WIDTH_TRACKINgMode]);
+			.range([0, DEFAULT_GRAPH_WIDTH_TRACKING_MODE]);
 			
 		// To do: better date format
 		xAxis = d3.svg.axis()
@@ -791,7 +796,7 @@ var reportViewer = (function() {
 		// Create Y Axis scale
 		yScale = d3.scale.linear()
 			.domain([0, 100])
-			.range([DEFAULT_GRAPH_HEIGHT_TRACKINgMode, 0]);
+			.range([DEFAULT_GRAPH_HEIGHT_TRACKING_MODE, 0]);
 			
 		yAxis = d3.svg.axis()
 			.scale(yScale)
@@ -805,7 +810,7 @@ var reportViewer = (function() {
 				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("x2", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("y1", 0)
-				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKINgMode)
+				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE)
 				.style("opacity", 0.7)
 				.style("stroke", "#cccccc")
 				.style("stroke-width", "1px");
@@ -816,7 +821,7 @@ var reportViewer = (function() {
 			.enter().append("line")
 				.attr("class", "tickLine yTickLine")
 				.attr("x1", 0)
-				.attr("x2", DEFAULT_GRAPH_WIDTH_TRACKINgMode)
+				.attr("x2", DEFAULT_GRAPH_WIDTH_TRACKING_MODE)
 				.attr("y1", yScale)
 				.attr("y2", yScale)
 				.style("opacity", 0.7)
@@ -826,7 +831,7 @@ var reportViewer = (function() {
 		// Append xAxis to the gCanvas
 		gCanvas.append("g")
 			.attr("class", "xAxis")
-			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKINgMode + ")")
+			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + ")")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.call(xAxis);
@@ -903,8 +908,8 @@ var reportViewer = (function() {
 		// Add x axis label
 		gCanvas.append("text")
 			.attr("class", "xAxisLabel")
-			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKINgMode / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKINgMode + 40)
+			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + 40)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -915,8 +920,8 @@ var reportViewer = (function() {
 		gCanvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKINgMode / 2)
-			.attr("y", -DEFAULT_PADDING_LEFT_TRACKINgMode / 2)
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING_MODE / 2)
+			.attr("y", -DEFAULT_PADDING_LEFT_TRACKING_MODE / 2)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -926,8 +931,8 @@ var reportViewer = (function() {
 		// Add graph title
 		gCanvas.append("text")
 			.attr("class", "graphTitle")
-			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKINgMode / 2)
-			.attr("y", -DEFAULT_PADDING_TOP_TRACKINgMode / 2)
+			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
+			.attr("y", -DEFAULT_PADDING_TOP_TRACKING_MODE / 2)
 			.attr("text-anchor", "middle")
 			.style("font-size", "14px")
 			.style("font-family", "sans-serif")
@@ -1019,7 +1024,7 @@ var reportViewer = (function() {
 			var arrayData = [];
 			var arrayDesc = [];
 
-			if (gMode == "snapshot") {
+			if (gMode === "snapshot") {
 				var snapshotData = gCalculatedData[0];
 			
 				for (var i=0; i < snapshotData.length; i++) {
