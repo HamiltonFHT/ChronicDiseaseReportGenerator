@@ -21,6 +21,7 @@ var reportViewer = (function() {
 
 	//Variables to store data and state
 	var gCanvas = d3.select("#canvasContainer").select("#canvasSVG");
+	var gCanvasExtra = null;
 	
 	var gMode = ""; //either "snapshot" or "tracking"
 	var gDataLabels = true; //either true or false (not currently used)
@@ -340,7 +341,6 @@ var reportViewer = (function() {
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentRule[item] + '"></div>'); 
 		});
 		
-		//items.push('<div style="line-height:200px;">&nbsp;</div>');
 		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
 		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
 		items.push('<div class="pure-u-1 indicator"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
@@ -451,6 +451,8 @@ var reportViewer = (function() {
 	function updateCharts() {
 		clearCanvas();
 		
+		$("#canvasContainer_extra").empty();
+		
 		if (gMode === "tracking") {
 			generateTracking();			
 		} else {
@@ -470,7 +472,8 @@ var reportViewer = (function() {
 	 */
 	function generateCharts(currentRuleSetIndex, calculatedData, selectedPhysicians, arrayDates) {
 		
-		gMode = gMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
+		//gMode = gMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
+		gMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
 		gCalculatedData = calculatedData;
 		gSelectedPhysicians = selectedPhysicians;
 		gArrayDates = arrayDates;
@@ -478,6 +481,10 @@ var reportViewer = (function() {
 		gCurrentRuleSetName = reportRules.ruleList[currentRuleSetIndex].name;
 				
 		clearCanvas();
+		
+
+		$("#canvasContainer_extra").empty();
+
 				
 		if (gCalculatedData == undefined) {
 			console.log("no calculated data!");
@@ -517,7 +524,10 @@ var reportViewer = (function() {
 		updateDropdownMode();
 	};
 	
-	function generateSnapshot(selectedDate){
+	function generateSnapshot(selectedDate, extraCanvas){
+	
+		
+		gCanvasCurrent = typeof extraCanvas !== 'undefined' ? gCanvasExtra : gCanvas;
 
 		var snapshotData = gCalculatedData[selectedDate];
 
@@ -552,7 +562,7 @@ var reportViewer = (function() {
 			.scale(yScale)
 			.orient("left");
 			
-		gCanvas.selectAll(".tickline")
+		gCanvasCurrent.selectAll(".tickline")
 			.data(xScale.ticks(10))
 			.enter().append("line")
 				.attr("x1", xScale)
@@ -564,7 +574,7 @@ var reportViewer = (function() {
 				.style("opacity", 0.7);
 			
 		// Add x axis label
-		gCanvas.append("text")
+		gCanvasCurrent.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
@@ -575,7 +585,7 @@ var reportViewer = (function() {
 			.text("% of Patients");
 			
 		// Add y axis label
-		gCanvas.append("text")
+		gCanvasCurrent.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
 			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
@@ -589,7 +599,7 @@ var reportViewer = (function() {
 			}));
 		
 		// Graph title text
-		gCanvas.append("text")
+		gCanvasCurrent.append("text")
 			.attr("class", "graphTitle")
 			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 3.5)
 			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
@@ -629,13 +639,13 @@ var reportViewer = (function() {
 			});
 		
 		//Translate graph into center of page
-		gCanvas.append("g")
+		gCanvasCurrent.append("g")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
 			
-		gCanvas.append("g")
+		gCanvasCurrent.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(yAxis);
@@ -662,7 +672,7 @@ var reportViewer = (function() {
 		}
 		
 		// Add bars for patients within criteria
-		gCanvas.selectAll("onTargetBar")
+		gCanvasCurrent.selectAll("onTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "onTargetBar")
@@ -680,7 +690,7 @@ var reportViewer = (function() {
 				.attr("shape-rendering", "crispEdges");
 
 		// Add bars for patients not within criteria
-		gCanvas.selectAll("offTargetBar")
+		gCanvasCurrent.selectAll("offTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "offTargetBar")
@@ -698,7 +708,7 @@ var reportViewer = (function() {
 				});
 		
 		//Labels for each bar
-		gCanvas.selectAll("onTargetLabel")
+		gCanvasCurrent.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -717,7 +727,7 @@ var reportViewer = (function() {
 											  })
 				.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return "0%"; });
 		
-		gCanvas.selectAll("offTargetLabel")
+		gCanvasCurrent.selectAll("offTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -889,15 +899,32 @@ var reportViewer = (function() {
 						.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex]);
 				})
 				.on("click", function(d, i) {
-					// To do: generate graph underneath for the date clicked
-					//document.getElementById("canvasContainer_extra").removeChild(document.getElementById("canvasSVG"));
+					d3.select(".selectedPoint")
+						.attr("r", 5)
+						.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])
+						.on("mouseout", function(d) {d3.select(this).attr("r", 5).style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])})
+						.attr("class", "dataPoint");
+					d3.select(this)
+						.on("mouseout", null)
+						.attr("class", "selectedPoint");
+					
+					$("#canvasContainer_extra").empty();
+					gCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
+						.attr("id", "canvasSVGExtra")
+						.attr("width", DEFAULT_CANVAS_WIDTH)
+						.attr("height", DEFAULT_CANVAS_HEIGHT)
+						.style("border", "1px solid lightgray")
+							.append("g")
+								.attr("class", "g_main")
+								.attr("transform", "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")");
+								
 					d3.select(this)
 						.attr("r", 7)
 						.style("fill", HIGHLIGHT_COLOURS[gCurrentRuleSetIndex]);
 					gMode = "snapshot";
-					clearCanvas();
+					//clearCanvas();
 					//$("#dropdownIndicators").hide();
-					generateSnapshot(i);
+					generateSnapshot(i, true);
 				});
 				
 		// Add x axis label
@@ -1105,7 +1132,8 @@ var reportViewer = (function() {
 	
 	return {
 		generateCharts: generateCharts,
-		clearCanvas: clearCanvas
+		clearCanvas: clearCanvas,
+		mode: gMode
 	};
 	
 })();
