@@ -13,24 +13,34 @@
     GNU General Public License for more details.
 */
 
+
+$.fn.scrollView = function () {
+  return this.each(function () {
+    $('html, body').animate({
+      scrollTop: $(this).offset().top
+    }, 1000);
+  });
+};
+
+
 /* 
  * Generates and displays chart and user controls
  * Handles user interaction
  */
-var reportViewer = (function() {
+var mdsViewer = (function() {
 
-	//Variables to store data and state
-	var gCanvas = d3.select("#canvasContainer").select("#canvasSVG");
-	var gCanvasExtra = null;
+	//Member variables to store data and state
+	var mCanvas = d3.select("#canvasContainer").select("#canvasSVG");
+	var mCanvasExtra = null;
 	
-	var gMode = ""; //either "snapshot" or "tracking"
-	var gDataLabels = true; //either true or false (not currently used)
-	var gCalculatedData = null; // indicator result data set from reportRules
-	var gSelectedPhysicians = null; // selected physicians object [{docnumber: true/false}, ...]
-	var gArrayDates = null; //array of dates [date, date, ...]
-	var gCurrentRuleSetIndex = 0; // current rule set index
-	var gCurrentRuleSetName = ""; // current rule set name
-	var gCurrentIndicator = 0;       // current indicator
+	var mMode = ""; //either "snapshot" or "tracking"
+	var mDataLabels = true; //either true or false (not currently used)
+	var mCalculatedData = null; // indicator result data set from mdsIndicators
+	var mSelectedPhysicians = null; // selected physicians object [{docnumber: true/false}, ...]
+	var mArrayDates = null; //array of dates [date, date, ...]
+	var mCurrentIndSetIndex = 0; // current rule set index
+	var mCurrentIndSetName = ""; // current rule set name
+	var mCurrentIndicator = 0;       // current indicator
 	
 	var xScale, yScale, xAxis, yAxis;
 	
@@ -71,7 +81,7 @@ var reportViewer = (function() {
 		
 		$("#canvasContainer").empty();
 				
-		gCanvas = d3.select("#canvasContainer").append("svg")
+		mCanvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					.attr("width", DEFAULT_CANVAS_WIDTH)
 					.attr("height", DEFAULT_CANVAS_HEIGHT)
@@ -79,7 +89,7 @@ var reportViewer = (function() {
 						.append("g")
 							.attr("class", "g_main")
 							.attr("transform", function() {
-								switch (gMode) {
+								switch (mMode) {
 									case "snapshot":
 										return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
 									break;
@@ -129,15 +139,15 @@ var reportViewer = (function() {
 		$("#selectPhysicians").append('<li id="mainSelector" class="physicianListItem selected"><span class="checkmark">\u2714</span>Select All</li>');
 		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 		// panel. There will also be a filter for "All Selected Physicians"
-		//for (var i = 0; i < Object.keys(gSelectedPhysicians).length; i++) {
-		for (doc in gSelectedPhysicians) {
+		//for (var i = 0; i < Object.keys(mSelectedPhysicians).length; i++) {
+		for (doc in mSelectedPhysicians) {
 			$("#selectPhysicians").append('<li class="physicianListItem selected" data-docnumber="'+doc+'"><span class="checkmark">\u2714</span> Doctor Number ' + doc + '</li>');
 		}
 		
 		//}
 		
 		$(".physicianListItem").click( function(){ 
-			if (gCalculatedData == undefined) { 
+			if (mCalculatedData == undefined) { 
 				console.log("Calculated data undefined");
 				return false;
 			}
@@ -151,10 +161,10 @@ var reportViewer = (function() {
 			// If clicked on "Select All"
 			if (this.id === "mainSelector") {
 				// If class has 'selected', it currently is selected and must be unselected
-				for (doc in gSelectedPhysicians) {
-					if (gSelectedPhysicians.hasOwnProperty(doc)) {
+				for (doc in mSelectedPhysicians) {
+					if (mSelectedPhysicians.hasOwnProperty(doc)) {
 						//negate the isSelected status to select/deselect the option
-						gSelectedPhysicians[doc] = !isSelected;
+						mSelectedPhysicians[doc] = !isSelected;
 					}
 				}
 				$(".physicianListItem").removeClass("selected notSelected").addClass(className);
@@ -162,16 +172,16 @@ var reportViewer = (function() {
 			// Otherwise, clicked on an individual doctor
 			else {
 				var doc = $(this).data('docnumber');//.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				gSelectedPhysicians[doc] = !isSelected;
+				mSelectedPhysicians[doc] = !isSelected;
 				$(this).toggleClass('selected notSelected');
-				if(allEqual(true, gSelectedPhysicians)) {
+				if(allEqual(true, mSelectedPhysicians)) {
 					$("#mainSelector").removeClass("selected notSelected").addClass("selected");
 				} else {
 					$("#mainSelector").removeClass("selected notSelected").addClass("notSelected");
 				}
 			}
 			
-			reportData.reCalculate(gCurrentRuleSetIndex, gSelectedPhysicians);
+			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 			return false; 
 	  	});
 
@@ -206,18 +216,18 @@ var reportViewer = (function() {
 							'</select>';
 		$("#settings").append(dropdownMode);
 		
-		if(gMode === "snapshot") {
+		if(mMode === "snapshot") {
 			$("#dropdownMode").val("Snapshot");
 		} else {
 			$("#dropdownMode").val("Tracking");
 		}
 		
 		$("#dropdownMode").change(function() {
-			gMode = $(this).find(':selected').data('mode');
+			mMode = $(this).find(':selected').data('mode');
 			updateCharts();
 		});
 		
-		if (gArrayDates.length == 1) {
+		if (mArrayDates.length == 1) {
 			$("#dropdownMode").prop("disabled", true);
 		} else {
 			$("#dropdownMode").prop("disabled", false);
@@ -229,23 +239,23 @@ var reportViewer = (function() {
 		var dropdownRules = ['<select id="dropdownRules" class="settingsDropdown">'];
 		
 		// Add dropdown to switch between rule sets
-		for (var i=0; i<reportRules.ruleList.length;i++) {
-			dropdownRules.push('<option>' + reportRules.ruleList[i].name + '</option>');
+		for (var i=0; i<mdsIndicators.ruleList.length;i++) {
+			dropdownRules.push('<option>' + mdsIndicators.ruleList[i].name + '</option>');
 		}
 		dropdownRules.push('</div>');
 		
 		$("#settings").append(dropdownRules.join('\n'));
 		
 		$("#dropdownRules").change(function() {
-			gCurrentRuleSetIndex = this.selectedIndex;
-			gCurrentRuleSetName = this.value;
-			gCurrentIndicator = 0;
+			mCurrentIndSetIndex = this.selectedIndex;
+			mCurrentIndSetName = this.value;
+			mCurrentIndicator = 0;
 			
-			reportData.reCalculate(gCurrentRuleSetIndex, gSelectedPhysicians);
+			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 			updateDropdownIndicators();
 		});
 		
-		$("#dropdownRules").val(reportRules.ruleList[gCurrentRuleSetIndex].name);
+		$("#dropdownRules").val(mdsIndicators.ruleList[mCurrentIndSetIndex].name);
 		
 		/*
 		 * Indicator set dropdown
@@ -254,7 +264,7 @@ var reportViewer = (function() {
 	};
 	
 		function updateDropdownMode() {
-		if(gMode === "snapshot") {
+		if(mMode === "snapshot") {
 			$("#dropdownMode").val("Snapshot");
 		} else {
 			$("#dropdownMode").val("Tracking");
@@ -327,7 +337,7 @@ var reportViewer = (function() {
 		//Reset indicator editor bar
 		removeIndicatorEditor();
 
-		currentRule = reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator];
+		currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator];
 		if (!currentRule.hasOwnProperty("modifiable")) {
 			return false;
 		}
@@ -338,7 +348,7 @@ var reportViewer = (function() {
 		items.push('<div class="pure-u-1 indicatorTitle">Modify Indicator Targets</div>');
 				
 		$.each(currentRule.modifiable, function(i, item) {
-			var itemName = reportRules.lookupVarNameTable[item];
+			var itemName = mdsIndicators.lookupVarNameTable[item];
 			if (typeof itemName === 'undefined') {
 				itemName = capitalize(item);
 			}
@@ -390,19 +400,19 @@ var reportViewer = (function() {
 		// Add the options for the different measures in the drop down menu
 		// Created dynamically based on default values
 		// To do: variables to store user input values
-		for (var i = 0; i < gCalculatedData[0].length; i++) {
-			dropdownIndicators.push('<option>' + gCalculatedData[0][i]["desc"] + '</option>');
+		for (var i = 0; i < mCalculatedData[0].length; i++) {
+			dropdownIndicators.push('<option>' + mCalculatedData[0][i]["desc"] + '</option>');
 		}
 		dropdownIndicators.push('</select>');
 		
 		$("#indicatorEditor").prepend(dropdownIndicators.join('\n'));
 		
-		$("#dropdownIndicators")[0].selectedIndex = gCurrentIndicator;
+		$("#dropdownIndicators")[0].selectedIndex = mCurrentIndicator;
 		
 		$("#dropdownIndicators").change(function() {
 			clearCanvas();
 			
-			gCurrentIndicator = this.selectedIndex;
+			mCurrentIndicator = this.selectedIndex;
 			addIndicatorEditor(getInternalRuleIndex());
 						
  			updateCharts();
@@ -416,15 +426,15 @@ var reportViewer = (function() {
 		
 		$('.indicatorValue').each(function() {
 			if (isNaN(Number(this.value))) {
-				reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator][this.id] = 0;
+				mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator][this.id] = 0;
 			} else {
-				reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator][this.id] = this.value; 
+				mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator][this.id] = this.value; 
 			}
 			params_updated++;
 		});
 		
 		if (params_updated === $('.indicatorValue').length) {
-			reportData.reCalculate(gCurrentRuleSetIndex, gSelectedPhysicians);
+			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 			updateDropdownIndicators();
 		}
 	}
@@ -432,23 +442,23 @@ var reportViewer = (function() {
 	function resetIndicator() {
 		var currentIndicator = getInternalRuleIndex();
 		
-		reportRules.resetToDefault(reportRules.ruleList[gCurrentRuleSetIndex].rules[currentIndicator]);
+		mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator]);
 		
 		updateDropdownIndicators();
-		reportData.reCalculate(gCurrentRuleSetIndex, gSelectedPhysicians);
+		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		
 		addIndicatorEditor();
 	}
 	
 	function resetAllIndicators() {
 		//Loop through all rules and Reset if they have a 'defaults' property			
-		for (var i = 0; i < reportRules.ruleList[gCurrentRuleSetIndex].rules.length; i++){
-			if (reportRules.ruleList[gCurrentRuleSetIndex].rules[i].hasOwnProperty('defaults')) {
-				reportRules.resetToDefault(reportRules.ruleList[gCurrentRuleSetIndex].rules[i]);
+		for (var i = 0; i < mdsIndicators.ruleList[mCurrentIndSetIndex].rules.length; i++){
+			if (mdsIndicators.ruleList[mCurrentIndSetIndex].rules[i].hasOwnProperty('defaults')) {
+				mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[i]);
 			}
 		}
 		updateDropdownIndicators();
-		reportData.reCalculate(gCurrentRuleSetIndex, gSelectedPhysicians);
+		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		addIndicatorEditor();
 	}
 	
@@ -462,7 +472,7 @@ var reportViewer = (function() {
 		
 		$("#canvasContainer_extra").empty();
 		
-		if (gMode === "tracking") {
+		if (mMode === "tracking") {
 			generateTracking();			
 		} else {
 			generateSnapshot(0);
@@ -471,27 +481,27 @@ var reportViewer = (function() {
 	}
 	
 	function getInternalRuleIndex() {
-		if (gCalculatedData[0].length > 0) {
-			return gCalculatedData[0][gCurrentIndicator].index;
+		if (mCalculatedData[0].length > 0) {
+			return mCalculatedData[0][mCurrentIndicator].index;
 		} else {
 			return 0;
 		}
 	}
 	
 	/* 
-	 * Called by reportData
+	 * Called by mdsReader
 	 * Removes and reinitializes UI elements and chart
 	 * Calls appropriate graphing function based on mode
 	 */
 	function generateCharts(currentRuleSetIndex, calculatedData, selectedPhysicians, arrayDates) {
 		
-		//gMode = gMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
-		gMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
-		gCalculatedData = calculatedData;
-		gSelectedPhysicians = selectedPhysicians;
-		gArrayDates = arrayDates;
-		gCurrentRuleSetIndex = currentRuleSetIndex;
-		gCurrentRuleSetName = reportRules.ruleList[currentRuleSetIndex].name;
+		//mMode = mMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
+		mMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
+		mCalculatedData = calculatedData;
+		mSelectedPhysicians = selectedPhysicians;
+		mArrayDates = arrayDates;
+		mCurrentIndSetIndex = currentRuleSetIndex;
+		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
 				
 		clearCanvas();
 		
@@ -499,7 +509,7 @@ var reportViewer = (function() {
 		$("#canvasContainer_extra").empty();
 
 				
-		if (gCalculatedData == undefined) {
+		if (mCalculatedData == undefined) {
 			console.log("no calculated data!");
 			return;
 		}
@@ -508,24 +518,24 @@ var reportViewer = (function() {
 			addUserInterface();
 		}
 		
-		if (gArrayDates.length == 1 && $('#dropdownMode').length) {
+		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
 			$("#dropdownMode").prop("disabled", true);
 		} else {
 			$("#dropdownMode").prop("disabled", false);
 		}
 		
-		if (gMode === "snapshot") {
+		if (mMode === "snapshot") {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
 			generateSnapshot(0);
 		} else {
 			var isEmpty = true;
-			for (var i = 0; i < gCalculatedData.length; i++) {
-				if (gCalculatedData[i].length>0) {
+			for (var i = 0; i < mCalculatedData.length; i++) {
+				if (mCalculatedData[i].length>0) {
 					isEmpty = false;
 				} else {
-					gCalculatedData.splice(i, 1);
-					gArrayDates.splice(i, 1);
+					mCalculatedData.splice(i, 1);
+					mArrayDates.splice(i, 1);
 				}
 			}
 			
@@ -544,11 +554,10 @@ var reportViewer = (function() {
 	};
 	
 	function generateSnapshot(selectedDate, extraCanvas){
-	
 		
-		gCanvasCurrent = typeof extraCanvas !== 'undefined' ? gCanvasExtra : gCanvas;
+		mCanvasCurrent = typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas;
 
-		var snapshotData = gCalculatedData[selectedDate];
+		var snapshotData = mCalculatedData[selectedDate];
 
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
@@ -560,6 +569,7 @@ var reportViewer = (function() {
 		}
 		for (var i=0; i < snapshotData.length; i++) {
 			if (snapshotData[i]["total"] == 0) {
+				arrayLabels.push("0% (0/0)");
 				continue;
 			}
 			var percent = snapshotData[i]["passed"] / snapshotData[i]["total"] * 100;
@@ -593,7 +603,7 @@ var reportViewer = (function() {
 			.scale(yScale)
 			.orient("left");
 			
-		gCanvasCurrent.selectAll(".tickline")
+		mCanvasCurrent.selectAll(".tickline")
 			.data(xScale.ticks(10))
 			.enter().append("line")
 				.attr("x1", xScale)
@@ -605,7 +615,7 @@ var reportViewer = (function() {
 				.style("opacity", 0.7);
 			
 		// Add x axis label
-		gCanvasCurrent.append("text")
+		mCanvasCurrent.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
@@ -616,7 +626,7 @@ var reportViewer = (function() {
 			.text("% of Patients");
 			
 		// Add y axis label
-		gCanvasCurrent.append("text")
+		mCanvasCurrent.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
 			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
@@ -626,11 +636,11 @@ var reportViewer = (function() {
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.text( (function() {
-				return reportRules.ruleList[gCurrentRuleSetIndex].name + " Measure"; 
+				return mdsIndicators.ruleList[mCurrentIndSetIndex].name + " Measure"; 
 			}));
 		
 		// Graph title text
-		gCanvasCurrent.append("text")
+		mCanvasCurrent.append("text")
 			.attr("class", "graphTitle")
 			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 3.5)
 			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
@@ -640,8 +650,8 @@ var reportViewer = (function() {
 			.text(function() {
 				var arraySelectedOnly = [];
 
-				for (var doc in gSelectedPhysicians) {
-					if (gSelectedPhysicians[doc] == true)
+				for (var doc in mSelectedPhysicians) {
+					if (mSelectedPhysicians[doc] == true)
 						arraySelectedOnly.push(doc);
 				}
 				
@@ -652,7 +662,7 @@ var reportViewer = (function() {
 				//Use this instead to remove global?
 				//ruleSet = $("#dropdownRules").val();
 				
-				var title = gCurrentRuleSetName + " Report for Doctor";
+				var title = mCurrentIndSetName + " Report for Doctor";
 				
 				if (arraySelectedOnly.length > 1) title += "s ";
 				else title += " ";
@@ -663,20 +673,20 @@ var reportViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + gArrayDates[selectedDate].toString().substring(4, 15);
+				title += " as of " + mArrayDates[selectedDate].toString().substring(4, 15);
 				title += " (n = " + snapshotData[0]["total"] + ")";
 				gReportTitle = title;
 				return title;
 			});
 		
 		//Translate graph into center of page
-		gCanvasCurrent.append("g")
+		mCanvasCurrent.append("g")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
 			
-		gCanvasCurrent.append("g")
+		mCanvasCurrent.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(yAxis);
@@ -703,14 +713,14 @@ var reportViewer = (function() {
 		}
 		
 		// Add bars for patients within criteria
-		gCanvasCurrent.selectAll("onTargetBar")
+		mCanvasCurrent.selectAll("onTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "onTargetBar")
 				.attr("width", function(d) { return xScale(d); })
 				.attr("height", yScale.rangeBand())
 				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
-				.attr("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])
+				.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.attr("data-ruleindex", function (d, i) { return i.toString(); }) //used to select/modify current rule
 				.on("click", function(d, i) {
 					handleBarClick(i, this.getAttribute("y"));
@@ -721,7 +731,7 @@ var reportViewer = (function() {
 				.attr("shape-rendering", "crispEdges");
 
 		// Add bars for patients not within criteria
-		gCanvasCurrent.selectAll("offTargetBar")
+		mCanvasCurrent.selectAll("offTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "offTargetBar")
@@ -739,7 +749,7 @@ var reportViewer = (function() {
 				});
 		
 		//Labels for each bar
-		gCanvasCurrent.selectAll("onTargetLabel")
+		mCanvasCurrent.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -758,7 +768,7 @@ var reportViewer = (function() {
 											  })
 				.text(function(d, i) { return arrayLabels[i]; });
 		
-		gCanvasCurrent.selectAll("offTargetLabel")
+		mCanvasCurrent.selectAll("offTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -776,12 +786,12 @@ var reportViewer = (function() {
 	
 	function handleBarClick(i, y) {
 		$(".onTargetBar")
-			.attr("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex]);
+			.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
 		var thisBar = $(".onTargetBar[y="+y+"]");
-		thisBar.attr("fill", HIGHLIGHT_COLOURS[gCurrentRuleSetIndex]);
-		gCurrentIndicator = i;
+		thisBar.attr("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
+		mCurrentIndicator = i;
 		
-		currentRule = reportRules.ruleList[gCurrentRuleSetIndex].rules[getInternalRuleIndex()];
+		currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
 		if (currentRule.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {
@@ -790,19 +800,27 @@ var reportViewer = (function() {
 	}
 	
 	function generateTracking() {
-		var arrayDates = gArrayDates;
+		var arrayDates = mArrayDates;
 
 		var arrayData = [];
 		var arrayDesc = [];
-		for (var i=0; i < gCalculatedData.length; i++) {
+		var arrayLabels = [];
+		
+		for (var i=0; i < mCalculatedData.length; i++) {
 			arrayData.push([]);
 			arrayDesc.push([]);
-			for (var j=0; j < gCalculatedData[i].length; j++) {
-				if (gCalculatedData[i][j]["total"] == 0) {
+			arrayLabels.push([]);
+			for (var j=0; j < mCalculatedData[i].length; j++) {
+				if (mCalculatedData[i][j]["total"] == 0) {
+					arrayLabels[i].push("0% (0/0)");
 					continue;
 				}
-				arrayData[i].push(gCalculatedData[i][j]["passed"] / gCalculatedData[i][j]["total"] * 100);
-				arrayDesc[i].push(gCalculatedData[i][j]["desc"]);
+				var percent = mCalculatedData[i][j]["passed"] / mCalculatedData[i][j]["total"] * 100;
+				var label = Math.round(percent) + "% (" + mCalculatedData[i][j]["passed"] + "/" + mCalculatedData[i][j]["total"]+ ")";
+
+				arrayData[i].push(percent);
+				arrayLabels[i].push(label);
+				arrayDesc[i].push(mCalculatedData[i][j]["desc"]);
 			}
 		}
 
@@ -839,7 +857,7 @@ var reportViewer = (function() {
 			.orient("left");
 			
 		// Create and append ticklines for the xAxis
-		gCanvas.selectAll(".xTickLine")
+		mCanvas.selectAll(".xTickLine")
 			.data(arrayData)
 			.enter().append("line")
 				.attr("class", "tickLine xTickLine")
@@ -852,7 +870,7 @@ var reportViewer = (function() {
 				.style("stroke-width", "1px");
 	
 		// Create and append ticklines for the yAxis
-		gCanvas.selectAll(".yTickLine")
+		mCanvas.selectAll(".yTickLine")
 			.data(yScale.ticks(10))
 			.enter().append("line")
 				.attr("class", "tickLine yTickLine")
@@ -864,16 +882,16 @@ var reportViewer = (function() {
 				.style("stroke", "#cccccc")
 				.style("stroke-width", "1px");
 		
-		// Append xAxis to the gCanvas
-		gCanvas.append("g")
+		// Append xAxis to the mCanvas
+		mCanvas.append("g")
 			.attr("class", "xAxis")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + ")")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.call(xAxis);
 					
-		// Append yAxis to the gCanvas
-		gCanvas.append("g")
+		// Append yAxis to the mCanvas
+		mCanvas.append("g")
 			.attr("class", "yAxis")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
@@ -899,50 +917,50 @@ var reportViewer = (function() {
 		}
 		
 		// Append lines between data points
-		gCanvas.selectAll(".dataPointConnector")
+		mCanvas.selectAll(".dataPointConnector")
 			.data(new Array(arrayData.length - 1))
 			.enter().append("line")
 				.attr("class", "dataPointConnector")
 				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("x2", function (d, i) { return xScale(arrayDates[i + 1]); })
-				.attr("y1", function (d, i) { return yScale(arrayData[i][gCurrentIndicator]); })
-				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][gCurrentIndicator]); })
-				.attr("stroke", DEFAULT_COLOURS[gCurrentRuleSetIndex])
+				.attr("y1", function (d, i) { return yScale(arrayData[i][mCurrentIndicator]); })
+				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][mCurrentIndicator]); })
+				.attr("stroke", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.attr("stroke-width", 2);
 		
 		// Append data points
-		gCanvas.selectAll(".dataPoint")
+		mCanvas.selectAll(".dataPoint")
 			.data(arrayData)
 			.enter().append("circle")
 				.attr("class", "dataPoint")
 				.attr("cx", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("cy", function(d, i) { return yScale(arrayData[i][gCurrentIndicator]); })
+				.attr("cy", function(d, i) { return yScale(arrayData[i][mCurrentIndicator]); })
 				.attr("r", 5)
-				.attr("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])
+				.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.on("mouseover", function(d) {
 					d3.select(this)
 						.attr("r", 7)
-						.style("fill", HIGHLIGHT_COLOURS[gCurrentRuleSetIndex]);
+						.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
 				})
 				.on("mouseout", function(d) {
 					d3.select(this)
 						.attr("r", 5)
-						.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex]);
+						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
 				})
 				.on("click", function(d, i) {
 					d3.select(".selectedPoint")
 						.attr("r", 5)
-						.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex])
+						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
 						.on("mouseout", function(d) { d3.select(this)
 														.attr("r", 5)
-														.style("fill", DEFAULT_COLOURS[gCurrentRuleSetIndex]); })
+														.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]); })
 						.attr("class", "dataPoint");
 					d3.select(this)
 						.on("mouseout", null)
 						.attr("class", "selectedPoint");
 					
 					$("#canvasContainer_extra").empty();
-					gCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
+					mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
 						.attr("id", "canvasSVGExtra")
 						.attr("width", DEFAULT_CANVAS_WIDTH)
 						.attr("height", DEFAULT_CANVAS_HEIGHT)
@@ -953,15 +971,17 @@ var reportViewer = (function() {
 								
 					d3.select(this)
 						.attr("r", 7)
-						.style("fill", HIGHLIGHT_COLOURS[gCurrentRuleSetIndex]);
-					gMode = "snapshot";
+						.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
+					mMode = "snapshot";
 					//clearCanvas();
 					//$("#dropdownIndicators").hide();
 					generateSnapshot(i, true);
+					
+					$("#canvasContainer_extra").scrollView();
 				});
 				
 		// Add x axis label
-		gCanvas.append("text")
+		mCanvas.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + 40)
@@ -972,7 +992,7 @@ var reportViewer = (function() {
 			.text("Date");
 		
 		// Add y axis label
-		gCanvas.append("text")
+		mCanvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
 			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING_MODE / 2)
@@ -984,7 +1004,7 @@ var reportViewer = (function() {
 			.text("% of patients");
 			
 		// Add graph title
-		gCanvas.append("text")
+		mCanvas.append("text")
 			.attr("class", "graphTitle")
 			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
 			.attr("y", -DEFAULT_PADDING_TOP_TRACKING_MODE / 2)
@@ -993,12 +1013,12 @@ var reportViewer = (function() {
 			.style("font-family", "sans-serif")
 			.style("font-weight", "bold")
 			.text(function() {
-				var indicator = gCalculatedData[0][gCurrentIndicator].desc;
+				var indicator = mCalculatedData[0][mCurrentIndicator].desc;
 				var title = indicator + " for Doctor";
 				var arraySelectedOnly = [];
 
-				for (var doc in gSelectedPhysicians) {
-					if (gSelectedPhysicians[doc] == true)
+				for (var doc in mSelectedPhysicians) {
+					if (mSelectedPhysicians[doc] == true)
 						arraySelectedOnly.push(doc);
 				}
 							
@@ -1016,7 +1036,7 @@ var reportViewer = (function() {
 			});
 		
 		// Add labels for data points
-		gCanvas.selectAll(".dataLabel")
+		mCanvas.selectAll(".dataLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -1030,26 +1050,26 @@ var reportViewer = (function() {
 						// For first data point
 						if (i == 0) {
 							// If adjacent point is above, place label below, vice versa
-							if (arrayData[1][0] >= arrayData[i][gCurrentIndicator])
-								return yScale(arrayData[i][gCurrentIndicator]) + 25;
-							else return yScale(arrayData[i][gCurrentIndicator]) - 15;
+							if (arrayData[1][0] >= arrayData[i][mCurrentIndicator])
+								return yScale(arrayData[i][mCurrentIndicator]) + 25;
+							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
 						}
 						// For last point, compare with second last point
 						else if (i == arrayData.length - 1) {
-							if (arrayData[arrayData.length - 2][0] >= arrayData[i][gCurrentIndicator])
-								return yScale(arrayData[i][gCurrentIndicator]) + 25;
-							else return yScale(arrayData[i][gCurrentIndicator]) - 15;
+							if (arrayData[arrayData.length - 2][0] >= arrayData[i][mCurrentIndicator])
+								return yScale(arrayData[i][mCurrentIndicator]) + 25;
+							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
 						}
 						// Else all points in between, check both sides
 						else {
 							// If both adjacent points are above, place below
-							if (arrayData[i - 1][0] >= arrayData[i][gCurrentIndicator] && arrayData[i + 1][0] >= arrayData[i][gCurrentIndicator])
-								return yScale(arrayData[i][gCurrentIndicator]) + 25;
+							if (arrayData[i - 1][0] >= arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] >= arrayData[i][mCurrentIndicator])
+								return yScale(arrayData[i][mCurrentIndicator]) + 25;
 							// Else if both are below, place above	
-							else if (arrayData[i - 1][0] < arrayData[i][gCurrentIndicator] && arrayData[i + 1][0] < arrayData[i][gCurrentIndicator])
-								return yScale(arrayData[i][gCurrentIndicator]) - 15;
+							else if (arrayData[i - 1][0] < arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] < arrayData[i][mCurrentIndicator])
+								return yScale(arrayData[i][mCurrentIndicator]) - 15;
 							// Else just place above
-							else return yScale(arrayData[i][gCurrentIndicator]) - 15;
+							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
 						}
 					}
 				}) 
@@ -1058,19 +1078,11 @@ var reportViewer = (function() {
 				.style("font-size", "13px")
 				.style("font-family", "Arial")
 				.text(function(d, i) { 
-					if (arrayData[i].length == 0) {
-						return "0%";
-					} else {
-						if (arrayData[i][gCurrentIndicator] == 0)
-							return (arrayData[i][gCurrentIndicator]).toFixed(0) + "%";
-						else 
-							return (arrayData[i][gCurrentIndicator]).toFixed(1) + "%";
-					}
-					
+					return arrayLabels[i][mCurrentIndicator];
 				});
 	};
 	
-	function toggleDataLabels(selectedDate) {
+	function toggleDataLabels() {
 			// Find data labels
 		if (d3.selectAll(".dataLabel")[0].length > 0) 
 			d3.selectAll(".dataLabel").remove();
@@ -1078,22 +1090,29 @@ var reportViewer = (function() {
 			
 			var arrayData = [];
 			var arrayDesc = [];
+			var arrayLabels = [];
 
-			if (gMode === "snapshot") {
-				var snapshotData = gCalculatedData[0];
+			if (mMode === "snapshot") {
+				var snapshotData = mCalculatedData[0];
 			
 				for (var i=0; i < snapshotData.length; i++) {
 					if (snapshotData[i]["total"] == 0) {
+						arrayLabels.push("0% (0/0)");
 						continue;
 					}
-					arrayData.push(snapshotData[i]["passed"] / snapshotData[i]["total"] * 100);
+					var percent = snapshotData[i]["passed"] / snapshotData[i]["total"] * 100;
+					arrayData.push(percent);
+					
+					var label = Math.round(percent) + "% (" + snapshotData[i]["passed"] + "/" + snapshotData[i]["total"]+ ")";
+					arrayLabels.push(label);
+					
 					arrayDesc.push(snapshotData[i]["desc"]);
 				}
 				if (arrayData.length == 0) {
 					return;
 				}
 			
-				gCanvas.selectAll("onTargetLabel")
+				mCanvas.selectAll("onTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
@@ -1110,9 +1129,9 @@ var reportViewer = (function() {
 												if (d<5) { return "black"; } 
 												else { return "white";	} 
 											  })
-						.text(function(d) { if (d > 0) return d.toFixed(1) + "%"; else return "0%"; });
+						.text(function(d, i) { return arrayLabels[i]; });
 				
-				gCanvas.selectAll("offTargetLabel")
+				mCanvas.selectAll("offTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
@@ -1128,36 +1147,41 @@ var reportViewer = (function() {
 						.attr("display", "none");
 			} else {
 
-				for (var i=0; i < gCalculatedData.length; i++) {
+				for (var i=0; i < mCalculatedData.length; i++) {
 					arrayData.push([]);
 					arrayDesc.push([]);
-					for (var j=0; j < gCalculatedData[i].length; j++) {
-						if (gCalculatedData[i][j]["total"] == 0) {
+					arrayLabels.push([]);
+					
+					for (var j=0; j < mCalculatedData[i].length; j++) {
+						if (mCalculatedData[i][j]["total"] == 0) {
+							arrayLabels[i].push("0% (0/0)");
 							continue;
 						}
-						arrayData[i].push(gCalculatedData[i][j]["passed"] / gCalculatedData[i][j]["total"] * 100);
-						arrayDesc[i].push(gCalculatedData[i][j]["desc"]);
+						var percent = Math.round(mCalculatedData[i][j]["passed"] / mCalculatedData[i][j]["total"] * 100);
+						arrayData[i].push(percent);
+						
+						var label = Math.round(percent) + "% (" + mCalculatedData[i][j]["passed"] + "/" + mCalculatedData[i][j]["total"]+ ")";
+						arrayLabels[i].push(label);
+						
+						arrayDesc[i].push(mCalculatedData[i][j]["desc"]);
 					}
 				}
 				if (arrayData.length == 0) {
 					return;
 				}
 								
-				gCanvas.selectAll(".dataLabel")
+				mCanvas.selectAll(".dataLabel")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabel")
-						.attr("x", function(d, i) { return xScale(gArrayDates[i]); })
-						.attr("y", function(d, i) { return yScale(arrayData[i][gCurrentIndicator]) - 15; }) // 15 pixels above data point
+						.attr("x", function(d, i) { return xScale(mArrayDates[i]); })
+						.attr("y", function(d, i) { return yScale(arrayData[i][mCurrentIndicator]) - 15; }) // 15 pixels above data point
 						.attr("text-anchor", "middle")
 						.style("fill", "black")
 						.style("font-size", "13px")
 						.style("font-family", "Arial")
 						.text(function(d, i) { 
-							if ((arrayData[i][gCurrentIndicator]) == 0)
-								return (arrayData[i][gCurrentIndicator]).toFixed(0) + "%";
-							else 
-							return (arrayData[i][gCurrentIndicator]).toFixed(1) + "%";
+							return arrayLabels[i][mCurrentIndicator];
 						});
 			}
 		}
@@ -1166,7 +1190,7 @@ var reportViewer = (function() {
 	return {
 		generateCharts: generateCharts,
 		clearCanvas: clearCanvas,
-		mode: gMode
+		mode: mMode
 	};
 	
 })();

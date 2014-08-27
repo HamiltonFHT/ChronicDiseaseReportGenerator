@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 */
 
-var reportRules =  (function(){
+var mdsIndicators =  (function(){
 	// Default comparison values for diabetic measures, based on Clinical Practice Guidelines and what we are asked to tracked in the report generator.
 	// NOTE: These are the DEFAULT values for comparison. There will be a settings menu to allow the user to modify these comparison values based on 
 	// their clinical judgement and what they want to track.
@@ -377,7 +377,6 @@ var reportRules =  (function(){
 		}
 	};
 
-
 	var ruleElevatedBPRegularVisit = {
 		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
 		long_desc: function() { return "% of patients who are coded as current smokers"; },
@@ -401,8 +400,6 @@ var reportRules =  (function(){
 		}
 	};
 	
-	
-
 	var ruleInfantVaccinations = {
 		desc: function(){return "Infant immunization schedule up to date"; },
 		long_desc: function() { return "Infants " + this.age + " months and under with immunization schedule up to date"; },
@@ -441,7 +438,7 @@ var reportRules =  (function(){
 							Number(polio) >= this.polio);
 					}
 				}
-				return NaN	
+				return NaN;
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -502,7 +499,6 @@ var reportRules =  (function(){
 		}
 	};
 
-
 	//Does not account for boosters
 	var ruleTeenagerVaccinations = {
 		desc: function(){return "Adults with all immunizations"; },
@@ -556,7 +552,6 @@ var reportRules =  (function(){
 		}
 	};
 
-
 	var ruleHeightWeightLastVaccination = {
 		desc: function(){return "Height and Weight at last immunization"; },
 		long_desc: function() { return "Height and Weight measured at last immunization"; },
@@ -571,24 +566,6 @@ var reportRules =  (function(){
 					return false;
 				} else {
 					return (new Date(heightDate).getTime() == mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
-	 			}
-			} catch (err) {
-				console.log(err);
-				return false;
-			}
-		}
-	};
-
-	var ruleSmokingStatusRecorded = {
-		desc: function(){return "Smoking Status Recorded"; },
-		long_desc: function() { return "Smoking Status Recorded in Risk Factors"; },
-		col: ["Risk Factors"],
-		rule: function(factors) {
-			try {
-				if (factors.length == 0 || factors.toLowerCase().indexOf('smok') == -1) {
-					return false;
-				} else {
-					return true;
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -620,21 +597,42 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-	};
+	};	
 
-	//Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
-	var ruleSmokingCessation = {
-		desc: function(){return "Smoking Cessation Attempted"; },
-		long_desc: function() { return "Smoking Cessation form in patient chart"; },
-		col: ["Risk Factors", "Smoking Cessation Form"],
-		rule: function(factors, form) {
+	var ruleSmokingStatusRecorded = {
+		desc: function(){return "Smoking Status Recorded"; },
+		long_desc: function() { return "Smoking Status Recorded in Risk Factors"; },
+		col: ["Risk Factors"],
+		rule: function(factors) {
 			try {
-				if (factors.length == 0 || !ruleSmokingStatusRecorded.rule(factors)) {
-					return NaN;
-				} else if (form == "" ){
+				if (factors.length == 0 || factors.toLowerCase().indexOf('smok') == -1) {
 					return false;
 				} else {
 					return true;
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+    //Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
+	var ruleSmokingCessation = {
+		desc: function(){return "Smoking Cessation Attempted"; },
+		long_desc: function() { return "Smoking Cessation form in patient chart"; },
+		months: 15,
+		modifiable: ["months"],
+		defaults:[15],
+		col: ["Risk Factors", "Smoking Cessation Form Date", "Last Seen Date", "Current Date"],
+		rule: function(factors, formDate, lastSeenDate, currentDate) {
+			try {
+				if (factors.indexOf("current smoker") === -1 || !withinDateRange(currentDate,this.months,lastSeenDate)) {
+					return NaN;
+				} else if (withinDateRange(currentDate, this.months, formDate)){
+					return true;
+				} else {
+					return false;
 				}
 			} catch (err) {
 				console.log(err);
@@ -799,7 +797,7 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-	}
+	};
 	
 	var ruleCervicalCancer = {
 		desc: function(){return "Up-to-date on cervical cancer screening"; },
@@ -823,7 +821,7 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-	}
+	};
 	
 	var ruleColorectalCancer = {
 		desc: function(){return "Up-to-date on colorectal cancer screening"; },
@@ -845,7 +843,7 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-	}
+	};
 	
 	var ruleFluVaccine = {
 		desc: function(){return "Up-to-date on Influenza Vaccine"; },
@@ -867,7 +865,7 @@ var reportRules =  (function(){
 				return false;
 			}
 		}
-	}
+	};
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonths,
@@ -981,15 +979,15 @@ var reportRules =  (function(){
 					index: r,
 					desc: currentRule.desc(),
 				  	passed: passed.filter(function(e) { return (e == true); }).length,
-				  	total: num_items - passed.filter(function(e) { return (isNaN(e).length); })
+				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
 			});
 		}	
 		return results;
 	};
 	
-		/* 
+	/* 
 	 * Inspect header of text file to guess which indicator set is most appropriate
-	 * Indicator sets are listed in the ruleList variable in reportRules
+	 * Indicator sets are listed in the ruleList variable in mdsIndicators
 	 */
 	function getCurrentRuleSet(header) {
 		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {

@@ -57,6 +57,7 @@ body {
 	margin-top: 0.5em;
 	margin-bottom: 0.5em;
 	margin-left: 1em;
+	cursor:pointer;
 }
 
 .settingsDropdown {

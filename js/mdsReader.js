@@ -13,20 +13,20 @@
     GNU General Public License for more details.
 */
 
-/* reportData is a variable that handles the reading and parsing
+/* mdsReader is a variable that handles the reading and parsing
  * of text files into a useable format and also filters data elements
- * based on user input in reportViewer. 
- * This variable also calls reportRules and reportViewer in order to
+ * based on user input in mdsViewer. 
+ * This variable also calls mdsIndicators and mdsViewer in order to
  * apply the indicator rules and display the results
  * 
 */
 
-var reportData = (function() {
-	//var dataSource = [];
-	var physicianIndex = [];
-	var selectedPhysicians = {};
-	var parsedData = [];
-	var currentRuleSet;
+var mdsReader = (function() {
+
+	var mSelectedPhysicians = {};
+	var mFilteredData = [];
+	var mParsedData = [];
+	var mCurrentIndSetIndex;
 	
 	/*
 	 * Called by index.html when a file is uploaded by the user.
@@ -36,15 +36,14 @@ var reportData = (function() {
 	function readFiles(files) {
 
 	   filesLeftToRead = files.length;
-	   reportViewer.mode = "";
+	   mdsViewer.mode = "";
 	   
 	   if (files.length == 0) {
 	   		return;
 	   }
-	   
-		physicianIndex = [];
-		selectedPhysicians = {};
-		parsedData = [];
+
+		mSelectedPhysicians = {};
+		mParsedData = [];
 	   
 
 	   
@@ -60,7 +59,7 @@ var reportData = (function() {
 			  	r.onload = (function(f) { 
 			  		return function(e) { 
 			    		var contents = e.target.result;
-			    		parsedData.push(parseToObject(f, contents));
+			    		mParsedData.push(parseToObject(f, contents));
 			    		//TODO replace with Promise pattern
 			    		--filesLeftToRead;
 			    		if (filesLeftToRead == 0) {
@@ -74,20 +73,20 @@ var reportData = (function() {
 							
 							//Check if patient records were found				
 							var empty = true;
-							for (var i=0; i < parsedData.length; i++) {
-								if (parsedData[i]["num_elements"] == 0) {
-								 	parsedData.splice(i, 1);
+							for (var i=0; i < mParsedData.length; i++) {
+								if (mParsedData[i]["num_elements"] == 0) {
+								 	mParsedData.splice(i, 1);
 								} else {
 									empty = false;
 								}
 							}
 							if (empty) {
 								alert("No patient records found in files");
-								reportViewer.clearCanvas();
+								mdsViewer.clearCanvas();
 								throw new Error("No patient records found in files");
 							}
 							
-							parsedData.sort(compare);
+							mParsedData.sort(compare);
 							calculate();
 			    		}
 			 		};
@@ -114,7 +113,7 @@ var reportData = (function() {
 		}
 		var csvHeaders = arrData.shift();
 		
-		currentRuleSet = reportRules.getCurrentRuleSet(csvHeaders);
+		mCurrentIndSetIndex = mdsIndicators.getCurrentRuleSet(csvHeaders);
 		
 		for (var rowIndex = 0; rowIndex < arrData.length; rowIndex++) {
 			var rowArray = arrData[rowIndex];
@@ -215,10 +214,10 @@ var reportData = (function() {
 		
 	/*
 	 * Filter all records from physicians that are not currently selected
-	 * If selectedPhysicians is undefined it creates the variable and defaults
+	 * If mSelectedPhysicians is undefined it creates the variable and defaults
 	 * to all physicians selected
 	 */
-	function getFilteredData(selectedPhysicians) {
+	function filterData() {
 		
 		
 		function uniqueDocs(value, pos, self) {
@@ -229,54 +228,52 @@ var reportData = (function() {
 		
 		var uniquePhysicians = [];
 		// Loop through each CSV file imported
-		for (var i = 0; i < parsedData.length; i++) {
+		for (var i = 0; i < mParsedData.length; i++) {
 			//array of array of unique physicians
-			uniquePhysicians.push(parsedData[i]["Doctor Number"].filter(uniqueDocs));
+			uniquePhysicians.push(mParsedData[i]["Doctor Number"].filter(uniqueDocs));
 		}
 		
-		//If selectedPhysicians is uninitialized, add all physicians and set to true
-		if (Object.keys(selectedPhysicians).length == 0) {
+		//If mSelectedPhysicians is uninitialized, add all physicians and set to true
+		if (Object.keys(mSelectedPhysicians).length == 0) {
 			//Flatten and filter for only unique docs
 			//array of all unique physicians
 			flatUniquePhysicians = [].concat.apply([], uniquePhysicians).filter(uniqueDocs);
 			for (var j = 0; j < flatUniquePhysicians.length; j++) {
-				selectedPhysicians[flatUniquePhysicians[j]] = true;
+				mSelectedPhysicians[flatUniquePhysicians[j]] = true;
 			}
 		}
 		
-		var filteredData = [];
-		for (var i = 0; i < parsedData.length; i++) {
+		mFilteredData = [];
+		for (var i = 0; i < mParsedData.length; i++) {
 			
 			//push new object for each file
-			filteredData.push({});
+			mFilteredData.push({});
 			
 			//For each column in the file
-			for (var key in parsedData[i]) {
+			for (var key in mParsedData[i]) {
 				
 				//If this is a data element (i.e. an array) and not a property element (i.e. a file name)
-				if (parsedData[i][key] instanceof Array) {
+				if (mParsedData[i][key] instanceof Array) {
 					
 					//array per column
-					//Add the key to filteredData if it doesn't have it
-					if (!filteredData[i].hasOwnProperty(key)) {
-						filteredData[i][key] = [];
+					//Add the key to mFilteredData if it doesn't have it
+					if (!mFilteredData[i].hasOwnProperty(key)) {
+						mFilteredData[i][key] = [];
 					}
 						
-					//Add the element from parsedData if the user selected it (i.e. it's index is in the physicianList)
-					for (var j = 0; j < parsedData[i][key].length; j++) {
-						var docNum = parsedData[i]["Doctor Number"][j];
-						if (selectedPhysicians[docNum] == true) {
-							filteredData[i][key].push(parsedData[i][key][j]);
+					//Add the element from mParsedData if the user selected it (i.e. it's index is in the physicianList)
+					for (var j = 0; j < mParsedData[i][key].length; j++) {
+						var docNum = mParsedData[i]["Doctor Number"][j];
+						if (mSelectedPhysicians[docNum] == true) {
+							mFilteredData[i][key].push(mParsedData[i][key][j]);
 						}
 					}
 				}
 			}
-			if (!("Current Date" in filteredData[i])) {
-				filteredData[i]["Current Date"] = repeat(parsedData[i]["fileLastModified"], filteredData[i][0].length);
+			if (!("Current Date" in mFilteredData[i])) {
+				mFilteredData[i]["Current Date"] = repeat(mParsedData[i]["fileLastModified"], mFilteredData[i][0].length);
 			}
 		}
-
-		return {filteredData: filteredData, selectedPhysicians: selectedPhysicians};
 	};
 
 	/*
@@ -286,12 +283,12 @@ var reportData = (function() {
 		
 		var arrayDates = [];
 		
-		if (parsedData.length > 0) {
-			for (var i=0; i<parsedData.length; i++) {
-				if (parsedData[i].hasOwnProperty("Current Date")) {
-					if (parsedData[i]["Current Date"].length > 0) {
+		if (mParsedData.length > 0) {
+			for (var i=0; i<mParsedData.length; i++) {
+				if (mParsedData[i].hasOwnProperty("Current Date")) {
+					if (mParsedData[i]["Current Date"].length > 0) {
 						var fileDate = "";
-						var currentDate = parsedData[i]["Current Date"][0];
+						var currentDate = mParsedData[i]["Current Date"][0];
 						if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/)){
 			 				var parsedDate = currentDate.split("/");
 			 				fileDate = new Date(parsedDate[2], parsedDate[0]-1, parsedDate[1]);
@@ -301,10 +298,10 @@ var reportData = (function() {
 						
 						arrayDates.push(fileDate);
 					} else {
-						arrayDates.push(parsedData[i]['fileLastModified']);
+						arrayDates.push(mParsedData[i]['fileLastModified']);
 					}
 				} else {
-					arrayDates.push(parsedData[i]['fileLastModified']);
+					arrayDates.push(mParsedData[i]['fileLastModified']);
 				}
 			}
 		}
@@ -314,40 +311,36 @@ var reportData = (function() {
 	/*
 	 * Get filtered data
 	 * Apply indicator sets to filtered data
-	 * Pass necessary data to reportViewer to display chart
+	 * Pass necessary data to mdsViewer to display chart
 	 */
 	function calculate() {
 		
-		physObj = getFilteredData(selectedPhysicians);
+		filterData();
 		
-		reportViewer.generateCharts(
-				currentRuleSet, //selected Rule List
-				reportRules.applyRules(currentRuleSet, physObj.filteredData),
-			 	physObj.selectedPhysicians,
+		mdsViewer.generateCharts(
+				mCurrentIndSetIndex, //selected Rule List
+				mdsIndicators.applyRules(mCurrentIndSetIndex, mFilteredData),
+			 	mSelectedPhysicians,
 			 	getDateArray()
 			 	);
 	};
 	
 	/*
-	 * Same as calculate above but passed updated information from reportViewer
+	 * Same as calculate above but passed updated information from mdsViewer
 	 * based on user interaction
 	 */
-	function reCalculate(rV_currentRuleList, rV_selectedPhysicians) {
-		//This function is called from reportViewer when the user deselects/reselects
-		//physicians, hence the selectedPhysicians from reportViewer is used in GenerateCharts
+	function reCalculate(currentRuleSetIndex, selectedPhysicians) {
+		//This function is called from mdsViewer when the user deselects/reselects
+		//physicians, hence the selectedPhysicians from mdsViewer is used in GenerateCharts
+		mSelectedPhysicians = selectedPhysicians;
+		mCurrentIndSetIndex = currentRuleSetIndex;
 		
-		physObj = getFilteredData(rV_selectedPhysicians);
-		
-		reportViewer.generateCharts(
-				rV_currentRuleList,
-				reportRules.applyRules(rV_currentRuleList, physObj.filteredData),
-			 	physObj.selectedPhysicians,
-			 	getDateArray());
+		calculate();
 	};
 	
 	/*
 	 * Expose readFiles to index.html
-	 * Expose reCalculate to reportViewer when user makes changes 
+	 * Expose reCalculate to mdsViewer when user makes changes 
 	 * 		to selectedPhysicians or current indicator set
 	 */
 	return {

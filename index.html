@@ -36,7 +36,7 @@
 	
 		<div id="actions">
 			<div class="actionImport" id="importFiles">
-				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="reportData.readFiles(this.files);" multiple="multiple" style="width:1200px;">
+				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="width:1200px;">
 			</div>
 			<div id="settings"> </div>
 			<div id="save"> </div>
@@ -73,7 +73,7 @@
 	<script type="text/javascript" src="js/jsPDF/canvas-toBlob.js"></script>
 
 	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
-	<script type="text/javascript" src = "js/reportData.js"> </script>
-	<script type="text/javascript" src = "js/reportViewer.js"> </script>
-	<script type="text/javascript" src = "js/reportRules.js"> </script>
+	<script type="text/javascript" src = "js/mdsReader.js"> </script>
+	<script type="text/javascript" src = "js/mdsViewer.js"> </script>
+	<script type="text/javascript" src = "js/mdsIndicators.js"> </script>
 </html>
