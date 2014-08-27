@@ -378,21 +378,46 @@ var mdsIndicators =  (function(){
 		}
 	};
 
+	//Patients with hypertension and an elevated blood pressure have come in for a regular checkup
 	var ruleElevatedBPRegularVisit = {
 		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
-		long_desc: function() { return "% of patients who are coded as current smokers"; },
-		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diatolic BP"],
+		long_desc: function() { return "% of patients diagnosed with hypertension and with BP over " + this.sysTarget + "/" + this.diasTarget + 
+										" who have had a visit within the past " + this.months + " months"; },
+		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diastolic BP", "ICD-9"],
 		months: 9,
 		sysTarget: 140,
 		diasTarget: 90,
 		modifiable: ["months", "sysTarget", "diasTarget"],
 		defaults: [9, 140, 90],
-		rule: function(currentDate, measuredDate, sysValue, diasValue) {
+		rule: function(currentDate, lastSeenDate, sysValue, diasValue, icd9) {
 			try {
-				if (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget) {
+				if (icd9.indexOf("401") == -1 || (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget)) {
 					return NaN;
 				} else {
-					return withinDateRange(currentDate, this.months, measuredDate);
+					return withinDateRange(currentDate, this.months, lastSeenDate);
+	 			}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+	
+	//Patients with hypertension and health blood pressure
+	var ruleHypertensionBP= {
+		desc: function(){return "Hypertensive patients with BP < " + this.sysTarget + "/" + this.diasTarget; },
+		long_desc: function() { return "% of patients diagnosed with hypertension and with BP less than " + this.sysTarget + "/" + this.diasTarget; },
+		col: ["Systolic BP", "Diastolic BP", "ICD-9"],
+		sysTarget: 140,
+		diasTarget: 90,
+		modifiable: ["sysTarget", "diasTarget"],
+		defaults: [140, 90],
+		rule: function(sysValue, diasValue, icd9) {
+			try {
+				if (icd9.indexOf("401") == -1) {
+					return NaN;
+				} else {
+					return (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -895,7 +920,7 @@ var mdsIndicators =  (function(){
 						 
 	var hypertensionRules = [ruleBaselineBP,
 							 ruleElevatedBPRegularVisit,
-							 ruleBPLessThanS_DLastNMonths];
+							 ruleHypertensionBP];
 							 
 	var immunizationRules = [ruleHeightWeightLastVaccination,
 							 ruleInfantVaccinations,
