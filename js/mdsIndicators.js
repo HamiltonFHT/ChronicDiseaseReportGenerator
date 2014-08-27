@@ -141,7 +141,7 @@ var mdsIndicators =  (function(){
 	
 	var ruleA1CPastNMonths = {
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
-		long_desc: function(){return "# of patients with A1C measured in last " +  this.months + " months"; },
+		long_desc: function(){return "% of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
 		modifiable: ["months"],
 		defaults: [6],
@@ -194,7 +194,8 @@ var mdsIndicators =  (function(){
 	
 	var ruleBPLessThanS_DLastNMonths = {
 		desc: function(){return "BP < " + this.sysTarget + "/" + this.diasTarget +" in past " + this.months + " months";},
-		long_desc: function(){return "% of patients with LDL less than or equal to 2.0";},
+		long_desc: function(){return "% of patients with BP less than " + this.sysTarget + "/" + this.diasTarget + 
+									" measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date Systolic BP", "Systolic BP", "Diastolic BP"],
 	 	months: 6,
 	 	sysTarget: 130,
@@ -357,7 +358,7 @@ var mdsIndicators =  (function(){
 	
 	var ruleBaselineBP = {
 		desc: function(){return "BP measured in last " + this.months + " months for adults over " + this.age; },
-		long_desc: function() { return "% of patients who are coded as current smokers"; },
+		long_desc: function(){return "% of patients with BP measured in the past " + this.months + " months for adults over " + this.age; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,
 		age: 40,
@@ -365,7 +366,7 @@ var mdsIndicators =  (function(){
 		defaults: [12, 40],
 		rule: function(currentDate, measuredDate, value) {
 			try {
-				if (Number(value) < 40) {
+				if (Number(value) < this.age) {
 					return NaN;
 				} else {
 					return (withinDateRange(currentDate, this.months, measuredDate) && (Number(value) >= this.age));
@@ -601,15 +602,17 @@ var mdsIndicators =  (function(){
 
 	var ruleSmokingStatusRecorded = {
 		desc: function(){return "Smoking Status Recorded"; },
-		long_desc: function() { return "Smoking Status Recorded in Risk Factors"; },
-		col: ["Risk Factors"],
-		rule: function(factors) {
+		long_desc: function() { return "Smoking Status Recorded in Risk Factors for patients over the age of " + this.age; },
+		age: 12,
+		col: ["Risk Factors", "Age"],
+		modifiable: ["age"],
+		defaults: [12],
+		rule: function(factors, age) {
 			try {
-				if (factors.length == 0 || factors.toLowerCase().indexOf('smok') == -1) {
-					return false;
-				} else {
-					return true;
-	 			}
+				if (Number(age) < 12) {
+					return NaN;
+				}
+				return factors.toLowerCase().indexOf('smok') != -1;
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -620,7 +623,8 @@ var mdsIndicators =  (function(){
     //Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
 	var ruleSmokingCessation = {
 		desc: function(){return "Smoking Cessation Attempted"; },
-		long_desc: function() { return "Smoking Cessation form in patient chart"; },
+		long_desc: function() { return "Smoking Cessation form performed within last " + this.months + 
+									   " months for smokers who have seen their doctor in that time"; },
 		months: 15,
 		modifiable: ["months"],
 		defaults:[15],
@@ -629,10 +633,8 @@ var mdsIndicators =  (function(){
 			try {
 				if (factors.indexOf("current smoker") === -1 || !withinDateRange(currentDate,this.months,lastSeenDate)) {
 					return NaN;
-				} else if (withinDateRange(currentDate, this.months, formDate)){
-					return true;
 				} else {
-					return false;
+					return withinDateRange(currentDate, this.months, formDate);	
 				}
 			} catch (err) {
 				console.log(err);
@@ -642,15 +644,18 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleLungHealthForm = {
-		desc: function(){return "Lung Health Recorded"; },
-		long_desc: function() { return "Canadian Lung Health Form in patient chart"; },
-		col: ["Lung Health Form"],
-		rule: function(form) {
+		desc: function(){return "Canadian Lung Health Test Performed"; },
+		long_desc: function() { return "Canadian Lung Health Form in patient chart for smokers over the age of " + this.age; },
+		age: 40,
+		modifiable: ["age"],
+		col: ["Age", "Lung Health Form", "Risk Factors"],
+		rule: function(age, formDate, factors) {
 			try {
-				if (form == "") {
-					return false;
-				} else {
-					return true;
+				if (Number(age) <= this.age || factors.indexOf("current smoker") === -1) {
+					return NaN;
+				}
+				else {
+					return formDate != "";
 				}
 			} catch (err) {
 				console.log(err);
@@ -661,7 +666,7 @@ var mdsIndicators =  (function(){
 	
 	var ruleSeniorsPneumovax = {
 		desc: function(){return "Seniors Recieving Pneumovax"; },
-		long_desc: function() { return "Patients over the age of 65 vaccinated for pneumonia"; },
+		long_desc: function() { return "Patients over the age of " + this.age + " and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "pneumococcal polysaccharide"],
 		age: 65,
 		modifiable: ["age"],
@@ -671,10 +676,8 @@ var mdsIndicators =  (function(){
 				//Only people older than 65 qualify
 				if (Number(age) <= this.age) {
 					return NaN;
-				} else if (Number(pneuc) > 0) {
-					return true;
 				} else {
-					return false;
+					return Number(pneuc) > 0;
 				}
 			} catch (err) {
 				console.log(err);
@@ -685,20 +688,18 @@ var mdsIndicators =  (function(){
 	
 	var ruleAdultSmokersPneumovax = {
 		desc: function(){return "Adult Smokers Recieving Pneumovax"; },
-		long_desc: function() { return "Patients over the age of 19 who smoke vaccinated for pneumonia"; },
+		long_desc: function() { return "Patients over the age of " + this.age + " who smoke and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Risk Factors", "pneumococcal polysaccharide"],
-		age: 19,
+		age: 18,
 		modifiable: ["age"],
 		defaults: [19],
-		rule: function(currentDate, age, pneuc) {
+		rule: function(factors, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (Number(age) >= this.age) {
+				if (Number(age) <= this.age || factors.indexOf("current smoker") == -1) {
 					return NaN;
-				} else if (Number(pneuc) > 0) {
-					return true;
 				} else {
-					return false;
+					return Number(pneuc) > 0;
 				}
 			} catch (err) {
 				console.log(err);
@@ -709,7 +710,8 @@ var mdsIndicators =  (function(){
 	
 	var ruleLungDiseasePneumovax = {
 		desc: function(){return "Adults with COPD or Asthma Recieving Pneumovax"; },
-		long_desc: function() { return "Patients over the age of 19 who have COPD or asthma vaccinated for pneumonia"; },
+		long_desc: function() { return "Patients over the age of " + this.age + 
+									   " who have COPD or asthma and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
 		age: 19,
 		modifiable: ["age"],
@@ -721,8 +723,7 @@ var mdsIndicators =  (function(){
 				if (Number(age) >= this.minAge) {
 					return NaN;
 				}
-				problemList = problemList.toLowerCase();
-				if (new RegExp(this.diseaseList.join("|")).test(problemList)) {
+				if (new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase())) {
 					return (Number(pneuc) > 0 ?  true : false);
 				} else {
 					return NaN;
@@ -736,8 +737,8 @@ var mdsIndicators =  (function(){
 	
 	var rulePHQ9 = {
 		desc: function(){return "Patients with multiple PHQ9 forms"; },
-		long_desc: function() { return ["Adult patients over have depression and have filled out at least one PHQ9 form",
-								 "have more than one PHQ9 form. This is an indication it is being used for follow-up"].join("\n"); },
+		long_desc: function() { return "Adult patients who have depression and have filled out at least one PHQ9 form" + 
+								 		"have more than one PHQ9 form. This is an indication it is being used for follow-up"; },
 		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
 		months:6,
 		modifiable: ["months"],
@@ -760,7 +761,7 @@ var mdsIndicators =  (function(){
 	
 	var ruleADHDMedReview = {
 		desc: function(){return "Youth on ADHD meds annual year"; },
-		long_desc: function() { return "Youth diagnosed with ADHD and on medications for ADHD have had an annual visit"; },
+		long_desc: function() { return "Youth diagnosed with ADHD and on medications for ADHD who have had an annual visit"; },
 		col: ["Current Date", "Last Seen Date"],
 		months:12,
 		modifiable: ["months"],
@@ -776,8 +777,9 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleBreastCancer = {
-		desc: function(){return "Up-to-date on breast cancer screening"; },
-		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a mammogram in the past " + months + " months"; },
+		desc: function(){return "Up-to-date for breast cancer screening"; },
+		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
+										" who received a mammogram in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Mammogram"],
 		months:3*12,
 		minAge:50,
@@ -855,10 +857,10 @@ var mdsIndicators =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (Number(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate)){
-						return true;
+				if (Number(age) < this.minAge) {
+					return NaN;
 				} else {
-					return false;
+					return Number(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate);
 				}
 			} catch (err) {
 				console.log(err);
@@ -978,6 +980,7 @@ var mdsIndicators =  (function(){
 			results.push({	
 					index: r,
 					desc: currentRule.desc(),
+					tooltip: currentRule.long_desc(),
 				  	passed: passed.filter(function(e) { return (e == true); }).length,
 				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
 			});

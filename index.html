@@ -18,45 +18,47 @@
 </head>
 
 <body>
-	<div id="main">
-		<div id="description">
-			<h1>Diabetes Report Generator v1.3</h1>
-			<!-- TODO: This needs to be updated -->
-			<p>
-					This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
-                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
-                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
-                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
-                    Each data point may be clicked to show the corresponding snapshot report.
-                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
-                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
-			</p>
-			<br />
-		</div>
-	
-		<div id="actions">
-			<div class="actionImport" id="importFiles">
-				<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="width:1200px;">
+	<div id="container">
+		<div class="content">
+			<div id="description">
+				<h1>Diabetes Report Generator v1.3</h1>
+				<!-- TODO: This needs to be updated -->
+				<p>
+						This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
+	                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
+	                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
+	                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
+	                    Each data point may be clicked to show the corresponding snapshot report.
+	                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
+	                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
+				</p>
+				<br />
 			</div>
-			<div id="settings"> </div>
-			<div id="save"> </div>
-		</div>
-	
-		<div id="canvasContainer">
-			<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211);"> </svg>
-		</div>
-	
-
-		<div id="indicatorEditor"> </div>
 		
-		<div id="canvasContainer_extra" style="position:relative; top:40px; clear:both;"> </div>
+			<div id="actions">
+				<div class="actionImport" id="importFiles">
+					<b>Import Report(s):</b><br><input type="file" id="fileImport" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="width:1200px;">
+				</div>
+				<div id="settings"> </div>
+				<div id="save"> </div>
+			</div>
 		
-		<div id="hidden">
-			<a href="" download="" id="outputA" style="display: none;">
-				<img src="" id="outputImg" style="display: none;" />
-			</a>
-		</div>
-	</div>
+			<div id="canvasContainer">
+				<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211);"> </svg>
+			</div>
+		
+	
+			<div id="indicatorEditor"> </div>
+			
+			<div id="canvasContainer_extra" style="position:relative; padding-top:1em; clear:both;"> </div>
+			
+			<div id="hidden">
+				<a href="" download="" id="outputA" style="display: none;">
+					<img src="" id="outputImg" style="display: none;" />
+				</a>
+			</div>
+		</div> <!-- content -->
+	</div> <!-- container -->
 </body>
 
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>

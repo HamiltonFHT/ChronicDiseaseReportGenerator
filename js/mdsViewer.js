@@ -557,33 +557,36 @@ var mdsViewer = (function() {
 		
 		mCanvasCurrent = typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas;
 
-		var snapshotData = mCalculatedData[selectedDate];
+		var data = mCalculatedData[selectedDate];
 
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
 		var arrayDesc = [];
+		var arrayTooltip = [];
 		var arrayLabels = [];
 		
-		if (typeof(snapshotData) === undefined || snapshotData.length == 0) {
+		if (typeof(data) === undefined || data.length == 0) {
 			return;
 		}
-		for (var i=0; i < snapshotData.length; i++) {
-			if (snapshotData[i]["total"] == 0) {
+		for (var i=0; i < data.length; i++) {
+			if (data[i]["total"] == 0) {
 				arrayLabels.push("0% (0/0)");
 				continue;
 			}
-			var percent = snapshotData[i]["passed"] / snapshotData[i]["total"] * 100;
-			var label = Math.round(percent) + "% (" + snapshotData[i]["passed"] + "/" + snapshotData[i]["total"]+ ")";
+			var percent = data[i]["passed"] / data[i]["total"] * 100;
+			var label = Math.round(percent) + "% (" + data[i]["passed"] + "/" + data[i]["total"]+ ")";
 			arrayData.push(percent);
 			arrayLabels.push(label);
 			//If the description is really long then insert a newline.
-			var desc = snapshotData[i]["desc"];
+			var desc = data[i]["desc"];
+			var tooltip = data[i]["tooltip"] || "";
 			/*
 			if (desc.length > 32 && desc.substr(32).indexOf(" ") > -1) {
 				desc = desc.replaceAt(desc.substr(32).indexOf(" ")+32, "\n");
 			}
 			*/
 			arrayDesc.push(desc);
+			arrayTooltip.push(tooltip);
 		}
 
 		xScale = d3.scale.linear()
@@ -674,7 +677,7 @@ var mdsViewer = (function() {
 					else title += arraySelectedOnly[i] + ", ";
 				}
 				title += " as of " + mArrayDates[selectedDate].toString().substring(4, 15);
-				title += " (n = " + snapshotData[0]["total"] + ")";
+				title += " (n = " + data[0]["total"] + ")";
 				gReportTitle = title;
 				return title;
 			});
@@ -728,7 +731,9 @@ var mdsViewer = (function() {
 				})
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
-				.attr("shape-rendering", "crispEdges");
+				.attr("shape-rendering", "crispEdges")
+				.append("svg:title")
+					.text(function(d, i) { return arrayTooltip[i]; });
 
 		// Add bars for patients not within criteria
 		mCanvasCurrent.selectAll("offTargetBar")
@@ -746,7 +751,9 @@ var mdsViewer = (function() {
 				.on("click", function(d, i) {
 					handleBarClick(i, this.getAttribute("y"));
 					return false;
-				});
+				})
+				.append("svg:title")
+					.text(function(d, i) { return arrayTooltip[i]; });
 		
 		//Labels for each bar
 		mCanvasCurrent.selectAll("onTargetLabel")
@@ -767,6 +774,7 @@ var mdsViewer = (function() {
 												else { return "white";	} 
 											  })
 				.text(function(d, i) { return arrayLabels[i]; });
+				
 		
 		mCanvasCurrent.selectAll("offTargetLabel")
 			.data(arrayData)
@@ -791,7 +799,7 @@ var mdsViewer = (function() {
 		thisBar.attr("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
 		mCurrentIndicator = i;
 		
-		currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
+		var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
 		if (currentRule.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {
@@ -1093,20 +1101,20 @@ var mdsViewer = (function() {
 			var arrayLabels = [];
 
 			if (mMode === "snapshot") {
-				var snapshotData = mCalculatedData[0];
+				var data = mCalculatedData[0];
 			
-				for (var i=0; i < snapshotData.length; i++) {
-					if (snapshotData[i]["total"] == 0) {
+				for (var i=0; i < data.length; i++) {
+					if (data[i]["total"] == 0) {
 						arrayLabels.push("0% (0/0)");
 						continue;
 					}
-					var percent = snapshotData[i]["passed"] / snapshotData[i]["total"] * 100;
+					var percent = data[i]["passed"] / data[i]["total"] * 100;
 					arrayData.push(percent);
 					
-					var label = Math.round(percent) + "% (" + snapshotData[i]["passed"] + "/" + snapshotData[i]["total"]+ ")";
+					var label = Math.round(percent) + "% (" + data[i]["passed"] + "/" + data[i]["total"]+ ")";
 					arrayLabels.push(label);
 					
-					arrayDesc.push(snapshotData[i]["desc"]);
+					arrayDesc.push(data[i]["desc"]);
 				}
 				if (arrayData.length == 0) {
 					return;
