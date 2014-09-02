@@ -39,6 +39,7 @@ body {
 
 #canvasSVG {
 	display: block;
+	float:left;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top:0.5em;
