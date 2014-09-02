@@ -41,25 +41,36 @@ var mdsViewer = (function() {
 	var mCurrentIndSetIndex = 0; // current rule set index
 	var mCurrentIndSetName = ""; // current rule set name
 	var mCurrentIndicator = 0;       // current indicator
-	
 	var xScale, yScale, xAxis, yAxis;
 	
 	
 	//Static variables to handle graph dimensions and colors
-	var DEFAULT_CANVAS_WIDTH = 940;  		// pixels
-	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
+	var DEFAULT_CANVAS_WIDTH = 940;
+	var mCanvasScale = 1;
+	var mCanvasWidth = DEFAULT_CANVAS_WIDTH * mCanvasScale;  		// pixels
+	var mCanvasHeight = 480;    	// pixels
+
 	
-	var DEFAULT_PADDING_LEFT_SNAPSHOT_MODE = 300;
-	var DEFAULT_PADDING_TOP_SNAPSHOT_MODE = 50;
+	var DEFAULT_PADDING_LEFT_SNAPSHOT = 300;
+	var mSnapshotPaddingLeft = DEFAULT_PADDING_LEFT_SNAPSHOT * mCanvasScale;
+	var DEFAULT_PADDING_TOP_SNAPSHOT = 50;
 	
-	var DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT_MODE - 25;
-	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_SNAPSHOT_MODE;
+	var DEFAULT_GRAPH_WIDTH_SNAPSHOT = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT - 25;
+	var mGraphWidthSnapshot = DEFAULT_GRAPH_WIDTH_SNAPSHOT * mCanvasScale;
+	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT = mCanvasHeight - (2 * DEFAULT_PADDING_TOP_SNAPSHOT);
 	
-	var DEFAULT_PADDING_LEFT_TRACKING_MODE = 75;
-	var DEFAULT_PADDING_TOP_TRACKING_MODE = 50;
+	var DEFAULT_PADDING_LEFT_TRACKING = 75;
+	var mTrackingPaddingLeft = DEFAULT_PADDING_LEFT_TRACKING * mCanvasScale;
+	var DEFAULT_PADDING_TOP_TRACKING = 50;
 	
-	var DEFAULT_GRAPH_WIDTH_TRACKING_MODE = DEFAULT_CANVAS_WIDTH - 2 * DEFAULT_PADDING_LEFT_TRACKING_MODE;
-	var DEFAULT_GRAPH_HEIGHT_TRACKING_MODE = DEFAULT_CANVAS_HEIGHT - 2 * DEFAULT_PADDING_TOP_TRACKING_MODE;
+	var DEFAULT_GRAPH_WIDTH_TRACKING = DEFAULT_CANVAS_WIDTH - (2 * DEFAULT_PADDING_LEFT_TRACKING);
+	var mGraphWidthTracking = DEFAULT_GRAPH_WIDTH_TRACKING * mCanvasScale;
+	var DEFAULT_GRAPH_HEIGHT_TRACKING = DEFAULT_CANVAS_WIDTH - (2 * DEFAULT_PADDING_TOP_TRACKING);
+	
+	
+	var DEFAULT_YAXIS_CHAR_LENGTH = 30;
+	var mYAxisCharLength = DEFAULT_YAXIS_CHAR_LENGTH * mCanvasScale;
+	
 	
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
 							"sandybrown", "forestgreen", "firebrick", "goldenrod", "darkslateblue",
@@ -73,6 +84,16 @@ var mdsViewer = (function() {
 	    return this.substr(0, index) + character + this.substr(index+character.length);
 	};
 
+	var resizeTimer;
+	window.onresize = function(){
+	    if (resizeTimer){
+	        clearTimeout(resizeTimer);
+	    } 
+	    resizeTimer = setTimeout(function(){
+	        updateCanvasSize(true);
+	        }, 250);
+	};
+
 	/*
 	 * Remove graph and user interface elements
 	 * Called when chart needs to be refreshed or cleared
@@ -83,18 +104,18 @@ var mdsViewer = (function() {
 				
 		mCanvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
-					.attr("width", DEFAULT_CANVAS_WIDTH)
-					.attr("height", DEFAULT_CANVAS_HEIGHT)
+					.attr("width", mCanvasWidth)
+					.attr("height", mCanvasHeight)
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("class", "g_main")
 							.attr("transform", function() {
 								switch (mMode) {
 									case "snapshot":
-										return "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")";
+										return "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")";
 									break;
 									case "tracking":
-										return "translate(" + DEFAULT_PADDING_LEFT_TRACKING_MODE + ", " + DEFAULT_PADDING_TOP_TRACKING_MODE + ")";
+										return "translate(" + DEFAULT_PADDING_LEFT_TRACKING + ", " + DEFAULT_PADDING_TOP_TRACKING + ")";
 									break;
 								}	
 							});		
@@ -274,7 +295,7 @@ var mdsViewer = (function() {
 	function saveFile(fileType) {
 		
 			// Append canvas to the document
-			var canvasString = '<canvas id="outputCanvas" width="' + DEFAULT_CANVAS_WIDTH + '" height="' + DEFAULT_CANVAS_HEIGHT +
+			var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + mCanvasHeight +
 								'" style="border: 1px solid black; display:none;"></canvas>';
 					
 			$("body").append(canvasString);
@@ -504,11 +525,10 @@ var mdsViewer = (function() {
 		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
 				
 		clearCanvas();
+		updateCanvasSize();
 		
-
 		$("#canvasContainer_extra").empty();
 
-				
 		if (mCalculatedData == undefined) {
 			console.log("no calculated data!");
 			return;
@@ -553,7 +573,40 @@ var mdsViewer = (function() {
 		updateDropdownMode();
 	};
 	
+	function updateCanvasSize(redraw) {
+		var prevScale = mCanvasScale;
+		if (window.innerWidth >= 1024) {
+			mCanvasScale = 1;
+		} else if (window.innerWidth < 1024 && window.innerWidth >= 501) {
+			mCanvasScale = 0.8;
+		} else if (window.innerWidth < 501) {
+			mCanvasScale = 0.6;
+		}
+		
+		
+		if (prevScale != mCanvasScale) {
+			mCanvasWidth = Math.floor(DEFAULT_CANVAS_WIDTH*mCanvasScale);
+			mGraphWidthSnapshot = Math.floor(DEFAULT_GRAPH_WIDTH_SNAPSHOT*mCanvasScale);
+			mGraphWidthTracking = Math.floor(DEFAULT_GRAPH_WIDTH_TRACKING*mCanvasScale);
+			mSnapshotPaddingLeft = Math.floor(DEFAULT_PADDING_LEFT_SNAPSHOT*mCanvasScale);
+			mYAxisCharLength = Math.floor(DEFAULT_YAXIS_CHAR_LENGTH*mCanvasScale);
+			
+			if (redraw) {
+				//$("#canvasSVG").prop("width", mCanvasWidth);
+				clearCanvas();
+				if (mMode === 'snapshot') {
+					generateSnapshot(0);
+				} else {
+					generateTracking();
+				}
+			}
+		}
+	}
+	
+	
 	function generateSnapshot(selectedDate, extraCanvas){
+
+		//updateCanvasSize();
 		
 		mCanvasCurrent = typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas;
 
@@ -591,7 +644,7 @@ var mdsViewer = (function() {
 
 		xScale = d3.scale.linear()
 			.domain([0, 100])
-			.range([0, DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE]);
+			.range([0, mGraphWidthSnapshot]);
 			
 		xAxis = d3.svg.axis()
 			.scale(xScale)
@@ -600,7 +653,7 @@ var mdsViewer = (function() {
 		
 		yScale = d3.scale.ordinal()
 			.domain(arrayDesc)
-			.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE], 0.1);
+			.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT], 0.1);
 			
 		yAxis = d3.svg.axis()
 			.scale(yScale)
@@ -612,7 +665,7 @@ var mdsViewer = (function() {
 				.attr("x1", xScale)
 				.attr("x2", xScale)
 				.attr("y1", 0)
-				.attr("y2", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE)
+				.attr("y2", DEFAULT_GRAPH_HEIGHT_SNAPSHOT)
 				.style("stroke", "#ccc")
 				.style("stroke-width", 1)
 				.style("opacity", 0.7);
@@ -620,8 +673,8 @@ var mdsViewer = (function() {
 		// Add x axis label
 		mCanvasCurrent.append("text")
 			.attr("class", "xAxisLabel")
-			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + 40)
+			.attr("x", mGraphWidthSnapshot / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT + 40)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -632,8 +685,8 @@ var mdsViewer = (function() {
 		mCanvasCurrent.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE / 2)
-			.attr("y", -DEFAULT_PADDING_LEFT_SNAPSHOT_MODE / 2 - 125)
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT / 2)
+			.attr("y", -mSnapshotPaddingLeft / 2 - (125 * mCanvasScale))
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -642,11 +695,12 @@ var mdsViewer = (function() {
 				return mdsIndicators.ruleList[mCurrentIndSetIndex].name + " Measure"; 
 			}));
 		
+	
 		// Graph title text
 		mCanvasCurrent.append("text")
 			.attr("class", "graphTitle")
-			.attr("x", DEFAULT_GRAPH_WIDTH_SNAPSHOT_MODE / 3.5)
-			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT_MODE / 2 + 10)
+			.attr("x", mGraphWidthSnapshot / 3.5)
+			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT / 2 + 10)
 			.attr("text-anchor", "middle")
 			.style("font-size", "14px")
 			.style("font-weight", "bold")
@@ -682,9 +736,10 @@ var mdsViewer = (function() {
 				return title;
 			});
 		
+		
 		//Translate graph into center of page
 		mCanvasCurrent.append("g")
-			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT_MODE + ")")
+			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
@@ -692,7 +747,26 @@ var mdsViewer = (function() {
 		mCanvasCurrent.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
+			.attr("id", "yaxis")
 			.call(yAxis);
+		
+		var insertLinebreaks = function (d) {
+        	var el = d3.select(this);
+        	var words = d3.select(this).text();
+        	var splitRegex = new RegExp(".{" + mYAxisCharLength + "}\\S*\\s+", "g");
+        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
+        
+        	el.text('');
+        	var length = 0;
+        	var line = '';
+	        for (var i = 0; i < words.length; i++) {
+				var tspan = el.append('tspan').text(words[i]);
+				if (i > 0)
+	      			tspan.attr('x', 0).attr('dy', '15').attr('dx', '-10');
+	  		}
+    	};
+	
+	    mCanvasCurrent.selectAll('g#yaxis g text').each(insertLinebreaks);
 		
 				
 		// Add styling and attributes for major ticks in axes
@@ -847,7 +921,7 @@ var mdsViewer = (function() {
 		// Creat the scale for the X axis
 		xScale = d3.time.scale()
 			.domain([minDate, maxDate])
-			.range([0, DEFAULT_GRAPH_WIDTH_TRACKING_MODE]);
+			.range([0, mGraphWidthTracking]);
 			
 		// To do: better date format
 		xAxis = d3.svg.axis()
@@ -858,7 +932,7 @@ var mdsViewer = (function() {
 		// Create Y Axis scale
 		yScale = d3.scale.linear()
 			.domain([0, 100])
-			.range([DEFAULT_GRAPH_HEIGHT_TRACKING_MODE, 0]);
+			.range([DEFAULT_GRAPH_HEIGHT_TRACKING, 0]);
 			
 		yAxis = d3.svg.axis()
 			.scale(yScale)
@@ -872,7 +946,7 @@ var mdsViewer = (function() {
 				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("x2", function (d, i) { return xScale(arrayDates[i]); })
 				.attr("y1", 0)
-				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE)
+				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING)
 				.style("opacity", 0.7)
 				.style("stroke", "#cccccc")
 				.style("stroke-width", "1px");
@@ -883,7 +957,7 @@ var mdsViewer = (function() {
 			.enter().append("line")
 				.attr("class", "tickLine yTickLine")
 				.attr("x1", 0)
-				.attr("x2", DEFAULT_GRAPH_WIDTH_TRACKING_MODE)
+				.attr("x2", mGraphWidthTracking)
 				.attr("y1", yScale)
 				.attr("y2", yScale)
 				.style("opacity", 0.7)
@@ -893,7 +967,7 @@ var mdsViewer = (function() {
 		// Append xAxis to the mCanvas
 		mCanvas.append("g")
 			.attr("class", "xAxis")
-			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + ")")
+			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.call(xAxis);
@@ -970,12 +1044,12 @@ var mdsViewer = (function() {
 					$("#canvasContainer_extra").empty();
 					mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
 						.attr("id", "canvasSVGExtra")
-						.attr("width", DEFAULT_CANVAS_WIDTH)
-						.attr("height", DEFAULT_CANVAS_HEIGHT)
+						.attr("width", mCanvasWidth)
+						.attr("height", mCanvasHeight)
 						.style("border", "1px solid lightgray")
 							.append("g")
 								.attr("class", "g_main")
-								.attr("transform", "translate(" + DEFAULT_PADDING_LEFT_SNAPSHOT_MODE + ", " + DEFAULT_PADDING_TOP_SNAPSHOT_MODE + ")");
+								.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 								
 					d3.select(this)
 						.attr("r", 7)
@@ -991,8 +1065,8 @@ var mdsViewer = (function() {
 		// Add x axis label
 		mCanvas.append("text")
 			.attr("class", "xAxisLabel")
-			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING_MODE + 40)
+			.attr("x", mGraphWidthTracking / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING + 40)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -1003,8 +1077,8 @@ var mdsViewer = (function() {
 		mCanvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING_MODE / 2)
-			.attr("y", -DEFAULT_PADDING_LEFT_TRACKING_MODE / 2)
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING / 2)
+			.attr("y", -DEFAULT_PADDING_LEFT_TRACKING / 2)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -1014,8 +1088,8 @@ var mdsViewer = (function() {
 		// Add graph title
 		mCanvas.append("text")
 			.attr("class", "graphTitle")
-			.attr("x", DEFAULT_GRAPH_WIDTH_TRACKING_MODE / 2)
-			.attr("y", -DEFAULT_PADDING_TOP_TRACKING_MODE / 2)
+			.attr("x", mGraphWidthTracking / 2)
+			.attr("y", -DEFAULT_PADDING_TOP_TRACKING / 2)
 			.attr("text-anchor", "middle")
 			.style("font-size", "14px")
 			.style("font-family", "sans-serif")
