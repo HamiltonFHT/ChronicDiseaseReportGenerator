@@ -369,7 +369,7 @@ var mdsIndicators =  (function(){
 				if (Number(value) < this.age) {
 					return NaN;
 				} else {
-					return (withinDateRange(currentDate, this.months, measuredDate) && (Number(value) >= this.age));
+					return withinDateRange(currentDate, this.months, measuredDate);
 	 			}
 			} catch (err) {
 				console.log(err);
