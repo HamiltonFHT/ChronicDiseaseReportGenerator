@@ -48,7 +48,7 @@ var mdsViewer = (function() {
 	var DEFAULT_CANVAS_WIDTH = 940;
 	var mCanvasScale = 1;
 	var mCanvasWidth = DEFAULT_CANVAS_WIDTH * mCanvasScale;  		// pixels
-	var mCanvasHeight = 480;    	// pixels
+	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
 
 	
 	var DEFAULT_PADDING_LEFT_SNAPSHOT = 300;
@@ -57,7 +57,7 @@ var mdsViewer = (function() {
 	
 	var DEFAULT_GRAPH_WIDTH_SNAPSHOT = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT - 25;
 	var mGraphWidthSnapshot = DEFAULT_GRAPH_WIDTH_SNAPSHOT * mCanvasScale;
-	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT = mCanvasHeight - (2 * DEFAULT_PADDING_TOP_SNAPSHOT);
+	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT = DEFAULT_CANVAS_HEIGHT - (2 * DEFAULT_PADDING_TOP_SNAPSHOT);
 	
 	var DEFAULT_PADDING_LEFT_TRACKING = 75;
 	var mTrackingPaddingLeft = DEFAULT_PADDING_LEFT_TRACKING * mCanvasScale;
@@ -65,11 +65,13 @@ var mdsViewer = (function() {
 	
 	var DEFAULT_GRAPH_WIDTH_TRACKING = DEFAULT_CANVAS_WIDTH - (2 * DEFAULT_PADDING_LEFT_TRACKING);
 	var mGraphWidthTracking = DEFAULT_GRAPH_WIDTH_TRACKING * mCanvasScale;
-	var DEFAULT_GRAPH_HEIGHT_TRACKING = DEFAULT_CANVAS_WIDTH - (2 * DEFAULT_PADDING_TOP_TRACKING);
+	var DEFAULT_GRAPH_HEIGHT_TRACKING = DEFAULT_CANVAS_HEIGHT - (2 * DEFAULT_PADDING_TOP_TRACKING);
 	
 	
 	var DEFAULT_YAXIS_CHAR_LENGTH = 30;
+	var DEFAULT_XAXIS_CHAR_LENGTH = 8;
 	var mYAxisCharLength = DEFAULT_YAXIS_CHAR_LENGTH * mCanvasScale;
+	var mXAxisCharLength = DEFAULT_XAXIS_CHAR_LENGTH;
 	
 	
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
@@ -105,7 +107,7 @@ var mdsViewer = (function() {
 		mCanvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					.attr("width", mCanvasWidth)
-					.attr("height", mCanvasHeight)
+					.attr("height", DEFAULT_CANVAS_HEIGHT)
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("class", "g_main")
@@ -295,7 +297,7 @@ var mdsViewer = (function() {
 	function saveFile(fileType) {
 		
 			// Append canvas to the document
-			var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + mCanvasHeight +
+			var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + DEFAULT_CANVAS_HEIGHT +
 								'" style="border: 1px solid black; display:none;"></canvas>';
 					
 			$("body").append(canvasString);
@@ -590,6 +592,12 @@ var mdsViewer = (function() {
 			mGraphWidthTracking = Math.floor(DEFAULT_GRAPH_WIDTH_TRACKING*mCanvasScale);
 			mSnapshotPaddingLeft = Math.floor(DEFAULT_PADDING_LEFT_SNAPSHOT*mCanvasScale);
 			mYAxisCharLength = Math.floor(DEFAULT_YAXIS_CHAR_LENGTH*mCanvasScale);
+			
+			if (mCanvasScale == 0.6) {
+				mXAxisCharLength = 3;
+			} else {
+				mXAxisCharLength = 8;
+			}
 			
 			if (redraw) {
 				//$("#canvasSVG").prop("width", mCanvasWidth);
@@ -918,7 +926,7 @@ var mdsViewer = (function() {
 		maxDate.setDate(maxDate.getDate()+30);
 		
 		
-		// Creat the scale for the X axis
+		// Create the scale for the X axis
 		xScale = d3.time.scale()
 			.domain([minDate, maxDate])
 			.range([0, mGraphWidthTracking]);
@@ -971,6 +979,24 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.call(xAxis);
+			
+		var insertLinebreaks = function (d) {
+        	var el = d3.select(this);
+        	var words = d3.select(this).text();
+        	var splitRegex = new RegExp(".{" + mXAxisCharLength + "}\\S*\\s+", "g");
+        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
+        
+        	el.text('');
+        	var length = 0;
+        	var line = '';
+	        for (var i = 0; i < words.length; i++) {
+				var tspan = el.append('tspan').text(words[i]);
+				if (i > 0)
+	      			tspan.attr('x', 0).attr('dy', '15');
+	  		}
+    	};
+	
+	    mCanvas.selectAll('g.xAxis g text').each(insertLinebreaks);
 					
 		// Append yAxis to the mCanvas
 		mCanvas.append("g")
@@ -1045,7 +1071,7 @@ var mdsViewer = (function() {
 					mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
 						.attr("id", "canvasSVGExtra")
 						.attr("width", mCanvasWidth)
-						.attr("height", mCanvasHeight)
+						.attr("height", DEFAULT_CANVAS_HEIGHT)
 						.style("border", "1px solid lightgray")
 							.append("g")
 								.attr("class", "g_main")
