@@ -309,8 +309,8 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleEGFRMeasuredPastNMonths = {
-		desc: function(){return "EGFR measured in past " + this.months + " months";},
-		long_desc: function(){return "% of patients with EGFR measured in the past " + this.months + " months";},
+		desc: function(){return "eGFR measured in past " + this.months + " months";},
+		long_desc: function(){return "% of patients with eGFR measured in the past " + this.months + " months";},
 		months: 12,
 		modifiable: ["months"],
 		defaults: [12],
@@ -325,8 +325,8 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleEGFRGreaterThanXPastNMonths = {
-		desc: function(){return "EGFR > " + this.target + " in past " + this.months + " months";},
-		long_desc: function(){return "% of patients with EGFR greater than " + this.target + " measured in the past " + this.months + " months";},
+		desc: function(){return "eGFR > " + this.target + " in past " + this.months + " months";},
+		long_desc: function(){return "% of patients with eGFR greater than " + this.target + " measured in the past " + this.months + " months";},
 	 	col: ["Current Date", "Date eGFR", "eGFR"],
 		months: 12,
 		target: 60,
@@ -902,20 +902,19 @@ var mdsIndicators =  (function(){
 					     ];
 						 
 		//Assemble rules into sets
-	var diabetesExtendedRules = [ruleBPPastNMonths, 
-						 ruleBPLessThanS_DLastNMonths, 
-						 ruleLDLLessThanEqualToXPastNMonths, 
-						 ruleACRLastNMonths,
-						 ruleACRFemaleLessThanXLastNMonths,
-						 ruleACRMaleLessThanXLastNMonths,
-						 ruleEGFRMeasuredPastNMonths, 
-						 ruleEGFRGreaterThanXPastNMonths,
-						 ruleCurrentSmokers,
-						 ruleDMPastNMonths,
-						 ruleA1CPastNMonths, 
-						 ruleA1CLessThanEqualToXPastNMonths,
-						 ruleLDLPastNMonths
-						 ];
+	var diabetesExtendedRules = [ruleDMPastNMonths,
+								 ruleA1CPastNMonths, 
+								 ruleA1CLessThanEqualToXPastNMonths,
+								 ruleBPPastNMonths, 
+								 ruleBPLessThanS_DLastNMonths,
+								 ruleLDLPastNMonths,
+								 ruleLDLLessThanEqualToXPastNMonths, 
+								 ruleACRLastNMonths,
+								 ruleACRFemaleLessThanXLastNMonths,
+								 ruleACRMaleLessThanXLastNMonths,
+								 ruleEGFRMeasuredPastNMonths, 
+								 ruleEGFRGreaterThanXPastNMonths,
+								 ruleCurrentSmokers];
 						 
 						 
 	var hypertensionRules = [ruleBaselineBP,
