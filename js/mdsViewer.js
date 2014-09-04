@@ -14,15 +14,6 @@
 */
 
 
-$.fn.scrollView = function () {
-  return this.each(function () {
-    $('html, body').animate({
-      scrollTop: $(this).offset().top
-    }, 1000);
-  });
-};
-
-
 /* 
  * Generates and displays chart and user controls
  * Handles user interaction
@@ -41,6 +32,7 @@ var mdsViewer = (function() {
 	var mCurrentIndSetIndex = 0; // current rule set index
 	var mCurrentIndSetName = ""; // current rule set name
 	var mCurrentIndicator = 0;       // current indicator
+	var mCurrentDateIndex = 0; //current selected date when in tracking mode
 	var xScale, yScale, xAxis, yAxis;
 	
 	
@@ -95,6 +87,24 @@ var mdsViewer = (function() {
 	        updateCanvasSize(true);
 	        }, 250);
 	};
+	
+	//Scroll until element is completely in view
+	$.fn.scrollView = function () {
+	  return this.each(function () {
+	    $('html, body').animate({
+	      scrollTop: $(this).offset().top
+	    }, 1000);
+	  });
+	};
+	
+	//If element is less than 1/2 in view then return true 
+	//(only works if element is below current viewing window)
+	$.fn.inViewport = function () {
+		return $("#canvasContainer_extra").position().top + $("#canvasContainer_extra").height()/3 
+				< (window.innerHeight || document.documentElement.clientHeight) + $(window).scrollTop();
+	};
+
+
 
 	/*
 	 * Remove graph and user interface elements
@@ -616,7 +626,7 @@ var mdsViewer = (function() {
 
 		//updateCanvasSize();
 		
-		mCanvasCurrent = typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas;
+		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
 
 		var data = mCalculatedData[selectedDate];
 
@@ -667,7 +677,7 @@ var mdsViewer = (function() {
 			.scale(yScale)
 			.orient("left");
 			
-		mCanvasCurrent.selectAll(".tickline")
+		canvas.selectAll(".tickline")
 			.data(xScale.ticks(10))
 			.enter().append("line")
 				.attr("x1", xScale)
@@ -679,7 +689,7 @@ var mdsViewer = (function() {
 				.style("opacity", 0.7);
 			
 		// Add x axis label
-		mCanvasCurrent.append("text")
+		canvas.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", mGraphWidthSnapshot / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT + 40)
@@ -690,7 +700,7 @@ var mdsViewer = (function() {
 			.text("% of Patients");
 			
 		// Add y axis label
-		mCanvasCurrent.append("text")
+		canvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
 			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT / 2)
@@ -705,7 +715,7 @@ var mdsViewer = (function() {
 		
 	
 		// Graph title text
-		mCanvasCurrent.append("text")
+		canvas.append("text")
 			.attr("class", "graphTitle")
 			.attr("x", mGraphWidthSnapshot / 3.5)
 			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT / 2 + 10)
@@ -746,13 +756,13 @@ var mdsViewer = (function() {
 		
 		
 		//Translate graph into center of page
-		mCanvasCurrent.append("g")
+		canvas.append("g")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
 			
-		mCanvasCurrent.append("g")
+		canvas.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.attr("id", "yaxis")
@@ -774,7 +784,7 @@ var mdsViewer = (function() {
 	  		}
     	};
 	
-	    mCanvasCurrent.selectAll('g#yaxis g text').each(insertLinebreaks);
+	    canvas.selectAll('g#yaxis g text').each(insertLinebreaks);
 		
 				
 		// Add styling and attributes for major ticks in axes
@@ -798,7 +808,7 @@ var mdsViewer = (function() {
 		}
 		
 		// Add bars for patients within criteria
-		mCanvasCurrent.selectAll("onTargetBar")
+		canvas.selectAll("onTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "onTargetBar")
@@ -818,7 +828,7 @@ var mdsViewer = (function() {
 					.text(function(d, i) { return arrayTooltip[i]; });
 
 		// Add bars for patients not within criteria
-		mCanvasCurrent.selectAll("offTargetBar")
+		canvas.selectAll("offTargetBar")
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "offTargetBar")
@@ -838,7 +848,7 @@ var mdsViewer = (function() {
 					.text(function(d, i) { return arrayTooltip[i]; });
 		
 		//Labels for each bar
-		mCanvasCurrent.selectAll("onTargetLabel")
+		canvas.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -858,7 +868,7 @@ var mdsViewer = (function() {
 				.text(function(d, i) { return arrayLabels[i]; });
 				
 		
-		mCanvasCurrent.selectAll("offTargetLabel")
+		canvas.selectAll("offTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
 				.attr("class", "dataLabel")
@@ -1056,36 +1066,22 @@ var mdsViewer = (function() {
 						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
 				})
 				.on("click", function(d, i) {
-					d3.select(".selectedPoint")
+					d3.selectAll(".dataPoint")
+						.attr("class", "dataPoint")
 						.attr("r", 5)
 						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-						.on("mouseout", function(d) { d3.select(this)
-														.attr("r", 5)
-														.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]); })
-						.attr("class", "dataPoint");
-					d3.select(this)
-						.on("mouseout", null)
-						.attr("class", "selectedPoint");
-					
-					$("#canvasContainer_extra").empty();
-					mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
-						.attr("id", "canvasSVGExtra")
-						.attr("width", mCanvasWidth)
-						.attr("height", DEFAULT_CANVAS_HEIGHT)
-						.style("border", "1px solid lightgray")
-							.append("g")
-								.attr("class", "g_main")
-								.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
-								
-					d3.select(this)
-						.attr("r", 7)
-						.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
-					mMode = "snapshot";
-					//clearCanvas();
-					//$("#dropdownIndicators").hide();
-					generateSnapshot(i, true);
-					
-					$("#canvasContainer_extra").scrollView();
+						.on("mouseout", function(d) {
+							d3.select(this)
+								.attr("r", 5)
+								.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
+						});
+					d3.select(this).attr("class", "dataPoint selected")
+									.attr("r", 7)
+									.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex])
+									.on("mouseout", function() {});
+									
+					mCurrentDateIndex = i;
+					generateExtraCanvas();
 				});
 				
 		// Add x axis label
@@ -1188,7 +1184,40 @@ var mdsViewer = (function() {
 				.text(function(d, i) { 
 					return arrayLabels[i][mCurrentIndicator];
 				});
+				
+		if (mCanvasExtra != null) {
+			generateExtraCanvas();
+		}
 	};
+	
+	function generateExtraCanvas() {
+		
+		var canvas = $("#canvasContainer_extra");
+		//Empty the extra canvas
+		canvas.empty();
+		
+		//Recreate the extra canvas
+		mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
+			.attr("id", "canvasSVGExtra")
+			.attr("width", mCanvasWidth)
+			.attr("height", DEFAULT_CANVAS_HEIGHT)
+			.style("border", "1px solid lightgray")
+				.append("g")
+					.attr("class", "g_main")
+					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
+
+		//mMode = "snapshot";
+		//clearCanvas();
+		//$("#dropdownIndicators").hide();
+		//Add the snapshot graph to the extra canvas
+		generateSnapshot(mCurrentDateIndex, true); //todo need this and "this"
+		
+		//Scroll to the new canvas
+		if (!canvas.inViewport()) {
+			canvas.scrollView();
+		}
+		//	$("#canvasContainer_extra").scrollView();
+	}
 	
 	function toggleDataLabels() {
 			// Find data labels
