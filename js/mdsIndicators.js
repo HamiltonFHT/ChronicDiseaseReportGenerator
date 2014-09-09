@@ -189,11 +189,11 @@ var mdsIndicators =  (function(){
 		//Immunizations
 		} else if (header.indexOf("height date") != -1) {
 			rule = 2;
-		//Smoking Cessation
-		} else if (header.indexOf("Smoking Cessation Form") != -1) {
-			rule = 3;
 		//Lung Health
 		} else if (header.indexOf("Lung Health Form") != -1) {
+			rule = 3;
+		//Smoking Cessation
+		} else if (header.indexOf("Smoking Cessation Form") != -1) {
 			rule = 4;
 		//Depression
 		} else if (header.indexOf("PHQ9 Dates") != -1) {
@@ -779,7 +779,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleSeniorsPneumovax = {
-		desc: function(){return "Seniors Recieving Pneumovax"; },
+		desc: function(){return "Seniors vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.age + " and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "pneumococcal polysaccharide"],
 		age: 65,
@@ -801,7 +801,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleAdultSmokersPneumovax = {
-		desc: function(){return "Adult Smokers Recieving Pneumovax"; },
+		desc: function(){return "Adult Smokers vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.age + " who smoke and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Risk Factors", "pneumococcal polysaccharide"],
 		age: 18,
@@ -823,7 +823,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleLungDiseasePneumovax = {
-		desc: function(){return "Adults with COPD or Asthma Recieving Pneumovax"; },
+		desc: function(){return "Adults with COPD or Asthma vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.age + 
 									   " who have COPD or asthma and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
@@ -1018,7 +1018,9 @@ var mdsIndicators =  (function(){
 	var smokingCessationRules = [ruleSmokingStatusRecorded,
 								 ruleSmokingCessation];
 	
-	var lungHealthRules = [ruleAdultSmokersPneumovax,
+	var lungHealthRules = [ruleSmokingStatusRecorded,
+						   ruleSmokingCessation,
+						   ruleAdultSmokersPneumovax,
 						   ruleSeniorsPneumovax,
 						   ruleLungDiseasePneumovax,
 						   ruleLungHealthForm];
@@ -1038,8 +1040,8 @@ var mdsIndicators =  (function(){
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
 					{name:"Immunizations", rules:immunizationRules},
-					{name:"Smoking Cessation", rules:smokingCessationRules},
 					{name:"Lung Health", rules:lungHealthRules},
+					{name:"Smoking Cessation", rules:smokingCessationRules},
 					{name:"Depression", rules:adultMentalHealthRules},
 					{name: "Adult Preventative Care", rules:cancerScreeningRules},
 					{name: "Well Baby", rules:wellBabyRules},
