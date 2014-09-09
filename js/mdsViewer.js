@@ -62,7 +62,7 @@ var mdsViewer = (function() {
 	var DEFAULT_GRAPH_HEIGHT_TRACKING = DEFAULT_CANVAS_HEIGHT - (2 * DEFAULT_PADDING_TOP_TRACKING);
 	
 	
-	var DEFAULT_YAXIS_CHAR_LENGTH = 30;
+	var DEFAULT_YAXIS_CHAR_LENGTH = 25;
 	var DEFAULT_XAXIS_CHAR_LENGTH = 8;
 	var mYAxisCharLength = DEFAULT_YAXIS_CHAR_LENGTH * mCanvasScale;
 	var mXAxisCharLength = DEFAULT_XAXIS_CHAR_LENGTH;
@@ -76,10 +76,12 @@ var mdsViewer = (function() {
 							 "#FAD2B0", "#90C590", "lightcoral"];
 
 	//Used when displaying axis titles
+	/*
 	String.prototype.replaceAt=function(index, character) {
 	    return this.substr(0, index) + character + this.substr(index+character.length);
 	};
-
+	*/
+	
 	var resizeTimer;
 	window.onresize = function(){
 	    if (resizeTimer){
@@ -394,22 +396,25 @@ var mdsViewer = (function() {
 	
 	function saveFile(fileType) {
 		
-			// Append canvas to the document
-			var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + DEFAULT_CANVAS_HEIGHT +
-								'" style="border: 1px solid black; display:none;"></canvas>';
-					
-			$("body").append(canvasString);
+	    updateCanvasSize(true);
+		
+		// Append canvas to the document
+		var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + DEFAULT_CANVAS_HEIGHT +
+							'" style="border: 1px solid black; display:none;"></canvas>';
+		
+		$("#outputCanvas").remove();
+		$("body").append(canvasString);
 
-			// Retrieve output canvas and copy the current visualization into the canvas
-			var output = $("#outputCanvas")[0];
-			var svgXML = (new XMLSerializer()).serializeToString($("#canvasSVG")[0]);	
-			canvg(output, svgXML, { ignoreDimensions: true });
-			
-			var ctx = output.getContext('2d');
-			ctx.save();
-			ctx.globalCompositeOperation = "destination-over";
-			ctx.fillStyle = 'white';
-			ctx.fillRect(0, 0, output.width, output.height);
+		// Retrieve output canvas and copy the current visualization into the canvas
+		var output = $("#outputCanvas")[0];
+		var svgXML = (new XMLSerializer()).serializeToString($("#canvasSVG")[0]);	
+		canvg(output, svgXML, { ignoreDimensions: true });
+		
+		var ctx = output.getContext('2d');
+		ctx.save();
+		ctx.globalCompositeOperation = "destination-over";
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, output.width, output.height);
 								
 		if (fileType === 'pdf') {
 			// Retrieve data URL of the graph
@@ -814,8 +819,11 @@ var mdsViewer = (function() {
         	var line = '';
 	        for (var i = 0; i < words.length; i++) {
 				var tspan = el.append('tspan').text(words[i]);
-				if (i > 0)
-	      			tspan.attr('x', 0).attr('dy', '15').attr('dx', '-10');
+				if (i > 0) {
+				    //Then pull all of the label up 4 units to recenter
+				    el.attr('dy', -4*(words.length-1));
+	      			tspan.attr('x', 0).attr('dy', '18').attr('dx', '-10');
+	      		}
 	  		}
     	};
 	
