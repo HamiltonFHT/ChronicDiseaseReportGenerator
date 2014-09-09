@@ -803,11 +803,11 @@ var mdsIndicators =  (function(){
 	var ruleAdultSmokersPneumovax = {
 		desc: function(){return "Adult Smokers vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.age + " who smoke and are vaccinated for pneumonia"; },
-		col: ["Current Date", "Age", "Risk Factors", "pneumococcal polysaccharide"],
+		col: ["Age", "Risk Factors", "pneumococcal polysaccharide"],
 		age: 18,
 		modifiable: ["age"],
 		defaults: [19],
-		rule: function(factors, age, pneuc) {
+		rule: function(age, factors, pneuc) {
 			try {
 				//Only people older than 65 qualify
 				if (Number(age) <= this.age || factors.indexOf("current smoker") == -1) {
