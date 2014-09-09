@@ -26,16 +26,18 @@ var mdsViewer = (function() {
 	
 	var mMode = ""; //either "snapshot" or "tracking"
 	var mDataLabels = true; //either true or false (not currently used)
+	var mReportTitle = "";
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
 	var mSelectedPhysicians = null; // selected physicians object [{docnumber: true/false}, ...]
 	var mArrayDates = null; //array of dates [date, date, ...]
+	var mTotalPatients = null; //# of patient records in file
 	var mCurrentIndSetIndex = 0; // current rule set index
 	var mCurrentIndSetName = ""; // current rule set name
 	var mCurrentIndicator = 0;       // current indicator
 	var mCurrentDateIndex = 0; //current selected date when in tracking mode
 	var xScale, yScale, xAxis, yAxis;
 	
-	
+
 	//Static variables to handle graph dimensions and colors
 	var DEFAULT_CANVAS_WIDTH = 940;
 	var mCanvasScale = 1;
@@ -88,6 +90,11 @@ var mdsViewer = (function() {
 	        }, 250);
 	};
 	
+	
+	//First time an extra canvas is generated, automatically scroll to it to show user the location
+	//then disable the feature
+	var mFirstScrollView = true;
+	
 	//Scroll until element is completely in view
 	$.fn.scrollView = function () {
 	  return this.each(function () {
@@ -97,13 +104,81 @@ var mdsViewer = (function() {
 	  });
 	};
 	
-	//If element is less than 1/2 in view then return true 
+	//If element is less than 1/3 (approximately) in view then return true 
 	//(only works if element is below current viewing window)
 	$.fn.inViewport = function () {
 		return $("#canvasContainer_extra").position().top + $("#canvasContainer_extra").height()/3 
 				< (window.innerHeight || document.documentElement.clientHeight) + $(window).scrollTop();
 	};
 
+
+	/* 
+	 * Called by mdsReader
+	 * Removes and reinitializes UI elements and chart
+	 * Calls appropriate graphing function based on mode
+	 */
+	function generateCharts(currentRuleSetIndex, calculatedData, selectedPhysicians, arrayDates, totalPatients) {
+		
+		//mMode = mMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
+		mMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
+		mCurrentIndSetIndex = currentRuleSetIndex;
+		mCalculatedData = calculatedData;
+		mSelectedPhysicians = selectedPhysicians;
+		mArrayDates = arrayDates;
+		mTotalPatients = totalPatients;
+		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
+		mCurrentIndicator = 0;
+				
+		clearCanvas();
+		updateCanvasSize();
+		
+		$("#canvasContainer_extra").empty();
+
+		if (mCalculatedData == undefined) {
+			console.log("no calculated data!");
+			return;
+		}
+		
+		if ($("#settings").children().length === 0) {
+			addUserInterface();
+		}
+		
+		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
+			$("#dropdownMode").prop("disabled", true);
+		} else {
+			$("#dropdownMode").prop("disabled", false);
+		}
+		
+		if (mMode === "snapshot") {
+			//calculatedData = calculatedData[0];
+			//$("#dropdownIndicators").hide();
+			generateSnapshot(0);
+		} else {
+			var isEmpty = true;
+			for (var i = 0; i < mCalculatedData.length; i++) {
+				if (mCalculatedData[i].length>0) {
+					isEmpty = false;
+				} else {
+					mCalculatedData.splice(i, 1);
+					mArrayDates.splice(i, 1);
+				}
+			}
+			
+			if (!isEmpty) {
+				//By default, select first item in dropdown
+				$("#dropdownIndicators").show();
+								
+				generateTracking();
+			} else {
+				alert("No data found in these files for the " + $("#dropdownRules").val() + " rule set");
+			}
+		}
+		
+		addIndicatorEditor();
+		updateDropdownMode();
+		
+		$("#dropdownRules").val(getCurrentIndSetName());
+	};
 
 
 	/*
@@ -149,6 +224,19 @@ var mdsViewer = (function() {
 			}
 		}
 		return true;
+	}
+	
+	function getCurrentIndSetName(){
+		return mdsIndicators.ruleList[mCurrentIndSetIndex].name;
+	}
+	
+	function getIndicator(){
+		if (arguments.length === 0) {
+			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[mCurrentIndicator];
+		} else {
+			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[arguments[0]];
+		}
+		
 	}
 	
 	/*
@@ -288,7 +376,7 @@ var mdsViewer = (function() {
 			updateDropdownIndicators();
 		});
 		
-		$("#dropdownRules").val(mdsIndicators.ruleList[mCurrentIndSetIndex].name);
+		$("#dropdownRules").val(getCurrentIndSetName());
 		
 		/*
 		 * Indicator set dropdown
@@ -296,7 +384,7 @@ var mdsViewer = (function() {
 		updateDropdownIndicators();	
 	};
 	
-		function updateDropdownMode() {
+	function updateDropdownMode() {
 		if(mMode === "snapshot") {
 			$("#dropdownMode").val("Snapshot");
 		} else {
@@ -333,24 +421,24 @@ var mdsViewer = (function() {
 			// Title
 			doc.setFontSize(20);
 			doc.setFont('times');
-			var splitTitle = doc.splitTextToSize(gReportTitle, 180);
+			var splitTitle = doc.splitTextToSize(mReportTitle, 180);
 			doc.text(15, 20, splitTitle);
 			doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
 			
 			// save() to download automatically, output() to open in a new tab
-			//doc.save(gReportTitle);
-			doc.output('save', gReportTitle);
+			//doc.save(mReportTitle);
+			doc.output('save', mReportTitle);
 		} else {
 			// Retrieve data string of the canvas and append to the hidden img element
 			var outputURL = output.toDataURL();
 			$("#outputImg").src = outputURL;
 			// Modify attributes of hidden elements and simulate file download
-			$("#outputA").download = gReportTitle;
+			$("#outputA").download = mReportTitle;
 			$("#outputA").href = outputURL;
 			$("#outputA").click();
 			
 			output.toBlob(function(blob) {
-				saveAs(blob, gReportTitle);
+				saveAs(blob, mReportTitle);
 			});
 		}
 		ctx.restore();
@@ -370,8 +458,9 @@ var mdsViewer = (function() {
 		//Reset indicator editor bar
 		removeIndicatorEditor();
 
-		currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator];
-		if (!currentRule.hasOwnProperty("modifiable")) {
+		//currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator];
+		currentIndicator = getIndicator();
+		if (!currentIndicator.hasOwnProperty("modifiable")) {
 			return false;
 		}
 
@@ -380,14 +469,14 @@ var mdsViewer = (function() {
 		//items.push('<div id="indicatorEditor" class="pure-g">');
 		items.push('<div class="pure-u-1 indicatorTitle">Modify Indicator Targets</div>');
 				
-		$.each(currentRule.modifiable, function(i, item) {
+		$.each(currentIndicator.modifiable, function(i, item) {
 			var itemName = mdsIndicators.lookupVarNameTable[item];
 			if (typeof itemName === 'undefined') {
 				itemName = capitalize(item);
 			}
 			
 			items.push('<div class="pure-u-1"><label for="' + item + '">' + itemName + '</label>');
-			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentRule[item] + '"></div>'); 
+			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentIndicator[item] + '"></div>'); 
 		});
 		
 		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
@@ -434,7 +523,11 @@ var mdsViewer = (function() {
 		// Created dynamically based on default values
 		// To do: variables to store user input values
 		for (var i = 0; i < mCalculatedData[0].length; i++) {
-			dropdownIndicators.push('<option>' + mCalculatedData[0][i]["desc"] + '</option>');
+			if (getIndicator(i).hasOwnProperty('modifiable')) {
+				dropdownIndicators.push('<option>' + mCalculatedData[0][i]["desc"] + '</option>');
+			} else {
+				dropdownIndicators.push('<option disabled>' + mCalculatedData[0][i]["desc"] + '</option>');
+			}
 		}
 		dropdownIndicators.push('</select>');
 		
@@ -467,8 +560,8 @@ var mdsViewer = (function() {
 		});
 		
 		if (params_updated === $('.indicatorValue').length) {
-			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
-			updateDropdownIndicators();
+			
+			addIndicatorElements();
 		}
 	}
 	
@@ -477,10 +570,7 @@ var mdsViewer = (function() {
 		
 		mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator]);
 		
-		updateDropdownIndicators();
-		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
-		
-		addIndicatorEditor();
+		addIndicatorElements();
 	}
 	
 	function resetAllIndicators() {
@@ -490,8 +580,16 @@ var mdsViewer = (function() {
 				mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[i]);
 			}
 		}
+		addIndicatorElements();
+	}
+	
+	function addIndicatorElements(){
 		updateDropdownIndicators();
+		
+		currentIndicator = mCurrentIndicator;
 		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
+		mCurrentIndicator = currentIndicator;
+		
 		addIndicatorEditor();
 	}
 	
@@ -521,70 +619,7 @@ var mdsViewer = (function() {
 		}
 	}
 	
-	/* 
-	 * Called by mdsReader
-	 * Removes and reinitializes UI elements and chart
-	 * Calls appropriate graphing function based on mode
-	 */
-	function generateCharts(currentRuleSetIndex, calculatedData, selectedPhysicians, arrayDates) {
 		
-		//mMode = mMode || (arrayDates.length > 1 ? "tracking" : "snapshot");
-		mMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
-		mCalculatedData = calculatedData;
-		mSelectedPhysicians = selectedPhysicians;
-		mArrayDates = arrayDates;
-		mCurrentIndSetIndex = currentRuleSetIndex;
-		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
-				
-		clearCanvas();
-		updateCanvasSize();
-		
-		$("#canvasContainer_extra").empty();
-
-		if (mCalculatedData == undefined) {
-			console.log("no calculated data!");
-			return;
-		}
-		
-		if ($("#settings").children().length === 0) {
-			addUserInterface();
-		}
-		
-		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
-			$("#dropdownMode").prop("disabled", true);
-		} else {
-			$("#dropdownMode").prop("disabled", false);
-		}
-		
-		if (mMode === "snapshot") {
-			//calculatedData = calculatedData[0];
-			//$("#dropdownIndicators").hide();
-			generateSnapshot(0);
-		} else {
-			var isEmpty = true;
-			for (var i = 0; i < mCalculatedData.length; i++) {
-				if (mCalculatedData[i].length>0) {
-					isEmpty = false;
-				} else {
-					mCalculatedData.splice(i, 1);
-					mArrayDates.splice(i, 1);
-				}
-			}
-			
-			if (!isEmpty) {
-				//By default, select first item in dropdown
-				$("#dropdownIndicators").show();
-								
-				generateTracking();
-			} else {
-				alert("No data found in these files for the " + $("#dropdownRules").val() + " rule set");
-			}
-		}
-		
-		addIndicatorEditor();
-		updateDropdownMode();
-	};
-	
 	function updateCanvasSize(redraw) {
 		var prevScale = mCanvasScale;
 		if (window.innerWidth >= 1024) {
@@ -710,14 +745,14 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.text( (function() {
-				return mdsIndicators.ruleList[mCurrentIndSetIndex].name + " Measure"; 
+				return getCurrentIndSetName() + " Measure"; 
 			}));
 		
 	
 		// Graph title text
 		canvas.append("text")
 			.attr("class", "graphTitle")
-			.attr("x", mGraphWidthSnapshot / 3.5)
+			.attr("x", mGraphWidthSnapshot / 2)
 			.attr("y", -DEFAULT_PADDING_TOP_SNAPSHOT / 2 + 10)
 			.attr("text-anchor", "middle")
 			.style("font-size", "14px")
@@ -749,8 +784,8 @@ var mdsViewer = (function() {
 					else title += arraySelectedOnly[i] + ", ";
 				}
 				title += " as of " + mArrayDates[selectedDate].toString().substring(4, 15);
-				title += " (n = " + data[0]["total"] + ")";
-				gReportTitle = title;
+				title += " (n = " + mTotalPatients[selectedDate] + ")";
+				mReportTitle = title;
 				return title;
 			});
 		
@@ -853,7 +888,7 @@ var mdsViewer = (function() {
 			.enter().append("text")
 				.attr("class", "dataLabel")
 				.attr("x", function(d, i) { 
-											if (d<5) { return xScale(d+5); } 
+											if (d<15) { return xScale(d+10); } 
 											else { return xScale(d/2);	} 
 										  })
 				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
@@ -862,7 +897,7 @@ var mdsViewer = (function() {
 				.style("font-size", "13px")
 				.attr("dy", ".35em")
 				.style("fill", function(d, i) { 
-												if (d<5) { return "black"; } 
+												if (d<15) { return "black"; } 
 												else { return "white";	} 
 											  })
 				.text(function(d, i) { return arrayLabels[i]; });
@@ -891,8 +926,9 @@ var mdsViewer = (function() {
 		thisBar.attr("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
 		mCurrentIndicator = i;
 		
-		var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
-		if (currentRule.hasOwnProperty("modifiable")) {
+		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
+		var currentIndicator = getIndicator();
+		if (currentIndicator.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {
 			removeIndicatorEditor();
@@ -1135,7 +1171,7 @@ var mdsViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";	
 				}
-				gReportTitle = title;
+				mReportTitle = title;
 				return title;
 			});
 		
@@ -1213,8 +1249,9 @@ var mdsViewer = (function() {
 		generateSnapshot(mCurrentDateIndex, true); //todo need this and "this"
 		
 		//Scroll to the new canvas
-		if (!canvas.inViewport()) {
+		if (!canvas.inViewport() && mFirstScrollView) {
 			canvas.scrollView();
+			mFirstScrollView = false;
 		}
 		//	$("#canvasContainer_extra").scrollView();
 	}
