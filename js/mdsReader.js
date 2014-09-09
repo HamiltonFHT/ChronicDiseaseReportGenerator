@@ -52,8 +52,10 @@ var mdsReader = (function() {
 			
 			if (!f) {
 			   alert("Failed to load file");
-			} else if (!f.type.match(/^text*/)) {
-			    alert(f.name + " is not a valid text file.");
+			   throw new Error("Failed to load file");
+			} else if (!f.type.match(/^text*/) && !f.type.match(/vnd\.ms-excel/g)) {
+			    alert(f.name + " is not a valid text or csv file.");
+				throw new Error(f.name + " is not a valid text or csv file.");
 			} else {
 			 	var r = new FileReader();
 			  	r.onload = (function(f) { 
@@ -111,6 +113,11 @@ var mdsReader = (function() {
 		if (arrData[0].length == 0) {
 			arrData.shift();
 		}
+		
+		if (arrData[arrData.length-1] == "") {
+			arrData.pop();
+		}
+		
 		var csvHeaders = arrData.shift();
 		
 		mCurrentIndSetIndex = mdsIndicators.getCurrentRuleSet(csvHeaders);
@@ -126,9 +133,7 @@ var mdsReader = (function() {
 			}
 		}
 		
-		if (arrData[arrData.length-1] == "") {
-			arrData.pop();
-		}
+
 		csvObject["num_elements"] = arrData.length;
 
 		//PSS include a blank column
@@ -307,6 +312,17 @@ var mdsReader = (function() {
 		}
 		return arrayDates;
 	};
+	
+	function getPatientCounts() {
+		var arrayPatientCounts = [];
+		if (mParsedData.length > 0) {
+			for (var i=0; i<mParsedData.length; i++) {
+				arrayPatientCounts.push(mParsedData[i]["num_elements"]);
+			}
+		}
+		return arrayPatientCounts;
+	}
+	
 
 	/*
 	 * Get filtered data
@@ -321,7 +337,8 @@ var mdsReader = (function() {
 				mCurrentIndSetIndex, //selected Rule List
 				mdsIndicators.applyRules(mCurrentIndSetIndex, mFilteredData),
 			 	mSelectedPhysicians,
-			 	getDateArray()
+			 	getDateArray(),
+			 	getPatientCounts()
 			 	);
 	};
 	
