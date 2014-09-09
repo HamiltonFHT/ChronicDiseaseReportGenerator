@@ -39,7 +39,9 @@ var mdsIndicators =  (function(){
 	function mostRecentDate(dateArray) {
 		parsedDateArray = [];
 		for (var i=0; i < dateArray.length; i++) {
-			if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
+			if (dateArray[i].toString().length === 0) {
+				parsedDateArray.push(new Date(0)); // Dec 31, 1969
+			} else if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
 				parsedDate = dateArray[i].split("/");
 				parsedDateArray.push(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]));
 			} else {
@@ -109,6 +111,105 @@ var mdsIndicators =  (function(){
 		'diasTarget': 'Diastolic BP Target',
 		'age': 'Age'
 	};
+	
+	
+	function applyRules(ruleListIndex, filteredData) {
+		//Loop through data from each file
+		var results = [];
+		
+		currentRuleList = ruleList[ruleListIndex];
+		
+		//loop through each file
+		for (var i = 0; i < filteredData.length; i++) {
+			results.push(checkRules(filteredData[i], currentRuleList.rules));
+		}
+		
+		return results;
+	};
+
+	function checkRules(csvObject, ruleList) {
+	
+		var results = [];
+		
+		forRule:
+		for (var r = 0; r < ruleList.length; r++) {
+			currentRule = ruleList[r];
+			var passed = [];
+		
+			for (i=0; i<currentRule.col.length; i++) {
+				if (!csvObject.hasOwnProperty(currentRule.col[i])) {
+					console.log("File has no column named " + currentRule.col[i]);
+					console.log("Can't check rule: " + currentRule.desc());
+
+					continue forRule;
+				}
+			}
+			
+			num_items = csvObject[currentRule.col[0]].length;
+			var num_params = currentRule.col.length;
+			
+			for (var e = 0; e < num_items; e++) {
+				var arg_list = [];
+				for (var p=0; p<num_params;p++) {
+					arg_list.push(csvObject[currentRule.col[p]][e]);
+				}
+				passed.push(currentRule.rule.apply(currentRule, arg_list));
+			}
+			
+			//Count the number of cases that passed the test
+			results.push({	
+					index: r,
+					desc: currentRule.desc(),
+					tooltip: currentRule.long_desc(),
+				  	passed: passed.filter(function(e) { return (e == true); }).length,
+				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
+			});
+		}	
+		return results;
+	};
+	
+	/* 
+	 * Inspect header of text file to guess which indicator set is most appropriate
+	 * Indicator sets are listed in the ruleList variable in mdsIndicators
+	 */
+	function getCurrentRuleSet(header) {
+		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
+			alert("File does not contain necessary data element Patient # or Doctor Number");
+			throw new Error("File does not contain necessary data element Patient # or Doctor Number");
+		}
+		
+		var rule = 0;
+		
+		//Diabetes
+		if (header.indexOf("Hb A1C") != -1) {
+			rule = 0;
+		//Hypertension
+		} else if (header.indexOf("Systolic BP") != -1) {
+			rule = 1;
+		//Immunizations
+		} else if (header.indexOf("height date") != -1) {
+			rule = 2;
+		//Smoking Cessation
+		} else if (header.indexOf("Smoking Cessation Form") != -1) {
+			rule = 3;
+		//Lung Health
+		} else if (header.indexOf("Lung Health Form") != -1) {
+			rule = 4;
+		//Depression
+		} else if (header.indexOf("PHQ9 Dates") != -1) {
+			rule = 5;
+		//Cancer Screening
+		} else if (header.indexOf("Mammogram") != -1) {
+			rule = 6;
+		} else if (header.indexOf("Rourke IV") != -1) {
+			rule = 7;
+		//Youth ADHD
+		} else {
+			rule = 8;
+		}
+		
+		return rule;
+	}
 	
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
@@ -428,7 +529,8 @@ var mdsIndicators =  (function(){
 	
 	var ruleInfantVaccinations = {
 		desc: function(){return "Infant immunization schedule up to date"; },
-		long_desc: function() { return "Infants " + this.age + " months and under with immunization schedule up to date"; },
+		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
+										" years with immunization schedule up to date"; },
 		col: ["Age", "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis",
 		      "varicella", "rotavirus", "polio"],
 		minAge: 2,
@@ -439,7 +541,7 @@ var mdsIndicators =  (function(){
 		polio: 4,
 		hib: 4,
 		pneuc: 3,
-		rot: 2,
+		rotavirus: 2,
 		mencc: 1,
 		measles: 1,
 		mumps: 1,
@@ -454,11 +556,7 @@ var mdsIndicators =  (function(){
 				if (typeof age === "number") {
 					if (age <= this.maxAge && age >= this.minAge) {
 						return (Number(measles) >= this.measles &&
-							Number(mumps) >= this.mumps && 
-							Number(rubella) >= this.rubella &&  
 							Number(diphtheria) >= this.diphtheria && 
-							Number(tetanus) >= this.tetanus && 
-							Number(pertussis) >= this.pertussis && 
 							Number(varicella) >= this.varicella && 
 							Number(rotavirus) >= this.rotavirus && 
 							Number(polio) >= this.polio);
@@ -476,7 +574,7 @@ var mdsIndicators =  (function(){
 	var ruleChildVaccinations = {
 		desc: function(){return "Children with all immunizations"; },
 		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
-		col: ["Current Date", "Age",
+		col: ["Age",
 			  "measles", "mumps", "rubella",
 			  "diphtheria", "tetanus", "pertussis",
 			  "varicella", "rotavirus", "polio",
@@ -506,11 +604,7 @@ var mdsIndicators =  (function(){
 					return NaN;
 				} else {
 					return (Number(measles) >= this.measles &&
-							Number(mumps) >= this.mumps && 
-							Number(rubella) >= this.rubella &&  
 							Number(diphtheria) >= this.diphtheria && 
-							Number(tetanus) >= this.tetanus && 
-							Number(pertussis) >= this.pertussis &&
 							Number(varicella) >= this.varicella &&
 							Number(rotavirus) >= this.rotavirus &&
 							Number(polio) >= this.polio &&
@@ -559,12 +653,7 @@ var mdsIndicators =  (function(){
 					return NaN;
 				} else {
 					return (Number(measles) >= this.measles &&
-							Number(mumps) >= this.mumps && 
-							Number(rubella) >= this.rubella &&  
 							Number(diphtheria) >= this.diphtheria && 
-							Number(tetanus) >= this.tetanus && 
-							Number(pertussis) >= this.pertussis &&
-							Number(varicella) >= this.varicella &&
 							Number(rotavirus) >= this.rotavirus &&
 							Number(polio) >= this.polio &&
 							Number(hib) >= this.hib &&
@@ -580,7 +669,7 @@ var mdsIndicators =  (function(){
 
 	var ruleHeightWeightLastVaccination = {
 		desc: function(){return "Height and Weight at last immunization"; },
-		long_desc: function() { return "Height and Weight measured at last immunization"; },
+		long_desc: function() { return "Height and Weight measured at last immunization. Only applies to patients with height and weight measured on the same day"; },
 		col: ["height date", "weight date",
 			  "measles date", "mumps date", "rubella date",
 			  "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date",
@@ -589,9 +678,9 @@ var mdsIndicators =  (function(){
 						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
 			try {
 				if (heightDate != weightDate) {
-					return false;
+					return NaN;
 				} else {
-					return (new Date(heightDate).getTime() == mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
+					return (new Date(heightDate).getTime() >= mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -785,7 +874,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleADHDMedReview = {
-		desc: function(){return "Youth on ADHD meds annual year"; },
+		desc: function(){return "Youth on ADHD meds annual checkup"; },
 		long_desc: function() { return "Youth diagnosed with ADHD and on medications for ADHD who have had an annual visit"; },
 		col: ["Current Date", "Last Seen Date"],
 		months:12,
@@ -802,7 +891,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleBreastCancer = {
-		desc: function(){return "Up-to-date for breast cancer screening"; },
+		desc: function(){return "Up-to-date breast cancer screening"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
 										" who received a mammogram in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Mammogram"],
@@ -827,8 +916,8 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleCervicalCancer = {
-		desc: function(){return "Up-to-date on cervical cancer screening"; },
-		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + months + " months"; },
+		desc: function(){return "Up-to-date cervical cancer screening"; },
+		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Pap Test Report"],
 		months:3*12,
 		minAge:25,
@@ -851,8 +940,8 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleColorectalCancer = {
-		desc: function(){return "Up-to-date on colorectal cancer screening"; },
-		long_desc: function() { return "Patients over the age of " + this.minAge + " who performed an FOBT in the past " + months + " months"; },
+		desc: function(){return "Up-to-date colorectal cancer screening"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " who performed an FOBT in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "FOBT"],
 		months:2*12,
 		minAge:50,
@@ -873,8 +962,8 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleFluVaccine = {
-		desc: function(){return "Up-to-date on Influenza Vaccine"; },
-		long_desc: function() { return "Patients over the age of " + this.minAge + " who received a flu vaccine in the past " + months + " months"; },
+		desc: function(){return "Up-to-date influenza vaccine"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " who received a flu vaccine in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "influenza date"],
 		months:12,
 		minAge:65,
@@ -957,102 +1046,6 @@ var mdsIndicators =  (function(){
 					{name:"ADHD", rules:youthADHDRules},
 					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
-	function applyRules(ruleListIndex, filteredData) {
-		//Loop through data from each file
-		var results = [];
-		
-		currentRuleList = ruleList[ruleListIndex];
-		
-		//loop through each file
-		for (var i = 0; i < filteredData.length; i++) {
-			results.push(checkRules(filteredData[i], currentRuleList.rules));
-		}
-		
-		return results;
-	};
-
-	function checkRules(csvObject, ruleList) {
-	
-		var results = [];
-		
-		forRule:
-		for (var r = 0; r < ruleList.length; r++) {
-			currentRule = ruleList[r];
-			var passed = [];
-		
-			for (i=0; i<currentRule.col.length; i++) {
-				if (!csvObject.hasOwnProperty(currentRule.col[i])) {
-					console.log("File has no column named " + currentRule.col[i]);
-					console.log("Can't check rule: " + currentRule.desc());
-
-					continue forRule;
-				}
-			}
-			
-			num_items = csvObject[currentRule.col[0]].length;
-			var num_params = currentRule.col.length;
-			
-			for (var e = 0; e < num_items; e++) {
-				var arg_list = [];
-				for (var p=0; p<num_params;p++) {
-					arg_list.push(csvObject[currentRule.col[p]][e]);
-				}
-				passed.push(currentRule.rule.apply(currentRule, arg_list));
-			}
-			
-			//Count the number of cases that passed the test
-			results.push({	
-					index: r,
-					desc: currentRule.desc(),
-					tooltip: currentRule.long_desc(),
-				  	passed: passed.filter(function(e) { return (e == true); }).length,
-				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
-			});
-		}	
-		return results;
-	};
-	
-	/* 
-	 * Inspect header of text file to guess which indicator set is most appropriate
-	 * Indicator sets are listed in the ruleList variable in mdsIndicators
-	 */
-	function getCurrentRuleSet(header) {
-		if (header.indexOf("Patient #") == -1 || header.indexOf("Doctor Number") == -1) {
-			alert("File does not contain necessary data element Patient # or Doctor Number");
-		}
-		
-		var rule = 0;
-		
-		//Diabetes
-		if (header.indexOf("Hb A1C") != -1) {
-			rule = 0;
-		//Hypertension
-		} else if (header.indexOf("Systolic BP") != -1) {
-			rule = 1;
-		//Immunizations
-		} else if (header.indexOf("height date") != -1) {
-			rule = 2;
-		//Smoking Cessation
-		} else if (header.indexOf("Smoking Cessation Form") != -1) {
-			rule = 3;
-		//Lung Health
-		} else if (header.indexOf("Lung Health Form") != -1) {
-			rule = 4;
-		//Depression
-		} else if (header.indexOf("PHQ9 Dates") != -1) {
-			rule = 5;
-		//Cancer Screening
-		} else if (header.indexOf("Mammogram") != -1) {
-			rule = 6;
-		} else if (header.indexOf("Rourke IV") != -1) {
-			rule = 7;
-		//Youth ADHD
-		} else {
-			rule = 8;
-		}
-		
-		return rule;
-	}
 	
 	return {
 		applyRules: applyRules,
