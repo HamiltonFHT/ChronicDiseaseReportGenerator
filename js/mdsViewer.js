@@ -437,7 +437,7 @@ var mdsViewer = (function() {
 			
 			// save() to download automatically, output() to open in a new tab
 			//doc.save(mReportTitle);
-			doc.output('save', mReportTitle);
+			doc.output('save', mReportTitle.concat('.pdf'));
 		} else {
 			// Retrieve data string of the canvas and append to the hidden img element
 			var outputURL = output.toDataURL();
@@ -448,7 +448,7 @@ var mdsViewer = (function() {
 			$("#outputA").click();
 			
 			output.toBlob(function(blob) {
-				saveAs(blob, mReportTitle);
+				saveAs(blob, mReportTitle.concat('.png'));
 			});
 		}
 		ctx.restore();
@@ -812,7 +812,8 @@ var mdsViewer = (function() {
 			.attr("id", "yaxis")
 			.call(yAxis);
 		
-		var insertLinebreaks = function (d) {
+	
+	    canvas.selectAll('g#yaxis g text').each(function (d) {
         	var el = d3.select(this);
         	var words = d3.select(this).text();
         	var splitRegex = new RegExp(".{" + mYAxisCharLength + "}\\S*\\s+", "g");
@@ -823,16 +824,18 @@ var mdsViewer = (function() {
         	var line = '';
 	        for (var i = 0; i < words.length; i++) {
 				var tspan = el.append('tspan').text(words[i]);
-				if (i > 0) {	    
-	      			tspan.attr('x', 0).attr('dy', '18').attr('dx', '-10').style('margin-top', '0.35em');
+				if (i > 0) {
+				    //Then pull all of the label up 4 units to recenter
+				    el.attr('y', -10*(words.length-1));
+	      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
 	      		}
 	  		}
-	  		//Then pull all of the label up 4 units to recenter
-	  		el.attr('dy', -4*(words.length-1));
-    	};
-	
-	    canvas.selectAll('g#yaxis g text').each(insertLinebreaks);
-		
+
+    	});
+
+    	/*canvas.append('foreignObject').attr('x',-150).attr('y',0)
+    		.attr('width',130).attr('height', 100).append("xhtml:body")
+    		.html('<div style="width:130px;">This is some information about whatever</div>');*/
 				
 		// Add styling and attributes for major ticks in axes
 		var majorTicks = document.getElementsByClassName("tick major");
