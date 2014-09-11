@@ -1,6 +1,6 @@
 /*
 	Chronic Disease Report Generator - Web based reports on quality of care standards
-    Copyright (C) 2014  Brice Wong, Tom Sitter - Hamilton Family Health Team
+    Copyright (C) 2014  Brice Wong, Tom Sitter, Kevin Lin - Hamilton Family Health Team
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ var mdsViewer = (function() {
 	var mDataLabels = true; //either true or false (not currently used)
 	var mReportTitle = "";
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
-	var mSelectedPhysicians = null; // selected physicians object [{docnumber: true/false}, ...]
+	var mSelectedPhysicians = {}; // selected physicians object [{docnumber: true/false}, ...]
 	var mArrayDates = null; //array of dates [date, date, ...]
 	var mTotalPatients = null; //# of patient records in file
 	var mCurrentIndSetIndex = 0; // current rule set index
@@ -118,7 +118,32 @@ var mdsViewer = (function() {
 				< (window.innerHeight || document.documentElement.clientHeight) + $(window).scrollTop();
 	};
 
+	//Check if two objects have the same keys
+	function isEquivalent(a, b) {
+	    // Create arrays of property names
+	    var aProps = Object.keys(a);
+	    var bProps = Object.keys(b);
 
+	    // If number of properties is different,
+	    // objects are not equivalent
+	    if (aProps.length != bProps.length) {
+	        return false;
+	    }
+
+	    for (var i = 0; i < aProps.length; i++) {
+	        var propName = aProps[i];
+
+	        // If b does not have property
+	        // objects are not equivalent
+	        if (!b.hasOwnProperty(propName)) {
+	        	return false
+	        }
+	    }
+
+	    // If we made it this far, objects
+	    // are considered equivalent
+	    return true;
+	}
 	/* 
 	 * Called by mdsReader
 	 * Removes and reinitializes UI elements and chart
@@ -130,6 +155,11 @@ var mdsViewer = (function() {
 		mMode = (arrayDates.length > 1 ? "tracking" : "snapshot");
 		mCurrentIndSetIndex = currentRuleSetIndex;
 		mCalculatedData = calculatedData;
+		
+		//If the selected phyisicians objects have different keys (i.e. docs) then this is
+		//a new file and we have to update the physician list in the action bar
+		var isNewFile = !isEquivalent(mSelectedPhysicians, selectedPhysicians);
+		
 		mSelectedPhysicians = selectedPhysicians;
 		mArrayDates = arrayDates;
 		mTotalPatients = totalPatients;
@@ -148,6 +178,8 @@ var mdsViewer = (function() {
 		
 		if ($("#settings").children().length === 0) {
 			addUserInterface();
+		} else if (isNewFile) {
+			addPhysicianList();
 		}
 		
 		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
@@ -264,54 +296,7 @@ var mdsViewer = (function() {
 							  '<div id="selectIndicator"></div>' +
 							  '<div id="toggleLabels"></div>');
 		
-		$("#selectPhysicians").append('<li id="mainSelector" class="physicianListItem selected"><span class="checkmark">\u2714</span>Select All</li>');
-		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
-		// panel. There will also be a filter for "All Selected Physicians"
-		//for (var i = 0; i < Object.keys(mSelectedPhysicians).length; i++) {
-		for (doc in mSelectedPhysicians) {
-			$("#selectPhysicians").append('<li class="physicianListItem selected" data-docnumber="'+doc+'"><span class="checkmark">\u2714</span> Doctor Number ' + doc + '</li>');
-		}
-		
-		//}
-		
-		$(".physicianListItem").click( function(){ 
-			if (mCalculatedData == undefined) { 
-				console.log("Calculated data undefined");
-				return false;
-			}
-
-			var isSelected = $(this).hasClass("selected");
-			if (isSelected === true) {
-				var className = 'notSelected';
-			} else {
-				var className = 'selected';
-			}
-			// If clicked on "Select All"
-			if (this.id === "mainSelector") {
-				// If class has 'selected', it currently is selected and must be unselected
-				for (doc in mSelectedPhysicians) {
-					if (mSelectedPhysicians.hasOwnProperty(doc)) {
-						//negate the isSelected status to select/deselect the option
-						mSelectedPhysicians[doc] = !isSelected;
-					}
-				}
-				$(".physicianListItem").removeClass("selected notSelected").addClass(className);
-			}
-			// Otherwise, clicked on an individual doctor
-			else {
-				var doc = $(this).data('docnumber');//.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
-				mSelectedPhysicians[doc] = !isSelected;
-				$(this).toggleClass('selected notSelected');
-				if(allEqual(true, mSelectedPhysicians)) {
-					$("#mainSelector").removeClass("selected notSelected").addClass("selected");
-				} else {
-					$("#mainSelector").removeClass("selected notSelected").addClass("notSelected");
-				}
-			}
-			
-			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
-			return false; 
-	  	});
+		addPhysicianList();
 
 		// Save to PNG
 		var btnSaveImage = '<button class="pure-button actionButton" id="btnSaveImage"><i class="fa fa-file-image-o"></i> Save as image</button>';
@@ -390,6 +375,60 @@ var mdsViewer = (function() {
 		 */
 		updateDropdownIndicators();	
 	};
+
+	function addPhysicianList() {
+
+		$("#selectPhysicians").empty();
+
+		$("#selectPhysicians").append('<li id="mainSelector" class="physicianListItem selected"><span class="checkmark">\u2714</span>Select All</li>');
+		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
+		// panel. There will also be a filter for "All Selected Physicians"
+		//for (var i = 0; i < Object.keys(mSelectedPhysicians).length; i++) {
+		for (doc in mSelectedPhysicians) {
+			$("#selectPhysicians").append('<li class="physicianListItem selected" data-docnumber="'+doc+'"><span class="checkmark">\u2714</span> Doctor Number ' + doc + '</li>');
+		}
+		
+		//}
+		
+		$(".physicianListItem").click( function(){ 
+			if (mCalculatedData == undefined) { 
+				console.log("Calculated data undefined");
+				return false;
+			}
+
+			var isSelected = $(this).hasClass("selected");
+			if (isSelected === true) {
+				var className = 'notSelected';
+			} else {
+				var className = 'selected';
+			}
+			// If clicked on "Select All"
+			if (this.id === "mainSelector") {
+				// If class has 'selected', it currently is selected and must be unselected
+				for (doc in mSelectedPhysicians) {
+					if (mSelectedPhysicians.hasOwnProperty(doc)) {
+						//negate the isSelected status to select/deselect the option
+						mSelectedPhysicians[doc] = !isSelected;
+					}
+				}
+				$(".physicianListItem").removeClass("selected notSelected").addClass(className);
+			}
+			// Otherwise, clicked on an individual doctor
+			else {
+				var doc = $(this).data('docnumber');//.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
+				mSelectedPhysicians[doc] = !isSelected;
+				$(this).toggleClass('selected notSelected');
+				if(allEqual(true, mSelectedPhysicians)) {
+					$("#mainSelector").removeClass("selected notSelected").addClass("selected");
+				} else {
+					$("#mainSelector").removeClass("selected notSelected").addClass("notSelected");
+				}
+			}
+			
+			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
+			return false; 
+	  	});
+	}
 	
 	function updateDropdownMode() {
 		if(mMode === "snapshot") {
