@@ -779,9 +779,6 @@ var mdsViewer = (function() {
 					return "No Doctors Selected";
 				}
 				
-				//Use this instead to remove global?
-				//ruleSet = $("#dropdownRules").val();
-				
 				var title = mCurrentIndSetName + " Report for Doctor";
 				
 				if (arraySelectedOnly.length > 1) title += "s ";
@@ -796,6 +793,7 @@ var mdsViewer = (function() {
 				var date = mArrayDates[selectedDate];
 				title += " as of " + MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
 				title += " (n = " + mTotalPatients[selectedDate] + ")";
+				//store for when saving file
 				mReportTitle = title;
 				return title;
 			});
