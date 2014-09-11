@@ -75,6 +75,11 @@ var mdsViewer = (function() {
 	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0",
 							 "#FAD2B0", "#90C590", "lightcoral"];
 
+	var MONTH_NAMES = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+    var MONTH_NAMES_SHORT = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
+    "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
+
 	//Used when displaying axis titles
 	/*
 	String.prototype.replaceAt=function(index, character) {
@@ -788,7 +793,8 @@ var mdsViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + mArrayDates[selectedDate].toString().substring(4, 15);
+				var date = mArrayDates[selectedDate];
+				title += " as of " + MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
 				title += " (n = " + mTotalPatients[selectedDate] + ")";
 				mReportTitle = title;
 				return title;
@@ -819,12 +825,12 @@ var mdsViewer = (function() {
         	var line = '';
 	        for (var i = 0; i < words.length; i++) {
 				var tspan = el.append('tspan').text(words[i]);
-				if (i > 0) {
-				    //Then pull all of the label up 4 units to recenter
-				    el.attr('dy', -4*(words.length-1));
-	      			tspan.attr('x', 0).attr('dy', '18').attr('dx', '-10');
+				if (i > 0) {	    
+	      			tspan.attr('x', 0).attr('dy', '18').attr('dx', '-10').style('margin-top', '0.35em');
 	      		}
 	  		}
+	  		//Then pull all of the label up 4 units to recenter
+	  		el.attr('dy', -4*(words.length-1));
     	};
 	
 	    canvas.selectAll('g#yaxis g text').each(insertLinebreaks);
