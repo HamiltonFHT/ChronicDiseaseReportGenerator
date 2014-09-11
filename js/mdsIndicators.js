@@ -810,7 +810,7 @@ var mdsIndicators =  (function(){
 		rule: function(age, factors, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (Number(age) <= this.age || factors.indexOf("current smoker") == -1) {
+				if (Number(age) <= this.age || factors.indexOf("current smoker") === -1) {
 					return NaN;
 				} else {
 					return Number(pneuc) > 0;
@@ -894,20 +894,18 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Up-to-date breast cancer screening"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
 										" who received a mammogram in the past " + this.months + " months"; },
-		col: ["Current Date", "Age", "Mammogram"],
+		col: ["Current Date", "Age", "Sex", "Mammogram"],
 		months:3*12,
 		minAge:50,
 		maxAge:69,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 50 , 69],
-		rule: function(currentDate, age, mammDate) {
+		rule: function(currentDate, age, sex, mammDate) {
 			try {
-				if (Number(age) > this.minAge && Number(age) < this.maxAge &&
-					withinDateRange(currentDate, this.months, mammDate)){
-						return true;
-				} else {
-					return false;
-				}
+				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
+					return NaN;
+				else
+					return	withinDateRange(currentDate, this.months, mammDate)
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -918,20 +916,18 @@ var mdsIndicators =  (function(){
 	var ruleCervicalCancer = {
 		desc: function(){return "Up-to-date cervical cancer screening"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + this.months + " months"; },
-		col: ["Current Date", "Age", "Pap Test Report"],
+		col: ["Current Date", "Age", "Sex", "Pap Test Report"],
 		months:3*12,
 		minAge:25,
 		maxAge:69,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 25, 69],
-		rule: function(currentDate, age, papDate) {
+		rule: function(currentDate, age, sex, papDate) {
 			try {
-				if (Number(age) > this.minAge && Number(age) < this.maxAge &&
-					withinDateRange(currentDate, this.months, papDate)){
-						return true;
-				} else {
-					return false;
-				}
+				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
+					return NaN;
+				else
+					return	withinDateRange(currentDate, this.months, papDate)
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -949,11 +945,10 @@ var mdsIndicators =  (function(){
 		defaults: [2*12, 50],
 		rule: function(currentDate, age, fobtDate) {
 			try {
-				if (Number(age) > this.minAge && withinDateRange(currentDate, this.months, fobtDate)){
-						return true;
-				} else {
-					return false;
-				}
+				if (Number(age) < this.minAge)
+					return NaN;
+				else
+					return	withinDateRange(currentDate, this.months, fobtDate)
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -971,10 +966,10 @@ var mdsIndicators =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (Number(age) < this.minAge) {
+				if (Number(age) <= this.minAge) {
 					return NaN;
 				} else {
-					return Number(age) >= this.minAge && withinDateRange(currentDate, this.months, fluDate);
+					return withinDateRange(currentDate, this.months, fluDate);
 				}
 			} catch (err) {
 				console.log(err);

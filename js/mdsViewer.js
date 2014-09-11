@@ -75,6 +75,11 @@ var mdsViewer = (function() {
 	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0",
 							 "#FAD2B0", "#90C590", "lightcoral"];
 
+	var MONTH_NAMES = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
+    var MONTH_NAMES_SHORT = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
+    "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
+
 	//Used when displaying axis titles
 	/*
 	String.prototype.replaceAt=function(index, character) {
@@ -788,7 +793,8 @@ var mdsViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";
 				}
-				title += " as of " + mArrayDates[selectedDate].toString().substring(4, 15);
+				var date = mArrayDates[selectedDate];
+				title += " as of " + MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
 				title += " (n = " + mTotalPatients[selectedDate] + ")";
 				mReportTitle = title;
 				return title;
@@ -832,7 +838,6 @@ var mdsViewer = (function() {
     	/*canvas.append('foreignObject').attr('x',-150).attr('y',0)
     		.attr('width',130).attr('height', 100).append("xhtml:body")
     		.html('<div style="width:130px;">This is some information about whatever</div>');*/
-		
 				
 		// Add styling and attributes for major ticks in axes
 		var majorTicks = document.getElementsByClassName("tick major");
