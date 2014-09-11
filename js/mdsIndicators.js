@@ -82,7 +82,7 @@ var mdsIndicators =  (function(){
 	    var msToMonths = 1000*60*60*24*30;
 	    return Math.round((currentDate - birthDate) / msToMonths);
 	}
-	*/
+	
 	function getAgeInMonths(age) {
 		if (age.indexOf('mo') > 0) {
 			return Math.floor(parseInt(age, 10) / 12);
@@ -90,7 +90,7 @@ var mdsIndicators =  (function(){
 			return; // return undefined
 		}
 	}
-	
+	*/
 	function resetToDefault(rule) {
 		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
 			fields = rule.modifiable;
@@ -554,7 +554,7 @@ var mdsIndicators =  (function(){
 			try {
 				age = getAgeFromMonths(ageStr);
 				if (typeof age === "number") {
-					if (age <= this.maxAge && age >= this.minAge) {
+					if (age >= this.minAge && age <= this.maxAge) {
 						return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
 							Number(varicella) >= this.varicella && 
@@ -692,21 +692,17 @@ var mdsIndicators =  (function(){
 	var ruleWellBabyVisit = {
 		desc: function() { return "Well Baby Visit for infants " + this.minAgeMonths + " to " + this.maxAgeMonths + " months"; },
 		long_desc: function() { return "Percent of children " + this.minAgeMonths + " to " + this.maxAgeMonths + " who have completed their 18 month well baby visit"; },
-		col: ["Current Date", "Age", "A002", "A268", "Rourke IV"],
-		minAgeMonths: 17,
-		maxAgeMonths: 24,
-		modifiable: ['minAgeMonths', 'maxAgeMonths'],
-		defaults: [17, 24],
-		rule: function(ageStr, A002, A268, rourke) {
+		col: ["Age", "A002A", "A268A", "Rourke IV", "Rourke Stamp"],
+		minAge: 2,
+		maxAge: 3,
+		modifiable: ['minAge', 'maxAge'],
+		defaults: [2, 3],
+		rule: function(age, A002, A268, rourke, rourkeStamp) {
 			try {
-				var age = getAgeInMonths(ageStr);
-				if (typeof age === "undefined") { return NaN; }
-				if (age >= this.minAgeMonths && age <= this.maxAgeMonths &&
-					(A002 != 0 || A268 != 0 || rourke != 0)) {
-						return true;
-				} else {
-					return false;
-				}
+				if (Number(age) < this.minAgeMonths || Number(age) > this.maxAgeMonths) 
+					return NaN;
+				else 
+					return (A002 != 0 || A268 != 0 || rourke != 0 || rourkeStamp != 0)
 			} catch (err) {
 				console.log(err);
 				return false;
