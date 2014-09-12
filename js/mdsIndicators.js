@@ -690,16 +690,16 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleWellBabyVisit = {
-		desc: function() { return "Well Baby Visit for infants " + this.minAgeMonths + " to " + this.maxAgeMonths + " months"; },
-		long_desc: function() { return "Percent of children " + this.minAgeMonths + " to " + this.maxAgeMonths + " who have completed their 18 month well baby visit"; },
-		col: ["A002A", "A268A", "Rourke IV", "Rourke Stamp"],
+		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge + " months"; },
+		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
+		col: ["A002A", "A268A", "Rourke IV"],
 		minAge: 2,
 		maxAge: 3,
 		modifiable: ['minAge', 'maxAge'],
 		defaults: [2, 3],
-		rule: function(A002, A268, rourke, rourkeStamp) {
+		rule: function(A002, A268, rourke) {
 			try {
-				return (A002 != 0 || A268 != 0 || rourke != 0 || rourkeStamp != 0)
+				return (A002 != 0 || A268 != 0 || rourke != 0)
 			} catch (err) {
 				console.log(err);
 				return false;
