@@ -690,7 +690,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleWellBabyVisit = {
-		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge + " months"; },
+		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge + " years old"; },
 		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
 		col: ["A002A", "A268A", "Rourke IV"],
 		minAge: 2,
