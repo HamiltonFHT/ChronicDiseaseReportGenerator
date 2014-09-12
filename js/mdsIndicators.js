@@ -718,6 +718,8 @@ var mdsIndicators =  (function(){
 			try {
 				if (Number(age) < 12) {
 					return NaN;
+				} else if (factors.toLowerCase() === "yes" || factors.toLowerCase() === "current") {
+					return true;
 				}
 				return factors.toLowerCase().indexOf('smok') != -1;
 			} catch (err) {
@@ -783,6 +785,9 @@ var mdsIndicators =  (function(){
 				//Only people older than 65 qualify
 				if (Number(age) <= this.age) {
 					return NaN;
+				} else if (pneuc === null) {
+					console.log("blah");
+					return false;
 				} else {
 					return Number(pneuc) > 0;
 				}

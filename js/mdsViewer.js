@@ -872,9 +872,6 @@ var mdsViewer = (function() {
 
     	});
 
-    	/*canvas.append('foreignObject').attr('x',-150).attr('y',0)
-    		.attr('width',130).attr('height', 100).append("xhtml:body")
-    		.html('<div style="width:130px;">This is some information about whatever</div>');*/
 				
 		// Add styling and attributes for major ticks in axes
 		var majorTicks = document.getElementsByClassName("tick major");
