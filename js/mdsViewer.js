@@ -271,7 +271,7 @@ var mdsViewer = (function() {
 	
 	function getIndicator(){
 		if (arguments.length === 0) {
-			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[mCurrentIndicator];
+			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
 		} else {
 			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[arguments[0]];
 		}
@@ -572,7 +572,7 @@ var mdsViewer = (function() {
 		// Created dynamically based on default values
 		// To do: variables to store user input values
 		for (var i = 0; i < mCalculatedData[0].length; i++) {
-			if (getIndicator(i).hasOwnProperty('modifiable')) {
+			if (getIndicator(getInternalRuleIndex(i)).hasOwnProperty('modifiable')) {
 				dropdownIndicators.push('<option>' + mCalculatedData[0][i]["desc"] + '</option>');
 			} else {
 				dropdownIndicators.push('<option disabled>' + mCalculatedData[0][i]["desc"] + '</option>');
@@ -726,20 +726,18 @@ var mdsViewer = (function() {
 		for (var i=0; i < data.length; i++) {
 			if (data[i]["total"] == 0) {
 				arrayLabels.push("0% (0/0)");
-				continue;
+				arrayData.push(0)
+			} else {
+				var percent = data[i]["passed"] / data[i]["total"] * 100;
+				var label = Math.round(percent) + "% (" + data[i]["passed"] + "/" + data[i]["total"]+ ")";
+				arrayData.push(percent);
+				arrayLabels.push(label);
 			}
-			var percent = data[i]["passed"] / data[i]["total"] * 100;
-			var label = Math.round(percent) + "% (" + data[i]["passed"] + "/" + data[i]["total"]+ ")";
-			arrayData.push(percent);
-			arrayLabels.push(label);
+			
 			//If the description is really long then insert a newline.
 			var desc = data[i]["desc"];
 			var tooltip = data[i]["tooltip"] || "";
-			/*
-			if (desc.length > 32 && desc.substr(32).indexOf(" ") > -1) {
-				desc = desc.replaceAt(desc.substr(32).indexOf(" ")+32, "\n");
-			}
-			*/
+
 			arrayDesc.push(desc);
 			arrayTooltip.push(tooltip);
 		}

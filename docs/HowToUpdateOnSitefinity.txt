@@ -1,0 +1,11 @@
+Log in to Sitefinity
+Go to Administration > File Structure
+Go to ChronicDiseaseReportGenerator
+Click "+Upload"
+Select the files that have been updated
+Check "Overwrite if file exists"
+Click "Upload"
+
+If no changes were made to index.html and no script files were moved or added then you are finished.
+
+
