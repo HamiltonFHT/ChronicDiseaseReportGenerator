@@ -80,6 +80,8 @@ var mdsViewer = (function() {
     var MONTH_NAMES_SHORT = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
     "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
 
+    var mEMR = {};
+
 	//Used when displaying axis titles
 	/*
 	String.prototype.replaceAt=function(index, character) {
@@ -144,6 +146,8 @@ var mdsViewer = (function() {
 	    // are considered equivalent
 	    return true;
 	}
+
+
 	/* 
 	 * Called by mdsReader
 	 * Removes and reinitializes UI elements and chart
@@ -374,6 +378,25 @@ var mdsViewer = (function() {
 		 * Indicator set dropdown
 		 */
 		updateDropdownIndicators();	
+
+		// Create an EMR object
+		mEMR = {
+			"PSS": false,
+			"Oscar": false
+		}
+
+		// Add dropdown for EMR
+		var dropdownEMR = '<select id="dropdownEMR">' +
+					'<option value="PSS">PSS</option>' +
+					'<option value="Oscar">Oscar</option>' +
+					'</select>';
+		$("#settings").append(dropdownEMR);
+
+		// Create change function
+		$("#dropdownEMR").change(function() {
+			mEMR[this.value] = true;
+			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
+		});
 	};
 
 	function addPhysicianList() {
@@ -1413,7 +1436,8 @@ var mdsViewer = (function() {
 	return {
 		generateCharts: generateCharts,
 		clearCanvas: clearCanvas,
-		mode: mMode
+		mode: mMode,
+		getEMR: function() {return mEMR;}
 	};
 	
 })();

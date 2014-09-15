@@ -760,7 +760,9 @@ var mdsIndicators =  (function(){
 		col: ["Age", "Lung Health Form", "Risk Factors"],
 		rule: function(age, formDate, factors) {
 			try {
-				if (Number(age) <= this.age || factors.indexOf("current smoker") === -1) {
+				if (Number(age) <= this.age || (factors.indexOf("current smoker") === -1
+					&& (mdsViewer.getEMR()["Oscar"] 
+						&& (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)))) {
 					return NaN;
 				}
 				else {
@@ -786,7 +788,6 @@ var mdsIndicators =  (function(){
 				if (Number(age) <= this.age) {
 					return NaN;
 				} else if (pneuc === null) {
-					console.log("blah");
 					return false;
 				} else {
 					return Number(pneuc) > 0;
@@ -807,11 +808,16 @@ var mdsIndicators =  (function(){
 		defaults: [19],
 		rule: function(age, factors, pneuc) {
 			try {
-				//Only people older than 65 qualify
-				if (Number(age) <= this.age || factors.indexOf("current smoker") === -1) {
-					return NaN;
-				} else {
+				//Only people older than 18 qualify
+				if (Number(age) <= this.age 
+					&& (factors.indexOf("current smoker") === 0 
+						|| (mdsViewer.getEMR()["Oscar"] && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0)))) {
 					return Number(pneuc) > 0;
+				} else if (factors.indexOf("current smoker") === 0 
+							|| (mdsViewer.getEMR()["Oscar"] && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0))) {
+					return Number(pneuc) > 0;
+				} else {
+					return NaN;
 				}
 			} catch (err) {
 				console.log(err);
