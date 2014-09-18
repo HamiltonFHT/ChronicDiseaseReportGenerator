@@ -214,10 +214,10 @@ var mdsIndicators =  (function(){
 		} else if (header.indexOf("height date") != -1) {
 			rule = 2;
 		//Lung Health
-		} else if (header.indexOf("Lung Health Form") != -1) {
+		} else if (header.indexOf("COPD Screening Date") != -1) {
 			rule = 3;
 		//Smoking Cessation
-		} else if (header.indexOf("Smoking Cessation Form") != -1) {
+		} else if (header.indexOf("Smoking Cessation Date") != -1) {
 			rule = 4;
 		//Depression
 		} else if (header.indexOf("PHQ9 Dates") != -1) {
