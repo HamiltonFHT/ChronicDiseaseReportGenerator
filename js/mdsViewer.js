@@ -394,6 +394,13 @@ var mdsViewer = (function() {
 
 		// Create change function
 		$("#dropdownEMR").change(function() {
+			// Set all values to false
+			for (var key in mEMR) {
+				if (mEMR.hasOwnProperty(key))
+					mEMR[key] = false;
+			}
+
+			// Set the selected EMR as true in mEMR
 			mEMR[this.value] = true;
 			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		});
@@ -858,6 +865,8 @@ var mdsViewer = (function() {
 				return title;
 			});
 		
+		//test
+		splitText(d3.select(".graphTitle"), 80, true);
 		
 		//Translate graph into center of page
 		canvas.append("g")
@@ -873,7 +882,7 @@ var mdsViewer = (function() {
 			.call(yAxis);
 		
 	
-	    canvas.selectAll('g#yaxis g text').each(function (d) {
+	    /*canvas.selectAll('g#yaxis g text').each(function (d) {
         	var el = d3.select(this);
         	var words = d3.select(this).text();
         	var splitRegex = new RegExp(".{" + mYAxisCharLength + "}\\S*\\s+", "g");
@@ -891,7 +900,42 @@ var mdsViewer = (function() {
 	      		}
 	  		}
 
-    	});
+    	});*/
+
+    	canvas.selectAll('g#yaxis g text').each(function () { splitText(d3.select(this), mYAxisCharLength); });
+
+    	function splitText(longText, charLength, title) {
+    		title = typeof title !== 'undefined' ? title : false;
+
+        	var words = longText.text();
+        	var splitRegex = new RegExp(".{" + charLength + "}\\S*\\s+", "g");
+        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
+        
+        	longText.text('');
+        	var length = 0;
+        	var line = '';
+
+    
+        	for (var i = 0; i < words.length; i++) {
+				var tspan = longText.append('tspan').text(words[i]);
+				if (i > 0) {
+
+					if (!title) {
+					    //Then pull all of the label up 4 units to recenter
+					    longText.attr('y', -10*(words.length-1));
+		      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
+
+	      			} else {
+
+	      				longText.attr('y', -25);
+	      				tspan.attr('y', '-8').attr('x',307.5).attr("style","text-anchor:middle");
+
+	      			}
+	      		}
+	  		}
+
+	        
+    	}
 
 				
 		// Add styling and attributes for major ticks in axes
@@ -1243,7 +1287,10 @@ var mdsViewer = (function() {
 						title += arraySelectedOnly[i];
 					else title += arraySelectedOnly[i] + ", ";	
 				}
+
 				mReportTitle = title;
+				//test
+				title = splitText(d3.select(".graphTitle"));
 				return title;
 			});
 		
