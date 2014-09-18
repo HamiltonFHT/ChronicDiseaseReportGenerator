@@ -69,11 +69,11 @@ var mdsViewer = (function() {
 	
 	
 	var DEFAULT_COLOURS = ["firebrick", "steelblue", "yellowgreen", "mediumpurple", "cadetblue",
-							"sandybrown", "forestgreen", "firebrick", "goldenrod", "darkslateblue",
+							"sandybrown", "forestgreen", "goldenrod", "darkslateblue", "firebrick",
 							 "palevioletred", "sienna", "bisque"];
 							
 	var HIGHLIGHT_COLOURS = ["lightcoral", "#90B4D2", "#CCE698", "#DFD4F4", "#AFCED0",
-							 "#FAD2B0", "#90C590", "lightcoral"];
+							 "#FAD2B0", "#90C590", "lightcoral","steelblue" , "lightcoral"];
 
 	var MONTH_NAMES = [ "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December" ];
@@ -1363,8 +1363,8 @@ var mdsViewer = (function() {
 					.enter().append("text")
 						.attr("class", "dataLabel")
 						.attr("x", function(d, i) { 
-											if (d<5) { return xScale(d+5); } 
-											else { return xScale(d/2);	} 
+											if (d<15) { return xScale(Math.ceil(d)+10); } 
+											else { return xScale(d/2);	}  
 										  })
 						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
 						.attr("text-anchor", "middle")
@@ -1372,7 +1372,7 @@ var mdsViewer = (function() {
 						.style("font-size", "13px")
 						.attr("dy", ".35em")
 						.style("fill", function(d, i) { 
-												if (d<5) { return "black"; } 
+												if (d<15) { return "black"; } 
 												else { return "white";	} 
 											  })
 						.text(function(d, i) { return arrayLabels[i]; });
