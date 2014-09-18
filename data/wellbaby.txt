@@ -1,3 +1,6 @@
 
-Patient #,Doctor Number,Age,Rourke IV,A002,A268,Current Date,Privacy,
-366,4,1,1,0,0,"Aug 26, 2014",,
+Patient #,Doctor Number,Age,Rourke,Current Date,Privacy,A002A,A268A,
+360,1,2,0,"Sep 18, 2014",,0,0,
+368,1,2,1,"Sep 18, 2014",,1,0,
+369,1,2,1,"Sep 18, 2014",,0,0,
+370,1,2,1,"Sep 18, 2014",,1,1,

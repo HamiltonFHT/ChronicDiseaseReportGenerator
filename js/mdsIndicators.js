@@ -225,7 +225,7 @@ var mdsIndicators =  (function(){
 		//Cancer Screening
 		} else if (header.indexOf("Mammogram") != -1) {
 			rule = 6;
-		} else if (header.indexOf("Rourke IV") != -1) {
+		} else if (header.indexOf("Rourke") != -1) {
 			rule = 7;
 		//Youth ADHD
 		} else {
