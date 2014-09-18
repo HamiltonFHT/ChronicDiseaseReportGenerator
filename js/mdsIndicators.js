@@ -720,12 +720,11 @@ var mdsIndicators =  (function(){
 		maxAge: 3,
 		modifiable: ['minAge', 'maxAge'],
 		defaults: [2, 3],
-		rule: function(age, A002, A268 rourke) {
+		rule: function(age, A002, A268, rourke) {
 			try {
-				if (Number(age) >= this.minAge && Number(age) <= this.maxAge)
+				if (Number(age) >= this.minAge && Number(age) <= this.maxAge) {
 					return (A002 != 0 || A268 != 0 || rourke != 0);
-				else
-					return NaN;
+				} else { return NaN; }
 			} catch (err) {
 				console.log(err);
 				return false;
