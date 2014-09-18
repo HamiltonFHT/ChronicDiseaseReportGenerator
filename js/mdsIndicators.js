@@ -100,7 +100,31 @@ var mdsIndicators =  (function(){
 			}
 		}
 	}
-	
+
+/*  Unused
+	var ICD9Regex = /\d+(\.\d+)*:/g
+	function extractICD9(prob) {
+		if (!prob) {
+			return "";
+		}
+
+		var icd9regex = /\d+(\.\d+)*:/g;
+		codes = prob.match(icd9regex);
+		if (!codes) {
+			return "";
+		}
+
+		var codeStr = ''
+		for (var i = 0; i<codes.length; i++) {
+			codeStr+=codes[i].slice(0, -1);
+			if (i < codes.length-1) {
+				codeStr+=", ";
+			}
+		}
+		return codeStr;
+	}
+*/
+
 	var lookupVarNameTable = {
 		'minAge': 'Minimum Age',
 		'maxAge': 'Maximum Age',
@@ -484,7 +508,7 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
 		long_desc: function() { return "% of patients diagnosed with hypertension and with BP over " + this.sysTarget + "/" + this.diasTarget + 
 										" who have had a visit within the past " + this.months + " months"; },
-		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diastolic BP", "ICD-9"],
+		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diastolic BP", "Problem List"],
 		months: 9,
 		sysTarget: 140,
 		diasTarget: 90,
@@ -508,7 +532,7 @@ var mdsIndicators =  (function(){
 	var ruleHypertensionBP= {
 		desc: function(){return "Hypertensive patients with BP < " + this.sysTarget + "/" + this.diasTarget; },
 		long_desc: function() { return "% of patients diagnosed with hypertension and with BP less than " + this.sysTarget + "/" + this.diasTarget; },
-		col: ["Systolic BP", "Diastolic BP", "ICD-9"],
+		col: ["Systolic BP", "Diastolic BP", "Problem List"],
 		sysTarget: 140,
 		diasTarget: 90,
 		modifiable: ["sysTarget", "diasTarget"],
@@ -558,7 +582,6 @@ var mdsIndicators =  (function(){
 						return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
 							Number(varicella) >= this.varicella && 
-							Number(rotavirus) >= this.rotavirus && 
 							Number(polio) >= this.polio);
 					}
 				}
@@ -606,11 +629,11 @@ var mdsIndicators =  (function(){
 					return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
 							Number(varicella) >= this.varicella &&
-							Number(rotavirus) >= this.rotavirus &&
-							Number(polio) >= this.polio &&
-							Number(hib) >= this.hib &&
-							Number(pneuc) >= this.pneuc &&
-							Number(mencc) >= this.mencc);
+							//Number(rotavirus) >= this.rotavirus &&
+							Number(polio) >= this.polio); //&&
+							//Number(hib) >= this.hib &&
+							//Number(pneuc) >= this.pneuc &&
+							//Number(mencc) >= this.mencc);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -654,11 +677,11 @@ var mdsIndicators =  (function(){
 				} else {
 					return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
-							Number(rotavirus) >= this.rotavirus &&
-							Number(polio) >= this.polio &&
-							Number(hib) >= this.hib &&
-							Number(pneuc) >= this.pneuc &&
-							Number(mencc) >= this.mencc);
+							//Number(rotavirus) >= this.rotavirus &&
+							Number(polio) >= this.polio);
+							//Number(hib) >= this.hib &&
+							//Number(pneuc) >= this.pneuc &&
+							//Number(mencc) >= this.mencc);
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -692,14 +715,17 @@ var mdsIndicators =  (function(){
 	var ruleWellBabyVisit = {
 		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge + " years old"; },
 		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
-		col: ["A002A", "A268A", "Rourke IV"],
+		col: ["Age", "A002A", "A268A", "Rourke"],
 		minAge: 2,
 		maxAge: 3,
 		modifiable: ['minAge', 'maxAge'],
 		defaults: [2, 3],
-		rule: function(A002, A268, rourke) {
+		rule: function(age, A002, A268 rourke) {
 			try {
-				return (A002 != 0 || A268 != 0 || rourke != 0)
+				if (Number(age) >= this.minAge && Number(age) <= this.maxAge)
+					return (A002 != 0 || A268 != 0 || rourke != 0);
+				else
+					return NaN;
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -737,7 +763,7 @@ var mdsIndicators =  (function(){
 		months: 15,
 		modifiable: ["months"],
 		defaults:[15],
-		col: ["Risk Factors", "Smoking Cessation Form Date", "Last Seen Date", "Current Date"],
+		col: ["Risk Factors", "Smoking Cessation Date", "Last Seen Date", "Current Date"],
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				if (factors.indexOf("current smoker") === -1 || !withinDateRange(currentDate,this.months,lastSeenDate)) {
@@ -753,11 +779,11 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleLungHealthForm = {
-		desc: function(){return "Canadian Lung Health Test Performed"; },
-		long_desc: function() { return "Canadian Lung Health Form in patient chart for smokers over the age of " + this.age; },
+		desc: function(){return "Lung Health Screening Performed"; },
+		long_desc: function() { return "Lung Health Screening performed for smokers over the age of " + this.age; },
 		age: 40,
 		modifiable: ["age"],
-		col: ["Age", "Lung Health Form", "Risk Factors"],
+		col: ["Age", "COPD Screening Date", "Risk Factors"],
 		rule: function(age, formDate, factors) {
 			try {
 				if (Number(age) <= this.age || (factors.indexOf("current smoker") === -1
