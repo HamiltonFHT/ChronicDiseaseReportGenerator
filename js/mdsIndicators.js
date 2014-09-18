@@ -27,12 +27,18 @@ var mdsIndicators =  (function(){
 	// Return true if it is in-date and false if it is out-of-date
 	function withinDateRange(currentDate, maxMonthsAgo, measuredDate) {
 		if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/) ){
+			// Parse currentDate, make a targetDate object with 15 months earlier
 	 		parsedDate = currentDate.split("/");
 	 		targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
+
+	 		// Parse measuredDate and make it an object
+	 		parsedDate = measuredDate.split("/");
+	 		measuredDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), 0);
+
 	 	} else {
 	 		targetDate = removeMonths(new Date(currentDate), maxMonthsAgo);
 	 	}
-	 	return (new Date(measuredDate) >= targetDate);	
+	 	return (measuredDate >= targetDate);	
 	};
 	
 	//Returns time String of the most recent date from an array of dates
@@ -743,7 +749,7 @@ var mdsIndicators =  (function(){
 			try {
 				if (Number(age) < 12) {
 					return NaN;
-				} else if (factors.toLowerCase() === "yes" || factors.toLowerCase() === "current") {
+				} else if (mdsViewer.getEMR()["Oscar"] && factors != "") {
 					return true;
 				}
 				return factors.toLowerCase().indexOf('smok') != -1;
@@ -765,7 +771,7 @@ var mdsIndicators =  (function(){
 		col: ["Risk Factors", "Smoking Cessation Date", "Last Seen Date", "Current Date"],
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
-				if (factors.indexOf("current smoker") === -1 || !withinDateRange(currentDate,this.months,lastSeenDate)) {
+				if ((factors.indexOf("current smoker") === -1 && factors.indexOf("yes") === -1) || !withinDateRange(currentDate,this.months,lastSeenDate)) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, formDate);	
@@ -789,8 +795,7 @@ var mdsIndicators =  (function(){
 					&& (mdsViewer.getEMR()["Oscar"] 
 						&& (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)))) {
 					return NaN;
-				}
-				else {
+				} else {
 					return formDate != "";
 				}
 			} catch (err) {
@@ -882,7 +887,7 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Patients with multiple PHQ9 forms"; },
 		long_desc: function() { return "Adult patients who have depression and have filled out at least one PHQ9 form" + 
 								 		"have more than one PHQ9 form. This is an indication it is being used for follow-up"; },
-		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurences"],
+		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurrences"],
 		months:6,
 		modifiable: ["months"],
 		defaults: [6],

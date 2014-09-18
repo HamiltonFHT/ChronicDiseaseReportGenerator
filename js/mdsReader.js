@@ -278,7 +278,54 @@ var mdsReader = (function() {
 			if (!("Current Date" in mFilteredData[i])) {
 				mFilteredData[i]["Current Date"] = repeat(mParsedData[i]["fileLastModified"], mFilteredData[i][0].length);
 			}
+
+			// If socialHistory is a column, then need to parse out smoking status
+			if ("socialHistory" in mFilteredData[i]) {
+				parseSocialHistory(i);
+			}
 		}
+	};
+
+	/*
+	 * Parse out smoking status from socialHistory
+	 */
+	function parseSocialHistory(x) {
+
+		// -----[[Fri Sep 12 11:25:35 EDT 2014]]-----\nsmk: yes\n-----[[Mon Sep 15 09:12:46 EDT 2014]]-----\nsmk: yes\n-----[[Mon Sep 15 09:13:56 EDT 2014]]-----\nsmk: yes
+		// Loop through and find the indices of the ones with a socialHistory and store it in hasSocialHistory
+		var hasSocialHistory = [];
+		var socialHistory = mFilteredData[x]["socialHistory"];
+
+		for (var i=0; i<socialHistory.length; i++) {
+			if (socialHistory[i] != "")
+				hasSocialHistory.push(i);
+		}
+
+		// Split the socialHistory by "\n" and only take the ones with however they code smoking status 
+		var temp = [];
+		var smk = /smk/i;
+		var skst = /skst/i;
+
+		for (var i=0; i<hasSocialHistory.length; i++) {
+			temp = socialHistory[hasSocialHistory[i]].split("\\n");
+
+			// Filter entries to only keep the ones that deal with smoking
+			for (var j=0; j<temp.length; j++) {
+				if (!smk.test(temp[j]) && !skst.test(temp[j]))
+					delete temp[j];
+			}
+
+			// Save only the latest entry
+			socialHistory[hasSocialHistory[i]] = temp[temp.length-1];
+
+			// If the entry is not "non-smoker", replace it with "yes"
+			if (!/no/i.test(socialHistory[hasSocialHistory[i]]))
+				socialHistory[hasSocialHistory[i]] = "yes";
+		}
+
+		// Add a "Risk Factors" object to mFilteredData and copy socialHistory to it
+		mFilteredData[x]["Risk Factors"] = mFilteredData[x]["socialHistory"];
+		
 	};
 
 	/*
