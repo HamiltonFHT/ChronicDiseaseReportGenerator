@@ -904,37 +904,27 @@ var mdsViewer = (function() {
 
     	canvas.selectAll('g#yaxis g text').each(function () { splitText(d3.select(this), mYAxisCharLength); });
 
-    	function splitText(longText, charLength, title) {
-    		title = typeof title !== 'undefined' ? title : false;
+    	function splitText(textElement, lineLength, title) {
+    		var isTitle = typeof title !== 'undefined' ? true : false;
 
-        	var words = longText.text();
-        	var splitRegex = new RegExp(".{" + charLength + "}\\S*\\s+", "g");
-        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
+        	var text = textElement.text();
+        	var splitRegex = new RegExp(".{" + lineLength + "}\\S*\\s+", "g");
+        	var splitText= text.replace(splitRegex, "$&@").split(/\s+@/);
         
-        	longText.text('');
-        	var length = 0;
-        	var line = '';
-
-    
-        	for (var i = 0; i < words.length; i++) {
-				var tspan = longText.append('tspan').text(words[i]);
+        	textElement.text('');
+        	for (var i = 0; i < splitText.length; i++) {
+				var tspan = textElement.append('tspan').text(splitText[i]);
 				if (i > 0) {
-
-					if (!title) {
-					    //Then pull all of the label up 4 units to recenter
-					    longText.attr('y', -10*(words.length-1));
-		      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
-
-	      			} else {
-
-	      				longText.attr('y', -25);
+					if (isTitle) {
+					    textElement.attr('y', -25);
 	      				tspan.attr('y', '-8').attr('x',307.5).attr("style","text-anchor:middle");
-
+	      			} else {
+	      				//Then pull all of the label up 4 units to recenter
+					    textElement.attr('y', -10*(splitText.length-1));
+		      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
 	      			}
 	      		}
 	  		}
-
-	        
     	}
 
 				

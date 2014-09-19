@@ -26,19 +26,22 @@ var mdsIndicators =  (function(){
 	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
 	// Return true if it is in-date and false if it is out-of-date
 	function withinDateRange(currentDate, maxMonthsAgo, measuredDate) {
-		if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/) ){
-			// Parse currentDate, make a targetDate object with 15 months earlier
-	 		parsedDate = currentDate.split("/");
+		var dateRegex = /\d{2}[/-]\d{2}[/-]\d{4}/; //matches dd-mm-yyyy and dd/mm/yyyy 
+
+		//Turn currentDate string into Date object with date currentDate - maxMonthsAgo
+		if (currentDate.toString().match(dateRegex) ){
+	 		parsedDate = currentDate.split(/[/-]/);
 	 		targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
+	 	} else { targetDate = removeMonths(new Date(currentDate), maxMonthsAgo); }
 
-	 		// Parse measuredDate and make it an object
+	 	//Turn measuredDate into a Date object
+	 	if (measuredDate.toString().match(dateRegex)) {
 	 		parsedDate = measuredDate.split("/");
-	 		measuredDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), 0);
+	 		measuredDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
+	 	} else { measuredDate = new Date(measuredDate); }
 
-	 	} else {
-	 		targetDate = removeMonths(new Date(currentDate), maxMonthsAgo);
-	 	}
-	 	return (measuredDate >= targetDate);	
+	 	//Make sure measuredDate was measured more recently than the target date.
+	 	return measuredDate >= targetDate;	
 	};
 	
 	//Returns time String of the most recent date from an array of dates
@@ -495,9 +498,9 @@ var mdsIndicators =  (function(){
 		age: 40,
 		modifiable: ["months", "age"],
 		defaults: [12, 40],
-		rule: function(currentDate, measuredDate, value) {
+		rule: function(currentDate, measuredDate, age) {
 			try {
-				if (Number(value) < this.age) {
+				if (Number(age) < this.age) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, measuredDate);
