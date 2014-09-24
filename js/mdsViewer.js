@@ -43,6 +43,7 @@ var mdsViewer = (function() {
 	var mCanvasScale = 1;
 	var mCanvasWidth = DEFAULT_CANVAS_WIDTH * mCanvasScale;  		// pixels
 	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
+	var mCanvasHeight = DEFAULT_CANVAS_HEIGHT;
 
 	
 	var DEFAULT_PADDING_LEFT_SNAPSHOT = 300;
@@ -50,6 +51,7 @@ var mdsViewer = (function() {
 	var DEFAULT_PADDING_TOP_SNAPSHOT = 50;
 	
 	var DEFAULT_GRAPH_WIDTH_SNAPSHOT = DEFAULT_CANVAS_WIDTH - DEFAULT_PADDING_LEFT_SNAPSHOT - 25;
+	var DEFAULT_BAR_WIDTH = 50;
 	var mGraphWidthSnapshot = DEFAULT_GRAPH_WIDTH_SNAPSHOT * mCanvasScale;
 	var DEFAULT_GRAPH_HEIGHT_SNAPSHOT = DEFAULT_CANVAS_HEIGHT - (2 * DEFAULT_PADDING_TOP_SNAPSHOT);
 	
@@ -230,12 +232,16 @@ var mdsViewer = (function() {
 	 */
 	function clearCanvas() {
 		
+
+		//Only applies to snapshot mode
+		mCanvasHeight = Math.floor(DEFAULT_BAR_WIDTH * mCalculatedData[mCurrentDateIndex].length  + (2*DEFAULT_PADDING_TOP_SNAPSHOT))
+
 		$("#canvasContainer").empty();
 				
 		mCanvas = d3.select("#canvasContainer").append("svg")
 					.attr("id", "canvasSVG")
 					.attr("width", mCanvasWidth)
-					.attr("height", DEFAULT_CANVAS_HEIGHT)
+					.attr("height", mMode == 'snapshot' ? mCanvasHeight : DEFAULT_CANVAS_HEIGHT)
 					.style("border", "1px solid lightgray")
 						.append("g")
 							.attr("class", "g_main")
@@ -473,7 +479,9 @@ var mdsViewer = (function() {
 	    updateCanvasSize(true);
 		
 		// Append canvas to the document
-		var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + DEFAULT_CANVAS_HEIGHT +
+		var canvasHeight = (mMode == 'snapshot' ? mCanvasHeight : DEFAULT_CANVAS_HEIGHT)
+
+		var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + canvasHeight +
 							'" style="border: 1px solid black; display:none;"></canvas>';
 		
 		$("#outputCanvas").remove();
@@ -716,7 +724,7 @@ var mdsViewer = (function() {
 			mGraphWidthTracking = Math.floor(DEFAULT_GRAPH_WIDTH_TRACKING*mCanvasScale);
 			mSnapshotPaddingLeft = Math.floor(DEFAULT_PADDING_LEFT_SNAPSHOT*mCanvasScale);
 			mYAxisCharLength = Math.floor(DEFAULT_YAXIS_CHAR_LENGTH*mCanvasScale);
-			
+ 			
 			if (mCanvasScale == 0.6) {
 				mXAxisCharLength = 3;
 			} else {
@@ -727,6 +735,8 @@ var mdsViewer = (function() {
 				//$("#canvasSVG").prop("width", mCanvasWidth);
 				clearCanvas();
 				if (mMode === 'snapshot') {
+					
+
 					generateSnapshot(0);
 				} else {
 					generateTracking();
@@ -743,6 +753,8 @@ var mdsViewer = (function() {
 		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
 
 		var data = mCalculatedData[selectedDate];
+
+		var mGraphHeight = DEFAULT_BAR_WIDTH * data.length;
 
 		// Add rectangles for percentage of patients within criteria
 		var arrayData = [];
@@ -783,7 +795,7 @@ var mdsViewer = (function() {
 		
 		yScale = d3.scale.ordinal()
 			.domain(arrayDesc)
-			.rangeRoundBands([0, DEFAULT_GRAPH_HEIGHT_SNAPSHOT], 0.1);
+			.rangeRoundBands([0, mGraphHeight], 0.1);
 			
 		yAxis = d3.svg.axis()
 			.scale(yScale)
@@ -795,7 +807,7 @@ var mdsViewer = (function() {
 				.attr("x1", xScale)
 				.attr("x2", xScale)
 				.attr("y1", 0)
-				.attr("y2", DEFAULT_GRAPH_HEIGHT_SNAPSHOT)
+				.attr("y2", mGraphHeight)
 				.style("stroke", "#ccc")
 				.style("stroke-width", 1)
 				.style("opacity", 0.7);
@@ -804,7 +816,7 @@ var mdsViewer = (function() {
 		canvas.append("text")
 			.attr("class", "xAxisLabel")
 			.attr("x", mGraphWidthSnapshot / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT + 40)
+			.attr("y", mGraphHeight + 40)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
@@ -815,7 +827,7 @@ var mdsViewer = (function() {
 		canvas.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT / 2)
+			.attr("x", -mGraphHeight / 2)
 			.attr("y", -mSnapshotPaddingLeft / 2 - (125 * mCanvasScale))
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
@@ -870,7 +882,7 @@ var mdsViewer = (function() {
 		
 		//Translate graph into center of page
 		canvas.append("g")
-			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_SNAPSHOT + ")")
+			.attr("transform", "translate(0, " + mGraphHeight + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.call(xAxis);
