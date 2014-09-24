@@ -44,7 +44,7 @@ var mdsIndicators =  (function(){
 	 	return measuredDate >= targetDate;	
 	};
 	
-	//Returns time String of the most recent date from an array of dates
+	// Returns time String of the most recent date from an array of dates
 	function mostRecentDate(dateArray) {
 		parsedDateArray = [];
 		for (var i=0; i < dateArray.length; i++) {
@@ -220,7 +220,7 @@ var mdsIndicators =  (function(){
 		} else if (header.indexOf("Systolic BP") != -1) {
 			rule = 1;
 		//Immunizations
-		} else if (header.indexOf("height date") != -1) {
+		} else if (header.indexOf("height date") != -1 || header.indexOf("measurements") != -1) {
 			rule = 2;
 		//Lung Health
 		} else if (header.indexOf("COPD Screening Date") != -1) {
@@ -564,7 +564,7 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Infant immunization schedule up to date"; },
 		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
 										" years with immunization schedule up to date"; },
-		col: ["Age", "measles", "mumps", "rubella", "diphtheria", "tetanus", "pertussis",
+		col: ["Age", "measles", "diphtheria",
 		      "varicella", "rotavirus", "polio"],
 		minAge: 2,
 		maxAge: 3,
@@ -582,7 +582,7 @@ var mdsIndicators =  (function(){
 		varicella: 1,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [2, 3],
-		rule: function(ageStr, measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+		rule: function(ageStr, measles, diphtheria,  
 			           varicella, rotavirus, polio) {
 			try {
 				age = getAgeFromMonths(ageStr);
@@ -607,10 +607,9 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Children with all immunizations"; },
 		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
-			  "measles", "mumps", "rubella",
-			  "diphtheria", "tetanus", "pertussis",
-			  "varicella", "rotavirus", "polio",
-			  "haemophilus b conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+			  "measles", "diphtheria", "varicella",
+			  "rotavirus", "polio", "haemophilus b conjugate",
+			  "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
@@ -627,7 +626,7 @@ var mdsIndicators =  (function(){
 		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [7, 13],
-		rule: function(ageStr,	measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+		rule: function(ageStr,	measles, diphtheria, 
 					   varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
 				age = getAgeFromMonths(ageStr);
@@ -656,10 +655,9 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Adults with all immunizations"; },
 		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
-			  "measles", "mumps", "rubella",
-			  "diphtheria", "tetanus", "pertussis",
-			  "varicella", "rotavirus", "polio",
-			  "haemophilus b conjugate", "pneumococcal conjugate", "meningococcal conjugate"],
+			  "measles", "diphtheria", "varicella",
+			  "rotavirus", "polio", "haemophilus b conjugate",
+			  "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
 		maxAge: 25,
 		diphtheria: 6,
@@ -676,7 +674,7 @@ var mdsIndicators =  (function(){
 		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [18, 25],
-		rule: function(ageStr,	measles, mumps, rubella, diphtheria, tetanus, pertussis, 
+		rule: function(ageStr,	measles, diphtheria,  
 					   varicella, rotavirus, polio, hib, pneuc, mencc) {
 			try {
 				//if younger than 18 than not included
@@ -700,19 +698,24 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleHeightWeightLastVaccination = {
-		desc: function(){return "Height and Weight at last immunization"; },
+		desc: function(){ return "Height and Weight at last immunization"; },
 		long_desc: function() { return "Height and Weight measured at last immunization. Only applies to patients with height and weight measured on the same day"; },
-		col: ["height date", "weight date",
-			  "measles date", "mumps date", "rubella date",
-			  "diphtheria date", "tetanus date", "pertussis date", "varicella date", "rotavirus date", "polio date",
+		months: 12,
+		modifiable: ["months"],
+		defaults: [12],
+		col: ["height date", "weight date", "Current Date",
+			  "measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
 			  "pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"],
-		rule: function(heightDate, weightDate,
-						measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio) {
+		rule: function(heightDate, weightDate, currentDate,
+						measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib) {
 			try {
-				if (heightDate != weightDate) {
+				if (heightDate != weightDate || heightDate == "") {
 					return NaN;
 				} else {
-					return (new Date(heightDate).getTime() >= mostRecentDate([measles, mumps, rubella, diphtheria, tetanus, pertussis, varicella, rotavirus, polio]));
+					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) == 0 && !withinDateRange(currentDate, this.months, heightDate)) {
+						return false;
+					} else
+					return (new Date(heightDate).getTime() >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
 	 			}
 			} catch (err) {
 				console.log(err);

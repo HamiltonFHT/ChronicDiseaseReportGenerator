@@ -146,6 +146,15 @@ var mdsReader = (function() {
 		
 		return csvObject;
 	};
+
+	// Converts DD/MM/YYYY to YYYY-MM-DD string
+	function parseDate(date) {
+		if (date != "") {
+			var parsedDate = date.split("/");
+			return parsedDate[2].concat("-", parsedDate[1], "-", parsedDate[0]);
+		} else
+		return 0;
+	};
 	
 	/* 
 	 * Converts a CSV formatted string into array of arrays
@@ -283,6 +292,11 @@ var mdsReader = (function() {
 			if ("socialHistory" in mFilteredData[i]) {
 				parseSocialHistory(i);
 			}
+
+			// If prevention_type is a column, then convert data into proper format
+			if ("prevention_type" in mFilteredData[i]) {
+				convertPreventions(i);
+			}
 		}
 	};
 
@@ -291,7 +305,6 @@ var mdsReader = (function() {
 	 */
 	function parseSocialHistory(x) {
 
-		// -----[[Fri Sep 12 11:25:35 EDT 2014]]-----\nsmk: yes\n-----[[Mon Sep 15 09:12:46 EDT 2014]]-----\nsmk: yes\n-----[[Mon Sep 15 09:13:56 EDT 2014]]-----\nsmk: yes
 		// Loop through and find the indices of the ones with a socialHistory and store it in hasSocialHistory
 		var hasSocialHistory = [];
 		var socialHistory = mFilteredData[x]["socialHistory"];
@@ -326,6 +339,146 @@ var mdsReader = (function() {
 		// Add a "Risk Factors" object to mFilteredData and copy socialHistory to it
 		mFilteredData[x]["Risk Factors"] = mFilteredData[x]["socialHistory"];
 		
+	};
+
+	/*
+	 * Pull out each prevention into their own columns
+	 */
+	function convertPreventions(x) {
+
+		// Create a new array of unique patient #s
+		mFilteredData[x]["unique patients"] = [];
+		for (var i = 0; i < mFilteredData[x]["Patient #"].length; i++) {
+        	if ((jQuery.inArray(mFilteredData[x]["Patient #"][i], mFilteredData[x]["unique patients"])) == -1) {
+           		mFilteredData[x]["unique patients"].push(mFilteredData[x]["Patient #"][i]);
+        	}
+   		}
+
+   		// Delete Ages for repeated patients
+   		var tempAge = [];
+   		for (var i=0; i<mFilteredData[x]["unique patients"].length; i++) {
+   			tempAge.push(mFilteredData[x]["Age"][mFilteredData[x]["Patient #"].indexOf(mFilteredData[x]["unique patients"][i])]);
+   		}
+   		mFilteredData[x]["Age"] = tempAge;
+
+		// Patient #,Doctor Number,Age,height date,weight date,measles,diphtheria,varicella,rotavirus,polio,haemophilus b conjugate,pneumococcal conjugate,meningococcal conjugate,Current Date
+		// Add a "height date" and a "weight date" object to mFilteredData
+		mFilteredData[x]["height date"] = [];
+		mFilteredData[x]["weight date"] = [];
+
+		// Convert Last Done to proper date format
+		for (var i=0; i<mFilteredData[x]["Last Done"].length; i++) {
+			mFilteredData[x]["Last Done"][i] = parseDate(mFilteredData[x]["Last Done"][i]);
+		}
+
+		// Convert Current Date to correct format
+   		for (var i=0; i<mFilteredData[x]["Current Date"].length; i++) {
+			mFilteredData[x]["Current Date"][i] = parseDate(mFilteredData[x]["Current Date"][i]);
+		}
+
+		// Split dateObserved column into height date and weight date
+		var measurements = mFilteredData[x]["measurements"];
+		var alreadyDone = [];
+
+		for (var i=0; i<measurements.length; i++) {
+			if (measurements[i] != "" && alreadyDone.indexOf(mFilteredData[x]["Patient #"][i]) == -1) {
+				var splitMeasurements = measurements[i].split("|");
+				var splitDateObserved = mFilteredData[x]["dateObserved"][i].split("|");
+				for (var j=0; j<splitMeasurements.length; j++) {
+					switch (splitMeasurements[j]) {
+						case "HT":
+							mFilteredData[x]["height date"].push(splitDateObserved[j]);
+							break;
+						case "WT":
+							mFilteredData[x]["weight date"].push(splitDateObserved[j]);
+							break;
+					}
+				}
+			alreadyDone.push(mFilteredData[x]["Patient #"][i]);
+			
+			if (!mFilteredData[x]["height date"][alreadyDone.length-1]) mFilteredData[x]["height date"][alreadyDone.length-1] = "";
+			if (!mFilteredData[x]["weight date"][alreadyDone.length-1]) mFilteredData[x]["weight date"][alreadyDone.length-1] = "";
+			} else if (measurements[i] == "" && alreadyDone.indexOf(mFilteredData[x]["Patient #"][i]) == -1) {
+				alreadyDone.push(mFilteredData[x]["Patient #"][i]);
+				if (!mFilteredData[x]["height date"][alreadyDone.length-1]) mFilteredData[x]["height date"][alreadyDone.length-1] = "";
+				if (!mFilteredData[x]["weight date"][alreadyDone.length-1]) mFilteredData[x]["weight date"][alreadyDone.length-1] = "";
+			}
+		}
+
+		// Create an array of new columns to add and initialize them
+		var preventionTypes = mFilteredData[x]["prevention_type"];
+		var newColumns = ["measles", "measles date", "diphtheria", "diphtheria date", "varicella", "varicella date",
+						  "rotavirus", "rotavirus date", "polio", "polio date", "haemophilus b conjugate", "haemophilus b conjugate date",
+						  "pneumococcal conjugate", "pneumococcal conjugate date", "meningococcal conjugate", "meningococcal conjugate date"];
+
+		for (var i=0; i<newColumns.length; i++) {
+			mFilteredData[x][newColumns[i]] = repeat(0,mFilteredData[x]["unique patients"].length);
+		}
+
+		// Set the number of times done to the appropriate columns
+		for (var i=0; i<preventionTypes.length; i++) {
+			if (preventionTypes[i] != "") {
+				// diphtheria
+				if (/dt.*/i.test(preventionTypes[i]) || /td.*/i.test(preventionTypes[i]) || /dpt.*/i.test(preventionTypes[i])) {
+					mFilteredData[x]["diphtheria"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["diphtheria date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["diphtheria date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])])) 
+						mFilteredData[x]["diphtheria date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// measles
+				if (/mm?r.?\w?/i.test(preventionTypes[i])) {
+					mFilteredData[x]["measles"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["measles date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["measles date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["measles date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// haemophilus b conjugate
+				if (/.*hib.*/i.test(preventionTypes[i])) {
+					mFilteredData[x]["haemophilus b conjugate"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["haemophilus b conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["haemophilus b conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["haemophilus b conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// polio
+				if (preventionTypes[i] != "HPV Vaccine" && (/.*pv.*/i.test(preventionTypes[i]) || preventionTypes[i] == "DPT POLIO")) {
+					mFilteredData[x]["polio"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["polio date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["polio date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["polio date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// varicella
+				if (preventionTypes[i] == "VZ" || preventionTypes[i] == "MMRV") {
+					mFilteredData[x]["varicella"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["varicella date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["varicella date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["varicella date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// meningococcal conjugate
+				if (preventionTypes[i] == "MenC-C" || preventionTypes[i] == "MEN-CONJ-ACWY") {
+					mFilteredData[x]["meningococcal conjugate"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["meningococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["meningococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["meningococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// pneumococcal conjugate
+				if (preventionTypes[i] == "Pneu-C") {
+					mFilteredData[x]["pneumococcal conjugate"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["pneumococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["pneumococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["pneumococcal conjugate date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+				// rotavirus
+				if (preventionTypes[i] == "Rot") {
+					mFilteredData[x]["rotavirus"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] += Number(mFilteredData[x]["Times Done"][i]);
+					if (mFilteredData[x]["rotavirus date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] == 0
+						|| new Date(mFilteredData[x]["Last Done"][i]) > new Date(mFilteredData[x]["rotavirus date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])]))
+						mFilteredData[x]["rotavirus date"][mFilteredData[x]["unique patients"].indexOf(mFilteredData[x]["Patient #"][i])] = new Date(mFilteredData[x]["Last Done"][i]);
+				}
+			}
+		}
+
+		mFilteredData[x]["Patient #"] = mFilteredData[x]["unique patients"];
+
 	};
 
 	/*
