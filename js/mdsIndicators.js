@@ -28,6 +28,10 @@ var mdsIndicators =  (function(){
 	function withinDateRange(currentDate, maxMonthsAgo, measuredDate) {
 		var dateRegex = /\d{2}[/-]\d{2}[/-]\d{4}/; //matches dd-mm-yyyy and dd/mm/yyyy 
 
+		if (measuredDate == "") {
+			return false;
+		}
+
 		//Turn currentDate string into Date object with date currentDate - maxMonthsAgo
 		if (currentDate.toString().match(dateRegex) ){
 	 		parsedDate = currentDate.split(/[/-]/);
@@ -253,6 +257,9 @@ var mdsIndicators =  (function(){
 	 	col: ["Current Date", "DM Months"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
+	 			if (measuredDate == "") {
+	 				return false;
+	 			}
 	 			// Old version output date of last assessment
 	 			// New version outputs number of months since last assessment,
 	 			// have to check which case and handle appropriately
