@@ -804,9 +804,8 @@ var mdsIndicators =  (function(){
 		col: ["Age", "COPD Screening Date", "Risk Factors"],
 		rule: function(age, formDate, factors) {
 			try {
-				if (Number(age) <= this.age || (factors.indexOf("current smoker") === -1
-					&& (mdsViewer.getEMR()["Oscar"] 
-						&& (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)))) {
+				if (Number(age) <= this.age || (mdsViewer.getEMR()["Oscar"] 
+					&& (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || (mdsViewer.getEMR()["PSS"] && factors.indexOf("current smoker") === -1)) {
 					return NaN;
 				} else {
 					return formDate != "";
