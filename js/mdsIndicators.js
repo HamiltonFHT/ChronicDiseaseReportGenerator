@@ -65,20 +65,7 @@ var mdsIndicators =  (function(){
 		return new Date(Math.max.apply(null,parsedDateArray)).getTime();
 	}
 
-	/*
-	function getAge(currentDate, birthDate) {
-	    var currentDate = new Date(currentDate);
-	    var birthDate = new Date(birthDate);
-	    var age = currentDate.getFullYear() - birthDate.getFullYear();
-	    var m = currentDate.getMonth() - birthDate.getMonth();
-	    if (m < 0 || (m === 0 && currentDate.getDate() < birthDate.getDate())) {
-	        age--;
-	    }
 
-	    return age;
-	}
-	*/
-	
 	function getAgeFromMonths(age){
 		if (age.indexOf('mo') > 0) {
 			return Math.floor(parseInt(age, 10) / 12);
@@ -87,23 +74,7 @@ var mdsIndicators =  (function(){
 		}
 	}
 	
-	//Approximate -- each month assumed to have 30 days
-	/*
-	function getAgeInMonths(currentDate, birthDate) {
-		var currentDate = new Date(currentDate);
-	    var birthDate = new Date(birthDate);
-	    var msToMonths = 1000*60*60*24*30;
-	    return Math.round((currentDate - birthDate) / msToMonths);
-	}
-	
-	function getAgeInMonths(age) {
-		if (age.indexOf('mo') > 0) {
-			return Math.floor(parseInt(age, 10) / 12);
-		} else {
-			return; // return undefined
-		}
-	}
-	*/
+
 	function resetToDefault(rule) {
 		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
 			fields = rule.modifiable;
@@ -137,6 +108,14 @@ var mdsIndicators =  (function(){
 		return codeStr;
 	}
 */
+
+	function isOSCAR() {
+		return mdsViewer.getEMR()["Oscar"];
+	}
+
+	function isPSS(){;
+		return mdsViewer.getEMR()["PSS"];
+	}
 
 	var lookupVarNameTable = {
 		'minAge': 'Minimum Age',
@@ -762,7 +741,7 @@ var mdsIndicators =  (function(){
 			try {
 				if (Number(age) < 12) {
 					return NaN;
-				} else if (mdsViewer.getEMR()["Oscar"] && factors != "") {
+				} else if (isOSCAR() && factors != "") {
 					return true;
 				}
 				return factors.toLowerCase().indexOf('smok') != -1;
@@ -804,8 +783,9 @@ var mdsIndicators =  (function(){
 		col: ["Age", "COPD Screening Date", "Risk Factors"],
 		rule: function(age, formDate, factors) {
 			try {
-				if (Number(age) <= this.age || (mdsViewer.getEMR()["Oscar"] 
-					&& (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || (mdsViewer.getEMR()["PSS"] && factors.indexOf("current smoker") === -1)) {
+				if (Number(age) <= this.age || 
+					(isOSCAR() && (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || 
+					(isPSS() && factors.indexOf("current smoker") === -1)) {
 					return NaN;
 				} else {
 					return formDate != "";
@@ -853,10 +833,10 @@ var mdsIndicators =  (function(){
 				//Only people older than 18 qualify
 				if (Number(age) <= this.age 
 					&& (factors.indexOf("current smoker") === 0 
-						|| (mdsViewer.getEMR()["Oscar"] && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0)))) {
+						|| (isOSCAR() && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0)))) {
 					return Number(pneuc) > 0;
 				} else if (factors.indexOf("current smoker") === 0 
-							|| (mdsViewer.getEMR()["Oscar"] && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0))) {
+							|| (isPSS() && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0))) {
 					return Number(pneuc) > 0;
 				} else {
 					return NaN;
