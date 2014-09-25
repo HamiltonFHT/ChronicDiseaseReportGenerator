@@ -122,7 +122,7 @@ var mdsViewer = (function() {
 				< (window.innerHeight || document.documentElement.clientHeight) + $(window).scrollTop();
 	};
 
-	//Check if two objects have the same keys
+	//Check if two objects have the same keys and values
 	function isEquivalent(a, b) {
 	    // Create arrays of property names
 	    var aProps = Object.keys(a);
@@ -140,8 +140,12 @@ var mdsViewer = (function() {
 	        // If b does not have property
 	        // objects are not equivalent
 	        if (!b.hasOwnProperty(propName)) {
-	        	return false
+	        	return false;
 	        }
+	        if (!(b[propName] === a[propName])) {
+	        	return false;
+	        }
+
 	    }
 
 	    // If we made it this far, objects
@@ -871,7 +875,7 @@ var mdsViewer = (function() {
 				}
 				var date = mArrayDates[selectedDate];
 				title += " as of " + MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
-				title += " (n = " + mTotalPatients[selectedDate] + ")";
+				//title += " (n = " + mTotalPatients[selectedDate] + ")";
 				//store for when saving file
 				mReportTitle = title;
 				return title;
