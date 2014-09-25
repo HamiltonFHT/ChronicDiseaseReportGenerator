@@ -500,7 +500,7 @@ var mdsIndicators =  (function(){
 
 	//Patients with hypertension and an elevated blood pressure have come in for a regular checkup
 	var ruleElevatedBPRegularVisit = {
-		desc: function(){return "Last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
+		desc: function(){return "Hypertensive patients with last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
 		long_desc: function() { return "% of patients diagnosed with hypertension and with BP over " + this.sysTarget + "/" + this.diasTarget + 
 										" who have had a visit within the past " + this.months + " months"; },
 		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diastolic BP", "Problem List"],
@@ -878,7 +878,7 @@ var mdsIndicators =  (function(){
 	var rulePHQ9 = {
 		desc: function(){return "Patients with multiple PHQ9 forms"; },
 		long_desc: function() { return "Adult patients who have depression and have filled out at least one PHQ9 form" + 
-								 		"have more than one PHQ9 form. This is an indication it is being used for follow-up"; },
+								 		" have more than one PHQ9 form. This is an indication it is being used for follow-up"; },
 		col: ["Current Date", "PHQ9 Dates","PHQ9 Occurrences"],
 		months:6,
 		modifiable: ["months"],
