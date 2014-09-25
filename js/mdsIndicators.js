@@ -282,7 +282,7 @@ var mdsIndicators =  (function(){
 	
 	var ruleA1CPastNMonths = {
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
-		long_desc: function(){return "% of patients with A1C measured in last " +  this.months + " months"; },
+		long_desc: function(){ return "% of patients with A1C measured in last " +  this.months + " months"; },
 		months: 6,
 		modifiable: ["months"],
 		defaults: [6],

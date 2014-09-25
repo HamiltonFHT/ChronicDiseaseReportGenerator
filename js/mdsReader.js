@@ -128,6 +128,11 @@ var mdsReader = (function() {
 				if (csvObject[csvHeaders[propIndex]] == undefined) {
 					csvObject[csvHeaders[propIndex]] = [];
 				}
+				// Convert DD/MM/YYYY to YYYY-MM-DD
+				if (/^[0-9]{2}\/[0-9]{2}\/[0-9]{4}/.test(rowArray[propIndex])) {
+					rowArray[propIndex] = parseDate(rowArray[propIndex]);
+				}
+
 				csvObject[csvHeaders[propIndex]].push(rowArray[propIndex]);
 
 			}
@@ -342,6 +347,15 @@ var mdsReader = (function() {
 	};
 
 	/*
+	 * Convert dates from Oscar files from DD/MM/YYYY to YYYY-MM-DD
+	 */
+	function convertDate(date) {
+		for (var i=0; i<date.length; i++) {
+			date[i] = parseDate(date[i]);
+		}
+	};
+
+	/*
 	 * Pull out each prevention into their own columns
 	 */
 	function convertPreventions(x) {
@@ -365,16 +379,6 @@ var mdsReader = (function() {
 		// Add a "height date" and a "weight date" object to mFilteredData
 		mFilteredData[x]["height date"] = [];
 		mFilteredData[x]["weight date"] = [];
-
-		// Convert Last Done to proper date format
-		for (var i=0; i<mFilteredData[x]["Last Done"].length; i++) {
-			mFilteredData[x]["Last Done"][i] = parseDate(mFilteredData[x]["Last Done"][i]);
-		}
-
-		// Convert Current Date to correct format
-   		for (var i=0; i<mFilteredData[x]["Current Date"].length; i++) {
-			mFilteredData[x]["Current Date"][i] = parseDate(mFilteredData[x]["Current Date"][i]);
-		}
 
 		// Split dateObserved column into height date and weight date
 		var measurements = mFilteredData[x]["measurements"];
