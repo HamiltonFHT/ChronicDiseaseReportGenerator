@@ -67,7 +67,7 @@ var mdsReader = (function() {
 			    		if (filesLeftToRead == 0) {
 							function compare(a,b) {
 							  if (a.fileLastModified < b.fileLastModified)
-							     return -1;
+							    return -1;
 							  if (a.fileLastModified > b.fileLastModified)
 							    return 1;
 							  return 0;
