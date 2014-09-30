@@ -477,7 +477,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleBaselineBP = {
-		desc: function(){return "BP measured in last " + this.months + " months for adults over " + this.age; },
+		desc: function(){return "BP measured in last " + this.months + " months for  adults over " + this.age; },
 		long_desc: function(){return "% of patients with BP measured in the past " + this.months + " months for adults over " + this.age; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,
@@ -713,15 +713,15 @@ var mdsIndicators =  (function(){
 	var ruleWellBabyVisit = {
 		desc: function() { return "Well Baby Visit for infants " + this.minAge + " to " + this.maxAge + " years old"; },
 		long_desc: function() { return "Percent of children " + this.minAge + " to " + this.maxAge + " who have completed their 18 month well baby visit"; },
-		col: ["Age", "A002A", "A268A", "Rourke"],
+		col: ["Age", "A002A", "Rourke"],
 		minAge: 2,
 		maxAge: 3,
 		modifiable: ['minAge', 'maxAge'],
 		defaults: [2, 3],
-		rule: function(age, A002, A268, rourke) {
+		rule: function(age, A002, rourke) {
 			try {
 				if (Number(age) >= this.minAge && Number(age) <= this.maxAge) {
-					return (A002 != 0 || A268 != 0 || rourke != 0);
+					return (A002 != 0 || rourke != 0);
 				} else { return NaN; }
 			} catch (err) {
 				console.log(err);
