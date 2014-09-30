@@ -498,11 +498,11 @@ var mdsReader = (function() {
 					if (mParsedData[i]["Current Date"].length > 0) {
 						var fileDate = "";
 						var currentDate = mParsedData[i]["Current Date"][0];
-						if (currentDate.toString().match(/\d{2}\/\d{2}\/\d{4}/)){
+						if (currentDate.toString().match(/\d{2}[/-]\d{2}[/-]\d{4}/)){
 			 				var parsedDate = currentDate.split("/");
 			 				fileDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
 			 			} else {
-			 				fileDate = new Date(currentDate);
+			 				fileDate = new Date(currentDate + " EST");
 			 			}
 						
 						arrayDates.push(fileDate);
