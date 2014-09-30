@@ -35,8 +35,8 @@ var mdsViewer = (function() {
 	var mCurrentIndSetName = ""; // current rule set name
 	var mCurrentIndicator = 0;       // current indicator
 	var mCurrentDateIndex = 0; //current selected date when in tracking mode
-	var xScale, yScale, xAxis, yAxis;
-	
+	var xScaleSnapshot, yScaleSnapshot, xAxisSnapshot, yAxisSnapshot;
+	var xScaleTracking, yScaleTracking, xAxisTracking, yAxisTracking;
 
 	//Static variables to handle graph dimensions and colors
 	var DEFAULT_CANVAS_WIDTH = 940;
@@ -176,9 +176,7 @@ var mdsViewer = (function() {
 		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
 		mCurrentIndicator = 0;
 				
-		clearCanvas();
-		updateCanvasSize();
-		
+
 		$("#canvasContainer_extra").empty();
 
 		if (mCalculatedData == undefined) {
@@ -190,7 +188,13 @@ var mdsViewer = (function() {
 			addUserInterface();
 		} else if (isNewFile) {
 			addPhysicianList();
+			mCurrentDateIndex = 0;
 		}
+
+
+		clearCanvas();
+		updateCanvasSize();
+		
 		
 		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
 			$("#dropdownMode").prop("disabled", true);
@@ -748,7 +752,50 @@ var mdsViewer = (function() {
 			}
 		}
 	}
+
+
+
+	function splitText(textElement, lineLength, title) {
+		var isTitle = typeof title !== 'undefined' ? true : false;
+
+    	var text = textElement.text();
+    	var splitRegex = new RegExp(".{" + lineLength + "}\\S*\\s+", "g");
+    	var splitText= text.replace(splitRegex, "$&@").split(/\s+@/);
+    
+    	textElement.text('');
+    	for (var i = 0; i < splitText.length; i++) {
+			var tspan = textElement.append('tspan').text(splitText[i]);
+			if (i > 0) {
+				if (isTitle) {
+				    textElement.attr('y', -25);
+      				tspan.attr('y', '-8').attr('x',mCanvasWidth/2 - splitText[i].length).attr("style","text-anchor:middle");
+      			} else {
+      				//Then pull all of the label up 4 units to recenter
+				    textElement.attr('y', -10*(splitText.length-1));
+	      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
+      			}
+      		}
+  		}
+	}
 	
+
+	var insertLinebreaks = function (d) {
+    	var el = d3.select(this);
+    	var words = d3.select(this).text();
+    	var splitRegex = new RegExp(".{" + mXAxisCharLength + "}\\S*\\s+", "g");
+    	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
+    
+    	el.text('');
+    	var length = 0;
+    	var line = '';
+        for (var i = 0; i < words.length; i++) {
+			var tspan = el.append('tspan').text(words[i]);
+			if (i > 0)
+      			tspan.attr('x', 0).attr('dy', '15');
+  		}
+	};
+	
+
 	
 	function generateSnapshot(selectedDate, extraCanvas){
 
@@ -788,28 +835,28 @@ var mdsViewer = (function() {
 			arrayTooltip.push(tooltip);
 		}
 
-		xScale = d3.scale.linear()
+		xScaleSnapshot = d3.scale.linear()
 			.domain([0, 100])
 			.range([0, mGraphWidthSnapshot]);
 			
-		xAxis = d3.svg.axis()
-			.scale(xScale)
+		xAxisSnapshot = d3.svg.axis()
+			.scale(xScaleSnapshot)
 			.orient("bottom")
 			.tickFormat(function(d) { return d + "%"; });
 		
-		yScale = d3.scale.ordinal()
+		yScaleSnapshot = d3.scale.ordinal()
 			.domain(arrayDesc)
 			.rangeRoundBands([0, mGraphHeight], 0.1);
 			
-		yAxis = d3.svg.axis()
-			.scale(yScale)
+		yAxisSnapshot = d3.svg.axis()
+			.scale(yScaleSnapshot)
 			.orient("left");
 			
 		canvas.selectAll(".tickline")
-			.data(xScale.ticks(10))
+			.data(xScaleSnapshot.ticks(10))
 			.enter().append("line")
-				.attr("x1", xScale)
-				.attr("x2", xScale)
+				.attr("x1", xScaleSnapshot)
+				.attr("x2", xScaleSnapshot)
 				.attr("y1", 0)
 				.attr("y2", mGraphHeight)
 				.style("stroke", "#ccc")
@@ -881,68 +928,21 @@ var mdsViewer = (function() {
 				return title;
 			});
 		
-		//test
-		splitText(d3.select(".graphTitle"), 80, true);
-		
+	
 		//Translate graph into center of page
 		canvas.append("g")
 			.attr("transform", "translate(0, " + mGraphHeight + ")")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
-			.call(xAxis);
+			.call(xAxisSnapshot);
 			
 		canvas.append("g")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.attr("id", "yaxis")
-			.call(yAxis);
-		
-	
-	    /*canvas.selectAll('g#yaxis g text').each(function (d) {
-        	var el = d3.select(this);
-        	var words = d3.select(this).text();
-        	var splitRegex = new RegExp(".{" + mYAxisCharLength + "}\\S*\\s+", "g");
-        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
-        
-        	el.text('');
-        	var length = 0;
-        	var line = '';
-	        for (var i = 0; i < words.length; i++) {
-				var tspan = el.append('tspan').text(words[i]);
-				if (i > 0) {
-				    //Then pull all of the label up 4 units to recenter
-				    el.attr('y', -10*(words.length-1));
-	      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
-	      		}
-	  		}
-
-    	});*/
+			.call(yAxisSnapshot);
 
     	canvas.selectAll('g#yaxis g text').each(function () { splitText(d3.select(this), mYAxisCharLength); });
-
-    	function splitText(textElement, lineLength, title) {
-    		var isTitle = typeof title !== 'undefined' ? true : false;
-
-        	var text = textElement.text();
-        	var splitRegex = new RegExp(".{" + lineLength + "}\\S*\\s+", "g");
-        	var splitText= text.replace(splitRegex, "$&@").split(/\s+@/);
-        
-        	textElement.text('');
-        	for (var i = 0; i < splitText.length; i++) {
-				var tspan = textElement.append('tspan').text(splitText[i]);
-				if (i > 0) {
-					if (isTitle) {
-					    textElement.attr('y', -25);
-	      				tspan.attr('y', '-8').attr('x',307.5).attr("style","text-anchor:middle");
-	      			} else {
-	      				//Then pull all of the label up 4 units to recenter
-					    textElement.attr('y', -10*(splitText.length-1));
-		      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
-	      			}
-	      		}
-	  		}
-    	}
-
 				
 		// Add styling and attributes for major ticks in axes
 		var majorTicks = document.getElementsByClassName("tick major");
@@ -969,9 +969,9 @@ var mdsViewer = (function() {
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "onTargetBar")
-				.attr("width", function(d) { return xScale(d); })
-				.attr("height", yScale.rangeBand())
-				.attr("y", function (d, i) { return yScale(arrayDesc[i]); })
+				.attr("width", function(d) { return xScaleSnapshot(d); })
+				.attr("height", yScaleSnapshot.rangeBand())
+				.attr("y", function (d, i) { return yScaleSnapshot(arrayDesc[i]); })
 				.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.attr("data-ruleindex", function (d, i) { return i.toString(); }) //used to select/modify current rule
 				.on("click", function(d, i) {
@@ -989,10 +989,10 @@ var mdsViewer = (function() {
 			.data(arrayData)
 			.enter().append("rect")
 				.attr("class", "offTargetBar")
-				.attr("width", function(d) { return xScale(100 - d); })
-				.attr("height", yScale.rangeBand())
-				.attr("x", function(d) { return xScale(d); })
-				.attr("y", function(d, i) { return yScale(arrayDesc[i]); })
+				.attr("width", function(d) { return xScaleSnapshot(100 - d); })
+				.attr("height", yScaleSnapshot.rangeBand())
+				.attr("x", function(d) { return xScaleSnapshot(d); })
+				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]); })
 				.attr("fill", "white")
 				.style("stroke", "black")
 				.style("stroke-width", "1px")
@@ -1008,12 +1008,12 @@ var mdsViewer = (function() {
 		canvas.selectAll("onTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
-				.attr("class", "dataLabel")
+				.attr("class", "dataLabelSnapshot")
 				.attr("x", function(d, i) { 
-											if (d<15) { return xScale(d+10); } 
-											else { return xScale(d/2);	} 
+											if (d<15) { return xScaleSnapshot(d+10); } 
+											else { return xScaleSnapshot(d/2);	} 
 										  })
-				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
+				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 				.attr("text-anchor", "middle")
 				.style("font-family", "Arial")
 				.style("font-size", "13px")
@@ -1028,9 +1028,9 @@ var mdsViewer = (function() {
 		canvas.selectAll("offTargetLabel")
 			.data(arrayData)
 			.enter().append("text")
-				.attr("class", "dataLabel")
-				.attr("x", function(d) { return xScale((100 - d)/2 + parseFloat(d)); })
-				.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
+				.attr("class", "dataLabelSnapshot")
+				.attr("x", function(d) { return xScaleSnapshot((100 - d)/2 + parseFloat(d)); })
+				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 				.attr("text-anchor", "middle")
 				.attr("dy", ".35em")
 				.style("fill", "black")
@@ -1095,23 +1095,23 @@ var mdsViewer = (function() {
 		
 		
 		// Create the scale for the X axis
-		xScale = d3.time.scale()
+		xScaleTracking = d3.time.scale()
 			.domain([minDate, maxDate])
 			.range([0, mGraphWidthTracking]);
 			
 		// To do: better date format
-		xAxis = d3.svg.axis()
-			.scale(xScale)
+		xAxisTracking = d3.svg.axis()
+			.scale(xScaleTracking)
 			.orient("bottom")
 			.tickFormat(d3.time.format("%b %Y"));
 	
 		// Create Y Axis scale
-		yScale = d3.scale.linear()
+		yScaleTracking = d3.scale.linear()
 			.domain([0, 100])
 			.range([DEFAULT_GRAPH_HEIGHT_TRACKING, 0]);
 			
-		yAxis = d3.svg.axis()
-			.scale(yScale)
+		yAxisTracking = d3.svg.axis()
+			.scale(yScaleTracking)
 			.orient("left");
 			
 		// Create and append ticklines for the xAxis
@@ -1119,8 +1119,8 @@ var mdsViewer = (function() {
 			.data(arrayData)
 			.enter().append("line")
 				.attr("class", "tickLine xTickLine")
-				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(arrayDates[i]); })
+				.attr("x1", function (d, i) { return xScaleTracking(arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScaleTracking(arrayDates[i]); })
 				.attr("y1", 0)
 				.attr("y2", DEFAULT_GRAPH_HEIGHT_TRACKING)
 				.style("opacity", 0.7)
@@ -1129,13 +1129,13 @@ var mdsViewer = (function() {
 	
 		// Create and append ticklines for the yAxis
 		mCanvas.selectAll(".yTickLine")
-			.data(yScale.ticks(10))
+			.data(yScaleTracking.ticks(10))
 			.enter().append("line")
 				.attr("class", "tickLine yTickLine")
 				.attr("x1", 0)
 				.attr("x2", mGraphWidthTracking)
-				.attr("y1", yScale)
-				.attr("y2", yScale)
+				.attr("y1", yScaleTracking)
+				.attr("y2", yScaleTracking)
 				.style("opacity", 0.7)
 				.style("stroke", "#cccccc")
 				.style("stroke-width", "1px");
@@ -1146,24 +1146,9 @@ var mdsViewer = (function() {
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
-			.call(xAxis);
+			.call(xAxisTracking);
 			
-		var insertLinebreaks = function (d) {
-        	var el = d3.select(this);
-        	var words = d3.select(this).text();
-        	var splitRegex = new RegExp(".{" + mXAxisCharLength + "}\\S*\\s+", "g");
-        	var words = words.replace(splitRegex, "$&@").split(/\s+@/);
-        
-        	el.text('');
-        	var length = 0;
-        	var line = '';
-	        for (var i = 0; i < words.length; i++) {
-				var tspan = el.append('tspan').text(words[i]);
-				if (i > 0)
-	      			tspan.attr('x', 0).attr('dy', '15');
-	  		}
-    	};
-	
+		//mCanvas.selectAll('g.xAxis g text').each(function () { splitText(d3.select(this), 3); });
 	    mCanvas.selectAll('g.xAxis g text').each(insertLinebreaks);
 					
 		// Append yAxis to the mCanvas
@@ -1171,7 +1156,7 @@ var mdsViewer = (function() {
 			.attr("class", "yAxis")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
-			.call(yAxis);
+			.call(yAxisTracking);
 		
 		// Add styling and attributes for major ticks
 		var majorTicks = document.getElementsByClassName("tick major");
@@ -1197,10 +1182,10 @@ var mdsViewer = (function() {
 			.data(new Array(arrayData.length - 1))
 			.enter().append("line")
 				.attr("class", "dataPointConnector")
-				.attr("x1", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScale(arrayDates[i + 1]); })
-				.attr("y1", function (d, i) { return yScale(arrayData[i][mCurrentIndicator]); })
-				.attr("y2", function (d, i) { return yScale(arrayData[i + 1][mCurrentIndicator]); })
+				.attr("x1", function (d, i) { return xScaleTracking(arrayDates[i]); })
+				.attr("x2", function (d, i) { return xScaleTracking(arrayDates[i + 1]); })
+				.attr("y1", function (d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]); })
+				.attr("y2", function (d, i) { return yScaleTracking(arrayData[i + 1][mCurrentIndicator]); })
 				.attr("stroke", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.attr("stroke-width", 2);
 		
@@ -1209,8 +1194,8 @@ var mdsViewer = (function() {
 			.data(arrayData)
 			.enter().append("circle")
 				.attr("class", "dataPoint")
-				.attr("cx", function (d, i) { return xScale(arrayDates[i]); })
-				.attr("cy", function(d, i) { return yScale(arrayData[i][mCurrentIndicator]); })
+				.attr("cx", function (d, i) { return xScaleTracking(arrayDates[i]); })
+				.attr("cy", function(d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]); })
 				.attr("r", 5)
 				.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
 				.on("mouseover", function(d) {
@@ -1295,46 +1280,47 @@ var mdsViewer = (function() {
 				}
 
 				mReportTitle = title;
-				//test
-				title = splitText(d3.select(".graphTitle"));
+				
 				return title;
 			});
+
+		mCanvas.selectAll('.graphTitle').each(function () { splitText(d3.select(this), 180, true); });
 		
 		// Add labels for data points
-		mCanvas.selectAll(".dataLabel")
+		mCanvas.selectAll(".dataLabelTracking")
 			.data(arrayData)
 			.enter().append("text")
-				.attr("class", "dataLabel")
-				.attr("x", function(d, i) { return xScale(arrayDates[i]); })
+				.attr("class", "dataLabelTracking")
+				.attr("x", function(d, i) { return xScaleTracking(arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
 					if ((arrayData[i][0]) < 10)
-						return yScale(arrayData[i][0]) - 15;
+						return yScaleTracking(arrayData[i][0]) - 15;
 					// Else	
 					else {
 						// For first data point
 						if (i == 0) {
 							// If adjacent point is above, place label below, vice versa
 							if (arrayData[1][0] >= arrayData[i][mCurrentIndicator])
-								return yScale(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
+								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
+							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
 						}
 						// For last point, compare with second last point
 						else if (i == arrayData.length - 1) {
 							if (arrayData[arrayData.length - 2][0] >= arrayData[i][mCurrentIndicator])
-								return yScale(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
+								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
+							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
 						}
 						// Else all points in between, check both sides
 						else {
 							// If both adjacent points are above, place below
 							if (arrayData[i - 1][0] >= arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] >= arrayData[i][mCurrentIndicator])
-								return yScale(arrayData[i][mCurrentIndicator]) + 25;
+								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
 							// Else if both are below, place above	
 							else if (arrayData[i - 1][0] < arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] < arrayData[i][mCurrentIndicator])
-								return yScale(arrayData[i][mCurrentIndicator]) - 15;
+								return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
 							// Else just place above
-							else return yScale(arrayData[i][mCurrentIndicator]) - 15;
+							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
 						}
 					}
 				}) 
@@ -1361,7 +1347,7 @@ var mdsViewer = (function() {
 		mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
-			.attr("height", DEFAULT_CANVAS_HEIGHT)
+			.attr("height", mCanvasHeight)
 			.style("border", "1px solid lightgray")
 				.append("g")
 					.attr("class", "g_main")
@@ -1382,16 +1368,16 @@ var mdsViewer = (function() {
 	}
 	
 	function toggleDataLabels() {
-			// Find data labels
-		if (d3.selectAll(".dataLabel")[0].length > 0) 
-			d3.selectAll(".dataLabel").remove();
-		else {
-			
-			var arrayData = [];
-			var arrayDesc = [];
-			var arrayLabels = [];
 
-			if (mMode === "snapshot") {
+		var arrayData = [];
+		var arrayDesc = [];
+		var arrayLabels = [];
+
+		if (mMode === "snapshot") {
+			if (d3.selectAll(".dataLabelSnapshot")[0].length > 0) {
+				d3.selectAll(".dataLabelSnapshot").remove();
+				return;
+			} else {
 				var data = mCalculatedData[0];
 			
 				for (var i=0; i < data.length; i++) {
@@ -1414,12 +1400,12 @@ var mdsViewer = (function() {
 				mCanvas.selectAll("onTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
-						.attr("class", "dataLabel")
+						.attr("class", "dataLabelSnapshot")
 						.attr("x", function(d, i) { 
-											if (d<15) { return xScale(Math.ceil(d)+10); } 
-											else { return xScale(d/2);	}  
+											if (d<15) { return xScaleSnapshot(Math.ceil(d)+10); } 
+											else { return xScaleSnapshot(d/2);	}  
 										  })
-						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
+						.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 						.attr("text-anchor", "middle")
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
@@ -1433,9 +1419,9 @@ var mdsViewer = (function() {
 				mCanvas.selectAll("offTargetLabel")
 					.data(arrayData)
 					.enter().append("text")
-						.attr("class", "dataLabel")
-						.attr("x", function(d) { return xScale((100 - d)/2 + parseFloat(d)); })
-						.attr("y", function(d, i) { return yScale(arrayDesc[i]) + (yScale.rangeBand()/2); })
+						.attr("class", "dataLabelSnapshot")
+						.attr("x", function(d) { return xScaleSnapshot((100 - d)/2 + parseFloat(d)); })
+						.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 						.attr("text-anchor", "middle")
 						.attr("dy", ".35em")
 						.style("fill", "black")
@@ -1444,8 +1430,12 @@ var mdsViewer = (function() {
 						.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "0%"; })
 						// don't display off target labels
 						.attr("display", "none");
+			}
+		} else {
+			if (d3.selectAll(".dataLabelTracking")[0].length > 0) {
+				d3.selectAll(".dataLabelTracking").remove();
+				return;
 			} else {
-
 				for (var i=0; i < mCalculatedData.length; i++) {
 					arrayData.push([]);
 					arrayDesc.push([]);
@@ -1469,12 +1459,12 @@ var mdsViewer = (function() {
 					return;
 				}
 								
-				mCanvas.selectAll(".dataLabel")
+				mCanvas.selectAll(".dataLabelTracking")
 					.data(arrayData)
 					.enter().append("text")
-						.attr("class", "dataLabel")
-						.attr("x", function(d, i) { return xScale(mArrayDates[i]); })
-						.attr("y", function(d, i) { return yScale(arrayData[i][mCurrentIndicator]) - 15; }) // 15 pixels above data point
+						.attr("class", "dataLabelTracking")
+						.attr("x", function(d, i) { return xScaleTracking(mArrayDates[i]); })
+						.attr("y", function(d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15; }) // 15 pixels above data point
 						.attr("text-anchor", "middle")
 						.style("fill", "black")
 						.style("font-size", "13px")
@@ -1484,7 +1474,8 @@ var mdsViewer = (function() {
 						});
 			}
 		}
-	};
+
+	}; //end toggleDataLabels
 	
 	return {
 		generateCharts: generateCharts,
