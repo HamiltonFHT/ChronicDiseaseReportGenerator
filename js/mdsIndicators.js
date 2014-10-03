@@ -511,7 +511,7 @@ var mdsIndicators =  (function(){
 		defaults: [9, 140, 90],
 		rule: function(currentDate, lastSeenDate, sysValue, diasValue, icd9) {
 			try {
-				if (icd9.indexOf("401") == -1 || (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget)) {
+				if (icd9.indexOf("401") == -1 || (Number(sysValue) < this.sysTarget || Number(diasValue) < this.diasTarget)) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, lastSeenDate);
