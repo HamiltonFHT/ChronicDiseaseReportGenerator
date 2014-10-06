@@ -762,19 +762,17 @@ var mdsViewer = (function() {
     	var splitRegex = new RegExp(".{" + lineLength + "}\\S*\\s+", "g");
     	var splitText= text.replace(splitRegex, "$&@").split(/\s+@/);
     
-    	textElement.text('');
+    	var numLines = splitText.length;
+
+    	textElement.text('').attr('y', '0');
     	for (var i = 0; i < splitText.length; i++) {
 			var tspan = textElement.append('tspan').text(splitText[i]);
-			if (i > 0) {
-				if (isTitle) {
-				    textElement.attr('y', -25);
-      				tspan.attr('y', '-8').attr('x',mCanvasWidth/2 - splitText[i].length).attr("style","text-anchor:middle");
-      			} else {
-      				//Then pull all of the label up 4 units to recenter
-				    textElement.attr('y', -10*(splitText.length-1));
-	      			tspan.attr('x', 0).attr('y', (i)*'12').attr('dx', '-10');
-      			}
-      		}
+			if (isTitle) {
+			    textElement.attr('y', -25);
+  				tspan.attr('y', '-8').attr('x',mCanvasWidth/2 - splitText[i].length).attr("style","text-anchor:middle");
+  			} else {
+      			tspan.attr('x', 0).attr('y', (i-1)*14).attr('dx', '-10');
+  			}
   		}
 	}
 	

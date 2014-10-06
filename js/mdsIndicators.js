@@ -325,7 +325,7 @@ var mdsIndicators =  (function(){
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
-	 				   (Number(diasValue) < this.diasTarget || Number(sysValue) < this.sysTarget));
+	 				   (Number(diasValue) < this.diasTarget && Number(sysValue) < this.sysTarget));
 	 		} catch (err) {
 	 			return false;
 	 		}
