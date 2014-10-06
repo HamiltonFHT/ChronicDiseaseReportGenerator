@@ -82,7 +82,8 @@ var mdsViewer = (function() {
     var MONTH_NAMES_SHORT = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
     "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
 
-    var mEMR = {};
+    var mEMR = {"PSS":true,
+				"Oscar":false};
 
 	//Used when displaying axis titles
 	/*

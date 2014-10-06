@@ -127,6 +127,9 @@ var mdsIndicators =  (function(){
 		'diasTarget': 'Diastolic BP Target',
 		'age': 'Age'
 	};
+
+	// fileNumber for Oscar CYMH
+	var fileNumber;
 	
 	
 	function applyRules(ruleListIndex, filteredData) {
@@ -137,6 +140,7 @@ var mdsIndicators =  (function(){
 		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
+			fileNumber = i;
 			results.push(checkRules(filteredData[i], currentRuleList.rules));
 		}
 		
@@ -898,17 +902,25 @@ var mdsIndicators =  (function(){
 			}
 		}
 	};
-	
+
 	var ruleADHDMedReview = {
 		desc: function(){return "Youth on ADHD meds annual checkup"; },
 		long_desc: function() { return "Youth diagnosed with ADHD and on medications for ADHD who have had an annual visit"; },
-		col: ["Current Date", "Last Seen Date"],
+		col: ["Current Date", "Last Seen Date", "Patient #"],
 		months:12,
 		modifiable: ["months"],
 		defaults: [12],
-		rule: function(currentDate, lastSeenDate) {
+		rule: function(currentDate, lastSeenDate, patientNumber) {
+
+			// Get mFilteredData for Oscar
+			var mFilteredData = mdsReader.getmFilteredData();
+
 			try {
-				return withinDateRange(currentDate, this.months, lastSeenDate);
+				if (isPSS()) {
+					return withinDateRange(currentDate, this.months, lastSeenDate);
+				} else if (mFilteredData[fileNumber]["Filtered Patients"].indexOf(patientNumber) != -1) {
+					return withinDateRange(currentDate, this.months, lastSeenDate);
+				}
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -916,6 +928,28 @@ var mdsIndicators =  (function(){
 		}
 	};
 	
+	var ruleChildYouthMentalHealthScreening = {
+		desc: function() { return "Children with recent screening tool"; },
+		long_desc: function() { return "Children referred to the HFHT child and youth mental health services who" + 
+										" have had a screening tool done in the past " + this.years + " years"},
+		col: ["Current Date", "Referral Date", "Last Screening"],
+		years:2,
+		modifiable: ["years"],
+		defaults: [2],
+		rule: function(currentDate, referralDate, lastScreening) {
+			try {
+				if (referralDate == "") {
+					return NaN;
+				} else {
+					return withinDateRange(currentDate, this.years*12, lastScreening);
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
 	var ruleBreastCancer = {
 		desc: function(){return "Up-to-date breast cancer screening"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
@@ -1047,8 +1081,9 @@ var mdsIndicators =  (function(){
 						   ruleLungHealthForm];
 						   
 	var adultMentalHealthRules = [rulePHQ9];
-	
-	var youthADHDRules = [ruleADHDMedReview];
+
+	var childYouthMentalHealthRules = [ruleADHDMedReview,
+								  ruleChildYouthMentalHealthScreening];
 	
 	var wellBabyRules = [ruleWellBabyVisit];
 	
@@ -1066,7 +1101,7 @@ var mdsIndicators =  (function(){
 					{name:"Depression", rules:adultMentalHealthRules},
 					{name: "Adult Preventative Care", rules:cancerScreeningRules},
 					{name: "Well Baby", rules:wellBabyRules},
-					{name:"ADHD", rules:youthADHDRules},
+					{name:"ADHD", rules:childYouthMentalHealthRules},
 					{name:"Diabetes (Full)", rules:diabetesExtendedRules}];
 
 	
