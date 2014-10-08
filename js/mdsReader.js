@@ -27,7 +27,25 @@ var mdsReader = (function() {
 	var mFilteredData = [];
 	var mParsedData = [];
 	var mCurrentIndSetIndex;
-	
+	var holder = document.getElementById('canvasContainer');
+
+
+	holder.ondragover = function () { return false; };
+	holder.ondragend = function () { return false; };
+	holder.ondrop = function (e) {
+		var fileReaderAvailable = false;
+
+		if (typeof window.FileReader === 'undefined') {
+		   return;
+		}
+
+		this.className = '';
+		e.preventDefault();
+
+		readFiles(e.dataTransfer.files);
+		return false;
+	};
+
 	/*
 	 * Called by index.html when a file is uploaded by the user.
 	 * Parses files and sorts by date and the calls calculate() to 
