@@ -1382,6 +1382,8 @@ var mdsViewer = (function() {
 				for (var i=0; i < data.length; i++) {
 					if (data[i]["total"] == 0) {
 						arrayLabels.push("0% (0/0)");
+						arrayData.push(0);
+						arrayDesc.push(data[i]["desc"]);
 						continue;
 					}
 					var percent = data[i]["passed"] / data[i]["total"] * 100;
