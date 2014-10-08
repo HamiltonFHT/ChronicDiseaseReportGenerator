@@ -302,6 +302,11 @@ var mdsReader = (function() {
 			if ("prevention_type" in mFilteredData[i]) {
 				convertPreventions(i);
 			}
+
+			// Add a new column listing the patients who are on medication for ADHD
+			if ("onMedication" in mFilteredData[i]) {
+				identifyADHD(i);
+			}
 		}
 	};
 
@@ -348,12 +353,13 @@ var mdsReader = (function() {
 
 	/*
 	 * Convert dates from Oscar files from DD/MM/YYYY to YYYY-MM-DD
+	 * No longer used?
 	 */
-	function convertDate(date) {
+	/*function convertDate(date) {
 		for (var i=0; i<date.length; i++) {
 			date[i] = parseDate(date[i]);
 		}
-	};
+	};*/
 
 	/*
 	 * Pull out each prevention into their own columns
@@ -486,6 +492,19 @@ var mdsReader = (function() {
 	};
 
 	/*
+	 * Creates a new column to show which patients are ADHD patients on medication
+	 */
+	function identifyADHD(x) {
+		var newList = [];
+		for (var i=0; i<mFilteredData[x]["Patient #"].length; i++) {
+			if (mFilteredData[x]["onMedication"][i] == "yes" && mFilteredData[x]["ADHD"][i] != "") {
+				newList.push(mFilteredData[x]["Patient #"][i]);
+			}
+		}
+		mFilteredData[x]["Filtered Patients"] = newList;
+	};
+
+	/*
 	 * Return the date that each report was generated in an array
 	 */
 	function getDateArray() {
@@ -566,10 +585,12 @@ var mdsReader = (function() {
 	 */
 	return {
 		readFiles: readFiles,
-		reCalculate: reCalculate
+		reCalculate: reCalculate,
+		getmFilteredData: function() { return mFilteredData; }
 	};
 	
 })();
+
 
 /*
 
