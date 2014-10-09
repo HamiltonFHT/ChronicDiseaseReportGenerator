@@ -518,11 +518,19 @@ var mdsViewer = (function() {
 			doc.setFontSize(20);
 			doc.setFont('times');
 			var splitTitle = doc.splitTextToSize(mReportTitle, 180);
-			doc.text(15, 20, splitTitle);
-			doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
+			var titleSpacing;
+			if (splitTitle[0].length >= 55) {
+				titleSpacing = 10;
+			} else {
+				titleSpacing = 60-(splitTitle[0].length/2);
+			}
+			doc.text(titleSpacing, 20, splitTitle);
+			
+			//doc.addImage(outputURL, 'JPEG', 15, 60, 180, 100);
+			doc.addImage(outputURL, 'JPEG', 15, 60, mCanvasWidth*0.2, canvasHeight*0.2);
 			
 			// save() to download automatically, output() to open in a new tab
-			//doc.save(mReportTitle);
+			//doc.save(mReportTitle.concat('.pdf'));
 			doc.output('save', mReportTitle.concat('.pdf'));
 		} else {
 			// Retrieve data string of the canvas and append to the hidden img element
@@ -772,7 +780,19 @@ var mdsViewer = (function() {
 			    textElement.attr('y', -25);
   				tspan.attr('y', '-8').attr('x',mCanvasWidth/2 - splitText[i].length).attr("style","text-anchor:middle");
   			} else {
-      			tspan.attr('x', 0).attr('y', (i-1)*14).attr('dx', '-10');
+  				switch (splitText.length) {
+  					case 2:
+  						if (i==0) {tspan.attr('x', 0).attr('y', -6).attr('dx', '-10');}
+  						else {tspan.attr('x', 0).attr('y', 12).attr('dx', '-10');}
+  						break;
+					case 3:
+						if (i==0) {tspan.attr('x', 0).attr('y', -14).attr('dx', '-10');}
+						else if (i==1) {tspan.attr('x', 0).attr('y', 4).attr('dx', '-10');}
+						else {tspan.attr('x', 0).attr('y', 18).attr('dx', '-10');}
+						break;
+					default:
+						tspan.attr('x', 0).attr('dx', '-10');
+  				}
   			}
   		}
 	}
@@ -1009,7 +1029,7 @@ var mdsViewer = (function() {
 			.enter().append("text")
 				.attr("class", "dataLabelSnapshot")
 				.attr("x", function(d, i) { 
-											if (d<15) { return xScaleSnapshot(d+10); } 
+											if (d<15) { return xScaleSnapshot(d+7); } 
 											else { return xScaleSnapshot(d/2);	} 
 										  })
 				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
