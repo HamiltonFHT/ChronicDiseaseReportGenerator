@@ -1061,10 +1061,24 @@ var mdsViewer = (function() {
 	};
 	
 	function handleBarClick(i, y) {
-		$(".onTargetBar")
-			.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
 		var thisBar = $(".onTargetBar[y="+y+"]");
-		thisBar.attr("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
+		
+		var isSelected = (thisBar.attr("data-selected") == "true")
+		
+		$(".onTargetBar")
+			.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
+			.attr("data-selected", "false");
+			
+		thisBar.attr("data-selected", "true");
+		
+		if (isSelected) {
+			thisBar.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
+					.attr("data-selected", "false");
+		} else {
+			thisBar.attr("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex])
+					.attr("data-selected", "true");
+		}
+		
 		mCurrentIndicator = i;
 		
 		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
