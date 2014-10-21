@@ -839,7 +839,7 @@ var mdsIndicators =  (function(){
 		defaults: [18],
 		rule: function(age, factors, pneuc) {
 			try {
-				facotrs = factors.toLowerCase();
+				factors = factors.toLowerCase();
 				//Only people older than 18 who are current smokers qualify
 				if (Number(age) <= this.minAge || 
 						(isPSS() && factors.indexOf("current smoker") === -1) ||
