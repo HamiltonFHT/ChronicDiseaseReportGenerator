@@ -764,7 +764,10 @@ var mdsIndicators =  (function(){
 		months: 15,
 		modifiable: ["months"],
 		defaults:[15],
-		col: ["Risk Factors", "Smoking Cessation Date", "Last Seen Date", "Current Date"],
+		col: [	"Risk Factors", 			//get smoking status
+				"Smoking Cessation Date",   //smoking intervention date (billing code or relevant documentation)
+				"Last Seen Date", 			//last patient visit
+				"Current Date"],			// date of report
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				if ((factors.indexOf("current smoker") === -1 && factors.indexOf("yes") === -1) || !withinDateRange(currentDate,this.months,lastSeenDate)) {
@@ -857,14 +860,14 @@ var mdsIndicators =  (function(){
 		long_desc: function() { return "Patients over the age of " + this.age + 
 									   " who have COPD or asthma and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
-		age: 19,
+		age: 18,
 		modifiable: ["age"],
-		defaults: [19],
+		defaults: [18],
 		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "496"],
 		rule: function(currentDate, age, problemList, pneuc) {
 			try {
-				//Only people older than 65 qualify
-				if (Number(age) >= this.minAge) {
+				//Only people older than 18 qualify
+				if (Number(age) <= this.minAge) {
 					return NaN;
 				}
 				if (new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase())) {

@@ -394,12 +394,6 @@ var mdsViewer = (function() {
 		 */
 		updateDropdownIndicators();	
 
-		// Create an EMR object
-		mEMR = {
-			"PSS": false,
-			"Oscar": false
-		}
-
 		// Add dropdown for EMR
 		var dropdownEMR = '<select id="dropdownEMR">' +
 					'<option value="PSS">PSS</option>' +
@@ -1029,11 +1023,14 @@ var mdsViewer = (function() {
 			.enter().append("text")
 				.attr("class", "dataLabelSnapshot")
 				.attr("x", function(d, i) { 
-											if (d<15) { return xScaleSnapshot(d+7); } 
+											if (d<15) { return xScaleSnapshot(d+2); } 
 											else { return xScaleSnapshot(d/2);	} 
 										  })
 				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
-				.attr("text-anchor", "middle")
+				.attr("text-anchor", function(d) {
+											if (d<15) { return "left"; }
+											else { return "middle"; } 
+				})
 				.style("font-family", "Arial")
 				.style("font-size", "13px")
 				.attr("dy", ".35em")
