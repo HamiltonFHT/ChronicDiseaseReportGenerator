@@ -34,15 +34,19 @@ var mdsIndicators =  (function(){
 
 		//Turn currentDate string into Date object with date currentDate - maxMonthsAgo
 		if (currentDate.toString().match(dateRegex) ){
-	 		parsedDate = currentDate.split(/[/-]/);
-	 		targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
-	 	} else { targetDate = removeMonths(new Date(currentDate), maxMonthsAgo); }
+	 		var parsedDate = currentDate.split(/[/-]/);
+	 		var targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
+	 	} else { 
+	 		var targetDate = removeMonths(new Date(currentDate), maxMonthsAgo); 
+	 	}
 
 	 	//Turn measuredDate into a Date object
 	 	if (measuredDate.toString().match(dateRegex)) {
-	 		parsedDate = measuredDate.split("/");
-	 		measuredDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
-	 	} else { measuredDate = new Date(measuredDate); }
+	 		var parsedDate = measuredDate.split("/");
+	 		var measuredDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
+	 	} else { 
+	 		var measuredDate = new Date(measuredDate); 
+	 	}
 
 	 	//Make sure measuredDate was measured more recently than the target date.
 	 	return measuredDate >= targetDate;	
@@ -246,13 +250,21 @@ var mdsIndicators =  (function(){
 	 			// Old version output date of last assessment
 	 			// New version outputs number of months since last assessment,
 	 			// have to check which case and handle appropriately
-		 		if (isNaN(Number(measuredDate)) && measuredDate != "") {
+		 		if (isNaN(Number(measuredDate))) {
 		 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-		 				parsedDate = currentDate.split("/");
-		 				targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), this.months);
+		 				var parsedFields = currentDate.split("/");
+		 				var parsedDate = new Date(parsedFields[2], parsedFields[1]-1, parsedFields[0])
+		 				var targetDate = removeMonths(parsedDate, this.months);
 			 		} else {
-			 			targetDate = removeMonths(new Date(currentDate), this.months);
+			 			var parsedDate = new Date(currentDate)
+			 			var targetDate = removeMonths(new Date(currentDate), this.months);
 			 		}
+
+			 		//All measurements should be older than the current date
+			 		if (new Date(measuredDate) > parsedDate) {
+			 			return NaN;
+			 		}
+
 			 		return (new Date(measuredDate) >= targetDate);
 			 	} else {
 			 		return (Number(measuredDate) <= this.months);
@@ -269,9 +281,6 @@ var mdsIndicators =  (function(){
 		months: 6,
 		modifiable: ["months"],
 		defaults: [6],
-		reset: function() {
-			this.months = 6;
-		},
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
@@ -292,7 +301,7 @@ var mdsIndicators =  (function(){
 		defaults: [6, 0.08],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
-	 			return (withinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) <= this.target);
+	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
 	 		} catch (err) {
 	 			return false;
 	 		}
@@ -365,7 +374,7 @@ var mdsIndicators =  (function(){
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
 	 			return withinDateRange(currentDate, this.months, measuredDate) && 
-	 				   (parseFloat(value) <= this.target || value == "<1.00");
+	 				   (Number(value) <= this.target || value == "<1.00");
 	 		} catch (err) {
 	 			// Field is likely blank
 	 			return false;
@@ -382,7 +391,7 @@ var mdsIndicators =  (function(){
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
-	 			return withinDateRange(currentDate, this.months, measuredDate) && parseFloat(value) != NaN;
+	 			return withinDateRange(currentDate, this.months, measuredDate) && Number(value) != NaN;
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -403,7 +412,7 @@ var mdsIndicators =  (function(){
 	 			return NaN;
 	 		}
 	 		try {
-	 			return withinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.0");
+	 			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) < this.target || value=="<2.0");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -424,7 +433,7 @@ var mdsIndicators =  (function(){
 	 			return NaN;
 	 		}	 		
 	 		try {
-	  			return withinDateRange(currentDate, this.months, measuredDate) && (parseFloat(value) < this.target || value=="<2.8");
+	  			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) < this.target || value=="<2.8");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -870,6 +879,7 @@ var mdsIndicators =  (function(){
 			try {
 				//Only people older than 18 with a lung disease (see diseaseList) qualify
 				if (Number(age) <= this.minAge ||
+					//Join diseaseList into a regular expression, test if 
 					new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase()) === false) {
 					return NaN;
 				} else {
@@ -1095,7 +1105,8 @@ var mdsIndicators =  (function(){
 								ruleCervicalCancer,
 								ruleColorectalCancer,
 								ruleFluVaccine];
-								
+
+							
 	//Add sets of rules to the master list
 	var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					{name:"Hypertension", rules:hypertensionRules},
@@ -1114,7 +1125,7 @@ var mdsIndicators =  (function(){
 		ruleList: ruleList,
 		resetToDefault: resetToDefault,
 		getCurrentRuleSet: getCurrentRuleSet,
-		lookupVarNameTable: lookupVarNameTable
+		lookupVarNameTable: lookupVarNameTable,
 	};
 	
 })();
