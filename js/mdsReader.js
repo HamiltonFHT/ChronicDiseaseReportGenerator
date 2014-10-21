@@ -62,9 +62,7 @@ var mdsReader = (function() {
 
 		mSelectedPhysicians = {};
 		mParsedData = [];
-	   
-
-	   
+	      
 		for (i = 0; i < files.length; i++) {
 			var f = files[i]; 
 			

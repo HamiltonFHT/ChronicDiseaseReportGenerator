@@ -789,12 +789,14 @@ var mdsIndicators =  (function(){
 		modifiable: ["age"],
 		col: ["Age", "COPD Screening Date", "Risk Factors"],
 		rule: function(age, formDate, factors) {
+			factors = factors.toLowerCase();
 			try {
 				if (Number(age) <= this.age || 
-					(isOSCAR() && (factors.toLowerCase().indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || 
+					(isOSCAR() && (factors.indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || 
 					(isPSS() && factors.indexOf("current smoker") === -1)) {
 					return NaN;
 				} else {
+					//This needs to be a date check! Once a date range is decided upon
 					return formDate != "";
 				}
 			} catch (err) {
@@ -806,15 +808,15 @@ var mdsIndicators =  (function(){
 	
 	var ruleSeniorsPneumovax = {
 		desc: function(){return "Seniors vaccinated with Pneumovax"; },
-		long_desc: function() { return "Patients over the age of " + this.age + " and are vaccinated for pneumonia"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "pneumococcal polysaccharide"],
-		age: 65,
-		modifiable: ["age"],
+		minAge: 65,
+		modifiable: ["minAge"],
 		defaults: [65],
 		rule: function(currentDate, age, pneuc) {
 			try {
 				//Only people older than 65 qualify
-				if (Number(age) <= this.age) {
+				if (Number(age) <= this.minAge) {
 					return NaN;
 				} else if (pneuc === null) {
 					return false;
@@ -830,23 +832,23 @@ var mdsIndicators =  (function(){
 	
 	var ruleAdultSmokersPneumovax = {
 		desc: function(){return "Adult Smokers vaccinated with Pneumovax"; },
-		long_desc: function() { return "Patients over the age of " + this.age + " who smoke and are vaccinated for pneumonia"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " who smoke and are vaccinated for pneumonia"; },
 		col: ["Age", "Risk Factors", "pneumococcal polysaccharide"],
-		age: 18,
-		modifiable: ["age"],
-		defaults: [19],
+		minAge: 18,
+		modifiable: ["minAge"],
+		defaults: [18],
 		rule: function(age, factors, pneuc) {
 			try {
-				//Only people older than 18 qualify
-				if (Number(age) <= this.age 
-					&& (factors.indexOf("current smoker") === 0 
-						|| (isOSCAR() && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0)))) {
-					return Number(pneuc) > 0;
-				} else if (factors.indexOf("current smoker") === 0 
-							|| (isPSS() && (factors.toLowerCase().indexOf("current") === -0 || factors.toLowerCase().indexOf("yes") === 0))) {
-					return Number(pneuc) > 0;
-				} else {
+				facotrs = factors.toLowerCase();
+				//Only people older than 18 who are current smokers qualify
+				if (Number(age) <= this.minAge || 
+						(isPSS() && factors.indexOf("current smoker") === -1) ||
+						(isOSCAR() && (factors.indexOf("current") === -1 || 
+									   factors.indexOf("yes") === -1))){
 					return NaN;
+				} else {
+					//Patients with 1 or more pneumovax shots pass
+					return Number(pneuc) > 0;
 				}
 			} catch (err) {
 				console.log(err);
@@ -857,23 +859,22 @@ var mdsIndicators =  (function(){
 	
 	var ruleLungDiseasePneumovax = {
 		desc: function(){return "Adults with COPD or Asthma vaccinated with Pneumovax"; },
-		long_desc: function() { return "Patients over the age of " + this.age + 
+		long_desc: function() { return "Patients over the age of " + this.minAge + 
 									   " who have COPD or asthma and are vaccinated for pneumonia"; },
 		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
-		age: 18,
-		modifiable: ["age"],
+		minAge: 18,
+		modifiable: ["minAge"],
 		defaults: [18],
 		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "496"],
 		rule: function(currentDate, age, problemList, pneuc) {
 			try {
-				//Only people older than 18 qualify
-				if (Number(age) <= this.minAge) {
+				//Only people older than 18 with a lung disease (see diseaseList) qualify
+				if (Number(age) <= this.minAge ||
+					new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase()) === false) {
 					return NaN;
-				}
-				if (new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase())) {
-					return (Number(pneuc) > 0 ?  true : false);
 				} else {
-					return NaN;
+					//Patients with 1 or more pneumovax shots pass
+					return Number(pneuc) > 0;
 				}
 			} catch (err) {
 				console.log(err);
