@@ -1040,7 +1040,7 @@ var mdsIndicators =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (Number(age) <= this.minAge) {
+				if (Number(age) < this.minAge) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, fluDate);

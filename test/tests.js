@@ -98,5 +98,115 @@
 			"No date")
 	});
 
+
+
+
+
+
+	/*
+	Cancer Screening Tests
+		[0] ruleBreastCancer
+		[1]	ruleCervicalCancer
+		[2]	ruleColorectalCancer
+		[3]	ruleFluVaccine
+	*/
+
+	var cancer = m.ruleList[6]["rules"];
+
+	BreastCancer = cancer[0];
+	CervicalCancer = cancer[1];
+	ColorectalCancer = cancer[2];
+	FluVaccine = cancer[3];
+
+	QUnit.test("Up-to-date breast cancer screening", function (assert) {
+		assert.ok(
+							//current date, age, sex, mammogram date (36 months difference)
+			BreastCancer.rule("Oct 21, 2014", 50, "F", "Oct 21, 2011") === true,
+			"Passed!");
+
+		assert.ok(
+							//(36 months +1 day difference)
+			BreastCancer.rule("Oct 21, 2014", 50, "F", "Oct 20, 2011") === false,
+			"Passed!");
+
+		assert.ok(
+							//non-female
+			isNaN(BreastCancer.rule("Oct 21, 2014", 69, "M", "Oct 21, 2011")),
+			"Passed!");
+
+		assert.ok(
+							//age in range
+			BreastCancer.rule("Oct 21, 2014", BreastCancer.minAge, "F", "Oct 21, 2011"),
+			"Passed!");
+
+		assert.ok(
+							//age out of range
+			isNaN(BreastCancer.rule("Oct 21, 2014", BreastCancer.maxAge+1, "F", "Oct 21, 2011")),
+			"Passed!");
+	});
+
+	QUnit.test("Up-to-date cervical cancer screening", function (assert) {
+		assert.ok(
+							//current date, age, sex, pap date (36 months)
+			CervicalCancer.rule("Oct 21, 2014", 25, "F", "Oct 21, 2011") === true,
+			"Passed!");
+
+		assert.ok(
+							//(36 months +1 day difference)
+			CervicalCancer.rule("Oct 21, 2014", 69, "F", "Oct 20, 2011") === false,
+			"Passed!");
+
+		assert.ok(
+							//non-female
+			isNaN(CervicalCancer.rule("Oct 21, 2014", 69, "M", "Oct 21, 2011")),
+			"Passed!");
+
+		assert.ok(
+							//age in range
+			CervicalCancer.rule("Oct 21, 2014", CervicalCancer.minAge, "F", "Oct 21, 2011"),
+			"Passed!");
+
+		assert.ok(
+							//age out of range
+			isNaN(CervicalCancer.rule("Oct 21, 2014", CervicalCancer.maxAge+1, "F", "Oct 21, 2011")),
+			"Passed!");
+	});
+
+
+	QUnit.test("Up-to-date colorectal cancer screening", function (assert) {
+		assert.ok(
+							//current date, age, fobt date (24 months difference)
+			ColorectalCancer.rule("Oct 21, 2014", 50, "Oct 21, 2012") === true,
+			"Passed!");
+
+		assert.ok(
+							//24 months +1 day difference
+			ColorectalCancer.rule("Oct 21, 2014", 100, "Oct 20, 2012") === false,
+			"Passed!");
+
+		assert.ok(
+							//age too low
+			isNaN(ColorectalCancer.rule("Oct 21, 2014", 49, "Oct 21, 2012")),
+			"Passed!");
+	});
+
+
+	QUnit.test("Up-to-date influenza vaccine", function (assert) {
+		assert.ok(
+							//current date, age, flu date (12 months difference)
+			FluVaccine.rule("Oct 21, 2014", 65, "Oct 21, 2013") === true,
+			"Passed!");
+
+		assert.ok(
+							//12 months +1 day difference
+			FluVaccine.rule("Oct 15, 2014", 65, "Sep 30, 2013") === false,
+			"Passed!");
+
+		assert.ok(
+							//age too low
+			isNaN(FluVaccine.rule("Oct 21, 2014", 64, "Oct 21, 2013")),
+			"Passed!");
+	});
+
 })();
 
