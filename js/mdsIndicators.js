@@ -752,7 +752,7 @@ var mdsIndicators =  (function(){
 		defaults: [12],
 		rule: function(factors, age) {
 			try {
-				if (Number(age) < 12) {
+				if (Number(age) < this.age) {
 					return NaN;
 				} else if (isOSCAR() && factors != "") {
 					return true;
@@ -779,7 +779,11 @@ var mdsIndicators =  (function(){
 				"Current Date"],			// date of report
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
-				if ((factors.indexOf("current smoker") === -1 && factors.indexOf("yes") === -1) || !withinDateRange(currentDate,this.months,lastSeenDate)) {
+				factors = factors.toLowerCase();
+				if ((factors.indexOf("current smoker") === -1 ||     //If they don't smoke (PSS), or
+					(isOSCAR() && factors.indexOf("yes") === -1) ||  //They don't smoke (OSCAR), or
+					!withinDateRange(currentDate,this.months,lastSeenDate))) // They haven't been in in more than 15 months
+				{
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, formDate);	

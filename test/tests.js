@@ -104,6 +104,55 @@
 
 
 
+	var lung = m.ruleList[3]["rules"];
+
+	var SmokingStatusRecorded = lung[0];
+	var SmokingCessation = lung[1]
+	var AdultSmokersPneumovax = lung[2];
+	var SeniorsPneumovax = lung[3];
+	var LungDiseasePneumovax = lung[4];
+	var LungHealthForm = lung[5];
+
+	QUnit.test("Smoking Status Recorded", function (assert) {
+		assert.ok(
+			SmokingStatusRecorded.rule("Current Smoker", "40") === true,
+			"Adult current smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("Ex-Smoker", "40") === true,
+			"Adult ex smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("Never Smoked", "40") === true,
+			"Adult never smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("", "40") === false,
+			"Adult no smoking status");
+		assert.ok(
+			isNaN(SmokingStatusRecorded.rule("", "10")),
+			"Child no smoking status");
+	});
+
+	QUnit.test("Smoking Cessation Attempted", function (assert) {
+		assert.ok(
+										//factors, 		 cessation date, last seen date, report date
+			SmokingCessation.rule("Current Smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014") === true,
+			"Current smoker, recent smoking cessation");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Ex-Smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
+			"Ex smoker");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Never Smoked", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
+			"Never smoker");
+		assert.ok(
+			SmokingCessation.rule("Current Smoker", "", "Aug 21, 2014", "Oct 21, 2014") === false,
+			"Current smoker, never smoking cessation");
+		assert.ok(
+			SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2014", "Oct 21, 2014") === false,
+			"Current smoker, out-dated smoking cessation");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2012", "Oct 21, 2014")),
+			"Current smoker, not seen recently");
+	});
+
 
 
 
