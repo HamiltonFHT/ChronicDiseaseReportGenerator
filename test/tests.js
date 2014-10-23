@@ -111,7 +111,7 @@
 	var AdultSmokersPneumovax = lung[2];
 	var SeniorsPneumovax = lung[3];
 	var LungDiseasePneumovax = lung[4];
-	var LungHealthForm = lung[5];
+	var LungHealthScreen = lung[5];
 
 	QUnit.test("Smoking Status Recorded", function (assert) {
 		assert.ok(
@@ -153,7 +153,82 @@
 			"Current smoker, not seen recently");
 	});
 
+	QUnit.test("Adult Smokers Pneumovax", function (assert) {
+		assert.ok(
+									  //age, factors, 		# pneuc vaccinations
+			AdultSmokersPneumovax.rule("19", "Current Smoker", "1") === true,
+			"Adult current smoker Pneumovax");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("18", "Current Smoker", "0")),
+			"Youth current smoker");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("19", "never smoked", "0")),
+			"Adult never smoker");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("41", "ex-smoker", "1")),
+			"Adult ex-smoker");
+		assert.ok(
+			AdultSmokersPneumovax.rule("19", "Current Smoker", "0") === false,
+			"Adult current smoker, no pneumovax");
+	});
 
+	QUnit.test("Senior Pneumovax", function (assert) {
+		assert.ok(
+								  //age,  # pneuc vaccinations
+			SeniorsPneumovax.rule("66", "1") === true,
+			"Senior Pneumovax");
+		assert.ok(
+			SeniorsPneumovax.rule("66", "0") === false,
+			"Senior no pneumovax");
+		assert.ok(
+			isNaN(SeniorsPneumovax.rule("65", "0")),
+			"Not senior");
+	});
+
+	QUnit.test("Lung Disease Pneumovax", function (assert) {
+		assert.ok(
+								 // "Age", "Problem List", "pneumococcal polysaccharide"
+			LungDiseasePneumovax.rule("66", "COPD", "1") === true,
+			"Adult COPD Pneumovax");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "493", "1") === true,
+			"Adult ICD-9 493 Pneumovax");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "asthma", "1") === true,
+			"Adult asthma Pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("66", "chronic congestion", "1")),
+			"Adult no lung disease Pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("19", "", "0")),
+			"Adult no problem list no pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("18", "COPD", "1")),
+			"Youth COPD");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "COPD", "0") === false,
+			"Adult COPD no pneumovax");
+	});
+
+
+	QUnit.test("Lung Health Screening", function (assert) {
+		assert.ok(
+									 //"Risk Factors", "Problem List", "COPD Screen Date", "Current Date", "Age"
+			LungHealthScreen.rule("Current Smoker", "",				"Aug 21, 2014", 	  "Oct 21, 2014", "41") === true,
+			"Adult no COPD recent screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("Current Smoker", "COPD", "", "Oct 21, 2014", "41")),
+			"Adult COPD no screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("Current Smoker", "", "", "Oct 21, 2014", "35")),
+			"Youth no screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("ex-smoker", "", "", "Oct 21, 2014", "41")),
+			"Ex-smoker no screening");
+		assert.ok(
+			LungHealthScreen.rule("Current Smoker", "", "Aug 21, 2012", "Oct 21, 2014", "41") === false,
+			"Adult no COPD old screening");
+	});
 
 
 	/*
