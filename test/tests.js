@@ -18,22 +18,28 @@
 		assert.ok(
 							//current date, measured date
 			DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2014") === true,
-			"Up-to-date passed")
+			"Up-to-date passed");
 		assert.ok(
 			DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2013") === false,
-			"Out-of-date passed")
+			"Out-of-date passed");
 		assert.ok(
 			DMPastNMonths.rule("Oct 21, 2014", "") === false,
-			"No Date passed")
+			"No Date passed");
 		assert.ok(
 			isNaN(DMPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014")),
-			"Future date passed")
+			"Future date passed");
+		assert.ok(
+			DMPastNMonths.rule("2014/10/21", "Sept 21, 2014") === true,
+			"YYYY/MM/DD up-to-date passed");
+		assert.ok(
+			DMPastNMonths.rule("2014/10/21", "Sept 21, 2013") === false,
+			"YYYY/MM/DD out-of-date passed");
 		assert.ok(
 			DMPastNMonths.rule("Oct 21, 2014", "6") === true,
-			"Up-to-date (compat) passed")
+			"Up-to-date (compat) passed");
 		assert.ok(
 			DMPastNMonths.rule("Oct 21, 2014", "13") === false,
-			"Out-of-date (compat) passed")
+			"Out-of-date (compat) passed");
 	});
 
 	//A1C Past N Months
@@ -41,15 +47,13 @@
 		assert.ok(
 							 //current date, measured date (4 months difference)
 			A1CPastNMonths.rule("Oct 21, 2014", "July 21, 2014") === true,
-			"Up-to-date Passed!")
+			"Up-to-date Passed!");
 		assert.ok(
-							 //current date, measured date (4 months difference)
 			A1CPastNMonths.rule("Oct 21, 2014", "Feb 21, 2014") === false,
-			"Out-of-date Passed!")
+			"Out-of-date Passed!");
 		assert.ok(
-							 //current date, measured date (4 months difference)
 			A1CPastNMonths.rule("Oct 21, 2014", "") === false,
-			"No date Passed!")
+			"No date Passed!");
 	});
 
 
@@ -58,27 +62,27 @@
 		assert.ok(
 									 //current date, measured date
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "July 21, 2014", "0.07") === true,
-			"Up-to-date, Good A1C")
+			"Up-to-date, Good A1C");
 		assert.ok(
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "July 21, 2014", "0.08") === true,
-			"Up-to-date, borderline A1C")
+			"Up-to-date, borderline A1C");
 		assert.ok(
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "July 21, 2014", "0.085") === false,
-			"Up-to-date, Bad A1C")
+			"Up-to-date, Bad A1C");
 		assert.ok(
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "Feb 21, 2014", "0.07") === false,
-			"Out-of-date, Good A1C")
+			"Out-of-date, Good A1C");
 		assert.ok(
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "Feb 21, 2014", "0.085") === false,
-			"Out-of-date, Bad A1C")
+			"Out-of-date, Bad A1C");
 		assert.ok(
 							 		//current date, measured date
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "", "0.07") === false,
-			"No Date, Good A1C")
+			"No Date, Good A1C");
 		assert.ok(
 							 		//current date, measured date
 			A1CLTEXPastNMonths.rule("Oct 21, 2014", "", "0.085") === false,
-			"No Date, Bad A1C")
+			"No Date, Bad A1C");
 	});
 
 	//LDL Past N Months
@@ -86,16 +90,144 @@
 		assert.ok(
 							 	//current date, measured date
 			LDLPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014") === true,
-			"Up-to-date")
+			"Up-to-date");
 		assert.ok(
 			LDLPastNMonths.rule("Oct 21, 2014", "Oct 21, 2014") === true,
-			"Same Date")
+			"Same Date");
 		assert.ok(
 			LDLPastNMonths.rule("Oct 21, 2014", "Sep 21, 2013") === false,
-			"Out-of-date")
+			"Out-of-date");
 		assert.ok(
 			LDLPastNMonths.rule("Oct 21, 2014", "") === false,
-			"No date")
+			"No date");
+	});
+
+
+
+	var lung = m.ruleList[3]["rules"];
+
+	var SmokingStatusRecorded = lung[0];
+	var SmokingCessation = lung[1]
+	var AdultSmokersPneumovax = lung[2];
+	var SeniorsPneumovax = lung[3];
+	var LungDiseasePneumovax = lung[4];
+	var LungHealthScreen = lung[5];
+
+	QUnit.test("Smoking Status Recorded", function (assert) {
+		assert.ok(
+			SmokingStatusRecorded.rule("Current Smoker", "40") === true,
+			"Adult current smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("Ex-Smoker", "40") === true,
+			"Adult ex smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("Never Smoked", "40") === true,
+			"Adult never smoker");
+		assert.ok(
+			SmokingStatusRecorded.rule("", "40") === false,
+			"Adult no smoking status");
+		assert.ok(
+			isNaN(SmokingStatusRecorded.rule("", "10")),
+			"Child no smoking status");
+	});
+
+	QUnit.test("Smoking Cessation Attempted", function (assert) {
+		assert.ok(
+										//factors, cessation date, last seen date, report date
+			SmokingCessation.rule("Current Smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014") === true,
+			"Current smoker, recent smoking cessation");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Ex-Smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
+			"Ex smoker");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Never Smoked", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
+			"Never smoker");
+		assert.ok(
+			SmokingCessation.rule("Current Smoker", "", "Aug 21, 2014", "Oct 21, 2014") === false,
+			"Current smoker, never smoking cessation");
+		assert.ok(
+			SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2014", "Oct 21, 2014") === false,
+			"Current smoker, out-dated smoking cessation");
+		assert.ok(
+			isNaN(SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2012", "Oct 21, 2014")),
+			"Current smoker, not seen recently");
+	});
+
+	QUnit.test("Adult Smokers Pneumovax", function (assert) {
+		assert.ok(
+									  //age, factors, # pneuc vaccinations
+			AdultSmokersPneumovax.rule("19", "Current Smoker", "1") === true,
+			"Adult current smoker Pneumovax");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("18", "Current Smoker", "0")),
+			"Youth current smoker");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("19", "never smoked", "0")),
+			"Adult never smoker");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("41", "ex-smoker", "1")),
+			"Adult ex-smoker");
+		assert.ok(
+			AdultSmokersPneumovax.rule("19", "Current Smoker", "0") === false,
+			"Adult current smoker, no pneumovax");
+	});
+
+	QUnit.test("Senior Pneumovax", function (assert) {
+		assert.ok(
+								  //age,  # pneuc vaccinations
+			SeniorsPneumovax.rule("66", "1") === true,
+			"Senior Pneumovax");
+		assert.ok(
+			SeniorsPneumovax.rule("66", "0") === false,
+			"Senior no pneumovax");
+		assert.ok(
+			isNaN(SeniorsPneumovax.rule("65", "0")),
+			"Not senior");
+	});
+
+	QUnit.test("Lung Disease Pneumovax", function (assert) {
+		assert.ok(
+								 // "Age", "Problem List", "pneumococcal polysaccharide"
+			LungDiseasePneumovax.rule("66", "COPD", "1") === true,
+			"Adult COPD Pneumovax");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "493", "1") === true,
+			"Adult ICD-9 493 Pneumovax");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "asthma", "1") === true,
+			"Adult asthma Pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("66", "chronic congestion", "1")),
+			"Adult no lung disease Pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("19", "", "0")),
+			"Adult no problem list no pneumovax");
+		assert.ok(
+			isNaN(LungDiseasePneumovax.rule("18", "COPD", "1")),
+			"Youth COPD");
+		assert.ok(
+			LungDiseasePneumovax.rule("66", "COPD", "0") === false,
+			"Adult COPD no pneumovax");
+	});
+
+	QUnit.test("Lung Health Screening", function (assert) {
+		assert.ok(
+									 //"Risk Factors", "Problem List", "COPD Screen Date", "Current Date", "Age"
+			LungHealthScreen.rule("Current Smoker", "",				"Aug 21, 2014", 	  "Oct 21, 2014", "41") === true,
+			"Adult no COPD recent screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("Current Smoker", "COPD", "", "Oct 21, 2014", "41")),
+			"Adult COPD no screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("Current Smoker", "", "", "Oct 21, 2014", "35")),
+			"Youth no screening");
+		assert.ok(
+			isNaN(LungHealthScreen.rule("ex-smoker", "", "", "Oct 21, 2014", "41")),
+			"Ex-smoker no screening");
+		assert.ok(
+			LungHealthScreen.rule("Current Smoker", "", "Aug 21, 2012", "Oct 21, 2014", "41") === false,
+			"Adult no COPD old screening");
+
 	});
 
 
@@ -175,7 +307,6 @@
 								//Not HT
 			isNaN(HypertensionBP.rule("139", "89", "123")),
 			"Not HT passed!");
-	});
 
 
 	/*

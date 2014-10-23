@@ -752,7 +752,7 @@ var mdsIndicators =  (function(){
 		defaults: [12],
 		rule: function(factors, age) {
 			try {
-				if (Number(age) < 12) {
+				if (Number(age) < this.age) {
 					return NaN;
 				} else if (isOSCAR() && factors != "") {
 					return true;
@@ -779,7 +779,11 @@ var mdsIndicators =  (function(){
 				"Current Date"],			// date of report
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
-				if ((factors.indexOf("current smoker") === -1 && factors.indexOf("yes") === -1) || !withinDateRange(currentDate,this.months,lastSeenDate)) {
+				factors = factors.toLowerCase();
+				if ((factors.indexOf("current smoker") === -1 ||     //If they don't smoke (PSS), or
+					(isOSCAR() && factors.indexOf("yes") === -1) ||  //They don't smoke (OSCAR), or
+					!withinDateRange(currentDate,this.months,lastSeenDate))) // They haven't been in in more than 15 months
+				{
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, formDate);	
@@ -790,55 +794,7 @@ var mdsIndicators =  (function(){
 			}
 		}
 	};
-	
-	var ruleLungHealthForm = {
-		desc: function(){return "Lung Health Screening Performed"; },
-		long_desc: function() { return "Lung Health Screening performed for smokers over the age of " + this.age; },
-		age: 40,
-		modifiable: ["age"],
-		col: ["Age", "COPD Screening Date", "Risk Factors"],
-		rule: function(age, formDate, factors) {
-			factors = factors.toLowerCase();
-			try {
-				if (Number(age) <= this.age || 
-					(isOSCAR() && (factors.indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || 
-					(isPSS() && factors.indexOf("current smoker") === -1)) {
-					return NaN;
-				} else {
-					//This needs to be a date check! Once a date range is decided upon
-					return formDate != "";
-				}
-			} catch (err) {
-				console.log(err);
-				return false;
-			}
-		}
-	};
-	
-	var ruleSeniorsPneumovax = {
-		desc: function(){return "Seniors vaccinated with Pneumovax"; },
-		long_desc: function() { return "Patients over the age of " + this.minAge + " and are vaccinated for pneumonia"; },
-		col: ["Current Date", "Age", "pneumococcal polysaccharide"],
-		minAge: 65,
-		modifiable: ["minAge"],
-		defaults: [65],
-		rule: function(currentDate, age, pneuc) {
-			try {
-				//Only people older than 65 qualify
-				if (Number(age) <= this.minAge) {
-					return NaN;
-				} else if (pneuc === null) {
-					return false;
-				} else {
-					return Number(pneuc) > 0;
-				}
-			} catch (err) {
-				console.log(err);
-				return false;
-			}
-		}
-	};
-	
+
 	var ruleAdultSmokersPneumovax = {
 		desc: function(){return "Adult Smokers vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who smoke and are vaccinated for pneumonia"; },
@@ -866,16 +822,40 @@ var mdsIndicators =  (function(){
 		}
 	};
 	
+	var ruleSeniorsPneumovax = {
+		desc: function(){return "Seniors vaccinated with Pneumovax"; },
+		long_desc: function() { return "Patients over the age of " + this.minAge + " and are vaccinated for pneumonia"; },
+		col: ["Age", "pneumococcal polysaccharide"],
+		minAge: 65,
+		modifiable: ["minAge"],
+		defaults: [65],
+		rule: function(age, pneuc) {
+			try {
+				//Only people older than 65 qualify
+				if (Number(age) <= this.minAge) {
+					return NaN;
+				} else if (pneuc === null) {
+					return false;
+				} else {
+					return Number(pneuc) > 0;
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+
 	var ruleLungDiseasePneumovax = {
 		desc: function(){return "Adults with COPD or Asthma vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + 
 									   " who have COPD or asthma and are vaccinated for pneumonia"; },
-		col: ["Current Date", "Age", "Problem List", "pneumococcal polysaccharide"],
+		col: ["Age", "Problem List", "pneumococcal polysaccharide"],
 		minAge: 18,
 		modifiable: ["minAge"],
 		defaults: [18],
 		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "496"],
-		rule: function(currentDate, age, problemList, pneuc) {
+		rule: function(age, problemList, pneuc) {
 			try {
 				//Only people older than 18 with a lung disease (see diseaseList) qualify
 				if (Number(age) <= this.minAge ||
@@ -892,7 +872,36 @@ var mdsIndicators =  (function(){
 			}
 		}
 	};
-	
+		
+	var ruleLungHealthScreen = {
+		desc: function(){return "Lung Health Screening Performed"; },
+		long_desc: function() { return "Lung Health Screening performed for smokers over the age of " + this.age; },
+		age: 40,
+		months: 24,
+		modifiable: ["age"],
+		col: ["Risk Factors", "Problem List", "COPD Screening Date", "Current Date", "Age"],
+		diseaseList: ["copd", "asthma", "chronic bronchitis", "490", "491", "492", "493", "494", "496"],
+		rule: function(factors, problemList, screenDate, currentDate, age) {
+			factors = factors.toLowerCase();
+			try {
+				//Filter out people under the minimum age, or who do not smoke, or who are already diagnosed with COPD
+				if (Number(age) <= this.age || 
+					(isOSCAR() && (factors.indexOf("current") === -1 && factors.toLowerCase().indexOf("yes") === -1)) || 
+					(isPSS() && factors.indexOf("current smoker") === -1) || 
+					new RegExp(this.diseaseList.join("|")).test(problemList.toLowerCase()) === true)
+				{
+					return NaN;
+				} else {
+					//This needs to be a date check! Once a date range is decided upon
+					return withinDateRange(currentDate, this.months, screenDate);
+				}
+			} catch (err) {
+				console.log(err);
+				return false;
+			}
+		}
+	};
+		
 	var rulePHQ9 = {
 		desc: function(){return "Patients with multiple PHQ9 forms"; },
 		long_desc: function() { return "Adult patients who have depression and have filled out at least one PHQ9 form" + 
@@ -901,11 +910,11 @@ var mdsIndicators =  (function(){
 		months:6,
 		modifiable: ["months"],
 		defaults: [6],
-		rule: function(currentDate, formDate, count) {
+		rule: function(currentDate, screenDate, count) {
 			try {
 				if (count == 0) {
 					return NaN;
-				} else if (count == 1 && !withinDateRange(currentDate, this.months, formDate)) {
+				} else if (count == 1 && !withinDateRange(currentDate, this.months, screenDate)) {
 					return false;
 				} else {
 					return true;
@@ -1092,7 +1101,7 @@ var mdsIndicators =  (function(){
 						   ruleAdultSmokersPneumovax,
 						   ruleSeniorsPneumovax,
 						   ruleLungDiseasePneumovax,
-						   ruleLungHealthForm];
+						   ruleLungHealthScreen];
 						   
 	var adultMentalHealthRules = [rulePHQ9];
 

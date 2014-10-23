@@ -85,6 +85,18 @@ var mdsViewer = (function() {
     var mEMR = {"PSS":true,
 				"Oscar":false};
 
+	function setEMR(emr) {
+		// Set all values to false
+		for (var key in mEMR) {
+			if (mEMR.hasOwnProperty(key))
+				mEMR[key] = false;
+		}
+
+		// Set the selected EMR as true in mEMR
+		mEMR[emr] = true;
+	}
+
+
 	//Used when displaying axis titles
 	/*
 	String.prototype.replaceAt=function(index, character) {
@@ -403,14 +415,7 @@ var mdsViewer = (function() {
 
 		// Create change function
 		$("#dropdownEMR").change(function() {
-			// Set all values to false
-			for (var key in mEMR) {
-				if (mEMR.hasOwnProperty(key))
-					mEMR[key] = false;
-			}
-
-			// Set the selected EMR as true in mEMR
-			mEMR[this.value] = true;
+			setEMR(this.value);
 			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		});
 	};
@@ -1513,7 +1518,8 @@ var mdsViewer = (function() {
 		generateCharts: generateCharts,
 		clearCanvas: clearCanvas,
 		mode: mMode,
-		getEMR: function() {return mEMR;}
+		getEMR: function() {return mEMR;},
+		setEMR: setEMR,
 	};
 	
 })();
