@@ -307,6 +307,7 @@
 								//Not HT
 			isNaN(HypertensionBP.rule("139", "89", "123")),
 			"Not HT passed!");
+	});
 
 
 	/*
