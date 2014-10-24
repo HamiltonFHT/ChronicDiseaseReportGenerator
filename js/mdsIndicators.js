@@ -54,12 +54,12 @@ var mdsIndicators =  (function(){
 	
 	// Returns time String of the most recent date from an array of dates
 	function mostRecentDate(dateArray) {
-		parsedDateArray = [];
+		var parsedDateArray = [];
 		for (var i=0; i < dateArray.length; i++) {
 			if (dateArray[i].toString().length === 0) {
 				parsedDateArray.push(new Date(0)); // Dec 31, 1969
 			} else if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
-				parsedDate = dateArray[i].split("/");
+				var parsedDate = dateArray[i].split("/");
 				parsedDateArray.push(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]));
 			} else {
 				parsedDateArray.push(new Date(dateArray[i]));
@@ -568,23 +568,19 @@ var mdsIndicators =  (function(){
 		minAge: 2,
 		maxAge: 3,
 		diphtheria: 4,
-		tetanus: 4,
-		pertussis: 4,
 		polio: 4,
 		hib: 4,
 		pneuc: 3,
 		rotavirus: 2,
 		mencc: 1,
 		measles: 1,
-		mumps: 1,
-		rubella: 1,
 		varicella: 1,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [2, 3],
 		rule: function(ageStr, measles, diphtheria,  
 			           varicella, rotavirus, polio) {
 			try {
-				age = getAgeFromMonths(ageStr);
+				var age = getAgeFromMonths(ageStr);
 				if (typeof age === "number") {
 					if (age >= this.minAge && age <= this.maxAge) {
 						return (Number(measles) >= this.measles &&
@@ -607,7 +603,7 @@ var mdsIndicators =  (function(){
 		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
 			  "measles", "diphtheria", "varicella",
-			  "rotavirus", "polio", "haemophilus b conjugate",
+			  "polio", "haemophilus b conjugate",
 			  "pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 7,
 		maxAge: 13,
@@ -626,9 +622,9 @@ var mdsIndicators =  (function(){
 		modifiable: ["minAge", "maxAge"],
 		defaults: [7, 13],
 		rule: function(ageStr,	measles, diphtheria, 
-					   varicella, rotavirus, polio, hib, pneuc, mencc) {
+					   varicella, polio, hib, pneuc, mencc) {
 			try {
-				age = getAgeFromMonths(ageStr);
+				var age = getAgeFromMonths(ageStr);
 				//if younger than 18 than not included
 				if (age < this.minAge || age > this.maxAge) {
 					return NaN;
@@ -655,8 +651,8 @@ var mdsIndicators =  (function(){
 		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
 			  "measles", "diphtheria", "varicella",
-			  "rotavirus", "polio", "haemophilus b conjugate",
-			  "pneumococcal conjugate", "meningococcal conjugate"],
+			  "polio", "haemophilus b conjugate"],
+			  //"pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
 		maxAge: 25,
 		diphtheria: 6,
@@ -674,15 +670,16 @@ var mdsIndicators =  (function(){
 		modifiable: ["minAge", "maxAge"],
 		defaults: [18, 25],
 		rule: function(ageStr,	measles, diphtheria,  
-					   varicella, rotavirus, polio, hib, pneuc, mencc) {
+					   varicella, polio) {
 			try {
 				//if younger than 18 than not included
-				age = getAgeFromMonths(ageStr);
+				var age = getAgeFromMonths(ageStr);
 				if (age < this.minAge || age > this.maxAge) {
 					return NaN;
 				} else {
 					return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
+							Number(varicella) >= this.varicella && 
 							//Number(rotavirus) >= this.rotavirus &&
 							Number(polio) >= this.polio);
 							//Number(hib) >= this.hib &&
@@ -804,7 +801,7 @@ var mdsIndicators =  (function(){
 		defaults: [18],
 		rule: function(age, factors, pneuc) {
 			try {
-				factors = factors.toLowerCase();
+				var factors = factors.toLowerCase();
 				//Only people older than 18 who are current smokers qualify
 				if (Number(age) <= this.minAge || 
 						(isPSS() && factors.indexOf("current smoker") === -1) ||
@@ -912,7 +909,7 @@ var mdsIndicators =  (function(){
 		defaults: [6],
 		rule: function(currentDate, screenDate, count) {
 			try {
-				if (count == 0) {
+				if (count == 0 || screenDate == "") {
 					return NaN;
 				} else if (count == 1 && !withinDateRange(currentDate, this.months, screenDate)) {
 					return false;

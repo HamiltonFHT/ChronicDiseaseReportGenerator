@@ -102,7 +102,88 @@
 			"No date");
 	});
 
+	/*
+	Hypertension Tests
+		[0]ruleBaselineBP
+		[1]ruleElevatedBPRegularVisit
+		[2]ruleHypertensionBP
+	*/
 
+	var hypertension = m.ruleList[1]["rules"];
+
+	var BaselineBP = hypertension[0];
+	var ElevatedBPRegularVisit = hypertension[1];
+	var HypertensionBP = hypertension[2];
+
+	QUnit.test("BP Past 12 Months for >40", function (assert) {
+		assert.ok(
+								//current date, measured date (12 months difference), age
+			BaselineBP.rule("Oct 21, 2014", "Oct 21, 2013", 40) === true,
+			"BP recent passed!");
+		assert.ok(
+								//12 months +1 day difference
+			BaselineBP.rule("Oct 21, 2014", "Oct 20, 2013", 40) === false,
+			"BP not recent passed!");
+		assert.ok(
+								//age out of range
+			isNaN(BaselineBP.rule("Oct 21, 2014", "Oct 21, 2013", 39)),
+			"Age out of range passed!");
+	});
+
+	QUnit.test("HT and BP>140/90 visit past 9 months", function (assert) {
+		assert.ok(
+								//current date, last seen date, sys, dias, icd9
+			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "90", "401") === true,
+			"Recent visit passed!");
+		assert.ok(
+								//Not recent visit
+			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 20, 2014", "140", "90", "401") === false,
+			"Not recent visit passed!");
+		assert.ok(
+								//Low sys, high dias
+			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "139", "90", "401") === true,
+			"Low systolic passed!");
+		assert.ok(
+								//High sys, low dias
+			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "89", "401") === true,
+			"Low diastolic passed!");
+		assert.ok(
+								//Both low
+			isNaN(ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "139", "89", "401")),
+			"Both low passed!");
+		assert.ok(
+								//Not hypertension
+			isNaN(ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "90", "123")),
+			"Not hypertension passed!");
+	});
+
+	QUnit.test("HT with BP<140/90", function (assert) {
+		assert.ok(
+								//sys, dias, icd9
+			HypertensionBP.rule("140", "90", "401") === false,
+			"Both high passed!");
+		assert.ok(
+								//Both low
+			HypertensionBP.rule("139", "89", "401") === true,
+			"Both low passed!");
+		assert.ok(
+								//Sys low
+			HypertensionBP.rule("139", "90", "401") === false,
+			"Sys low passed!");
+		assert.ok(
+								//Dias low
+			HypertensionBP.rule("140", "89", "401") === false,
+			"Dias low passed!");
+		assert.ok(
+								//Not HT
+			isNaN(HypertensionBP.rule("139", "89", "123")),
+			"Not HT passed!");
+	});
+
+
+	/*
+	Lung Health Tests
+	*/
 
 	var lung = m.ruleList[3]["rules"];
 
@@ -231,83 +312,155 @@
 	});
 
 
-	/*
-	Hypertension Tests
-		[0]ruleBaselineBP
-		[1]ruleElevatedBPRegularVisit
-		[2]ruleHypertensionBP
+	/* Immunization Tests */
+	var immu = m.ruleList[2]["rules"];
+
+	var HeightWeightLastVaccination = immu[0],
+		InfantVaccinations = immu[1],
+		ChildVaccinations = immu[2],
+		TeenagerVaccinations = immu[3];
+
+	QUnit.test("Height & Weight Last Immunization", function (assert) {
+		assert.ok(
+											//height date, weight date, current date							
+			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 21, 2014",
+											//"measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
+											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
+											 //"pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"
+											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011") === true,
+			"Up-to-date passed!");
+		assert.ok(
+			HeightWeightLastVaccination.rule("Oct 20, 2013", "Oct 20, 2013", "Oct 22, 2013",
+											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
+											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011") === false,
+			"Height/weight older than vaccinations passed!");
+		assert.ok(
+			isNaN(HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 22, 2013", "Oct 22, 2013",
+											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
+											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011")),
+			"Height/weight different dates passed!");
+		assert.ok(
+			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
+											 "Oct 21, 2011", "", "Oct 21, 2011", "", "Oct 21, 2011",
+											 "Oct 21, 2013", "Oct 21, 2011", "") === true,
+			"Height/weight w/ missing immus passed!");
+		assert.ok(
+			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
+											 "", "", "", "", "",
+											 "", "", "") === true,
+			"Height/weight w/ no immus passed!");
+
+		assert.ok(
+			isNaN(HeightWeightLastVaccination.rule("Oct 20, 2013", "Oct 21, 2013", "Oct 22, 2013",
+											 "", "", "", "", "",
+											 "", "", "")),
+			"Height/weight diff dates w/ no immus passed!");
+		assert.ok(
+			HeightWeightLastVaccination.rule("Oct 20, 2012", "Oct 20, 2012", "Oct 22, 2013",
+											 "", "", "", "", "",
+											 "", "", "") === false,
+			"Height/weight out-of-date w/ no immus passed!");
+	});
+
+
+
+	QUnit.test("Infant Immunizations", function (assert) {
+		assert.ok(
+											//"Age", "measles", "diphtheria",
+		      								//"varicella", "rotavirus", "polio"						
+			InfantVaccinations.rule("2", "1", "4", "1", "2", "4") === true,
+			"Up-to-date age 2 passed!");
+		assert.ok(				
+			InfantVaccinations.rule("3", "1", "4", "1", "2", "4") === true,
+			"Up-to-date age 3 passed!");
+		assert.ok(				
+			isNaN(InfantVaccinations.rule("1", "1", "4", "1", "2", "4")),
+			"Up-to-date age 1 passed!");
+		assert.ok(				
+			isNaN(InfantVaccinations.rule("4", "1", "4", "1", "2", "4")),
+			"Up-to-date age 4 passed!");
+		assert.ok(				
+			InfantVaccinations.rule("2", "1", "3", "1", "2", "4") === false,
+			"Out-of-date passed!");
+		assert.ok(				
+			InfantVaccinations.rule("2", "", "", "1", "2", "4") === false,
+			"Out-of-date passed!");
+	});
+
+	QUnit.test("Child Immunizations", function (assert) {
+		assert.ok(
+											//"Age", "measles", "diphtheria",
+		      								//"varicella", "polio", "hib", "pneuc", "mencc"					
+			ChildVaccinations.rule("7", "2", "5", "2", "5") === true,
+			"Up-to-date age 7 passed!");
+		assert.ok(				
+			ChildVaccinations.rule("13", "2", "5", "2", "5") === true,
+			"Up-to-date age 13 passed!");
+		assert.ok(				
+			isNaN(ChildVaccinations.rule("6", "2", "5", "2", "5")),
+			"Up-to-date age 6 passed!");
+		assert.ok(				
+			isNaN(ChildVaccinations.rule("14", "2", "5", "2", "5")),
+			"Up-to-date age 14 passed!");
+		assert.ok(				
+			ChildVaccinations.rule("7", "1", "5", "2", "5") === false,
+			"Out-of-date passed!");
+		assert.ok(				
+			ChildVaccinations.rule("7", "", "", "2", "5") === false,
+			"Out-of-date passed!");
+	});
+
+	QUnit.test("Teen Immunizations", function (assert) {
+		assert.ok(
+											//"Age", "measles", "diphtheria",
+		      								//"varicella", "polio", "hib", "pneuc", "mencc"					
+			TeenagerVaccinations.rule("18", "2", "6", "2", "5") === true,
+			"Up-to-date age 18 passed!");
+		assert.ok(				
+			TeenagerVaccinations.rule("25", "22", "6", "2", "5") === true,
+			"Up-to-date age 25 passed!");
+		assert.ok(				
+			isNaN(TeenagerVaccinations.rule("17", "22", "6", "2", "5")),
+			"Up-to-date age 17 passed!");
+		assert.ok(				
+			isNaN(TeenagerVaccinations.rule("26", "22", "6", "2", "5")),
+			"Up-to-date age 26 passed!");
+		assert.ok(				
+			TeenagerVaccinations.rule("19", "1", "6", "2", "5") === false,
+			"Out-of-date passed!");
+		assert.ok(				
+			TeenagerVaccinations.rule("19", "2", "6", "", "") === false,
+			"Missing vaccinations passed!");
+	});
+
+	/* Depression 
+		PHQ-9
 	*/
 
-	var hypertension = m.ruleList[1]["rules"];
+	var depression = m.ruleList[5]["rules"];
 
-	var BaselineBP = hypertension[0];
-	var ElevatedBPRegularVisit = hypertension[1];
-	var HypertensionBP = hypertension[2];
+	var PHQ9 = depression[0];
 
-	QUnit.test("BP Past 12 Months for >40", function (assert) {
+	QUnit.test("PHQ-9", function (assert) {
 		assert.ok(
-								//current date, measured date (12 months difference), age
-			BaselineBP.rule("Oct 21, 2014", "Oct 21, 2013", 40) === true,
-			"BP recent passed!");
+					  //current date, screen date, count
+			PHQ9.rule("Oct 21, 2014", "Sept 21, 2014", "2") === true,
+			"Up-to-date passed!");
 		assert.ok(
-								//12 months +1 day difference
-			BaselineBP.rule("Oct 21, 2014", "Oct 20, 2013", 40) === false,
-			"BP not recent passed!");
+					  //current date, screen date, count
+			PHQ9.rule("Oct 21, 2014", "Sept 21, 2014", "1") === true,
+			"Up-to-date (only 1) passed!");
 		assert.ok(
-								//age out of range
-			isNaN(BaselineBP.rule("Oct 21, 2014", "Oct 21, 2013", 39)),
-			"Age out of range passed!");
+			isNaN(PHQ9.rule("Oct 21, 2014", "", "")),
+			"Never done passed!");
+		assert.ok(
+			PHQ9.rule("Oct 21, 2014", "Mar 21, 2014", "1") === false,
+			"No follow-up passed!");
+		assert.ok(
+			PHQ9.rule("Oct 21, 2014", "Mar 21, 2014", "2") === true,
+			"Follow-up passed!");
 	});
 
-	QUnit.test("HT and BP>140/90 visit past 9 months", function (assert) {
-		assert.ok(
-								//current date, last seen date, sys, dias, icd9
-			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "90", "401") === true,
-			"Recent visit passed!");
-		assert.ok(
-								//Not recent visit
-			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 20, 2014", "140", "90", "401") === false,
-			"Not recent visit passed!");
-		assert.ok(
-								//Low sys, high dias
-			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "139", "90", "401") === true,
-			"Low systolic passed!");
-		assert.ok(
-								//High sys, low dias
-			ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "89", "401") === true,
-			"Low diastolic passed!");
-		assert.ok(
-								//Both low
-			isNaN(ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "139", "89", "401")),
-			"Both low passed!");
-		assert.ok(
-								//Not hypertension
-			isNaN(ElevatedBPRegularVisit.rule("Oct 21, 2014", "Jan 21, 2014", "140", "90", "123")),
-			"Not hypertension passed!");
-	});
-
-	QUnit.test("HT with BP<140/90", function (assert) {
-		assert.ok(
-								//sys, dias, icd9
-			HypertensionBP.rule("140", "90", "401") === false,
-			"Both high passed!");
-		assert.ok(
-								//Both low
-			HypertensionBP.rule("139", "89", "401") === true,
-			"Both low passed!");
-		assert.ok(
-								//Sys low
-			HypertensionBP.rule("139", "90", "401") === false,
-			"Sys low passed!");
-		assert.ok(
-								//Dias low
-			HypertensionBP.rule("140", "89", "401") === false,
-			"Dias low passed!");
-		assert.ok(
-								//Not HT
-			isNaN(HypertensionBP.rule("139", "89", "123")),
-			"Not HT passed!");
-	});
 
 
 	/*
@@ -325,7 +478,7 @@
 	var ColorectalCancer = cancer[2];
 	var FluVaccine = cancer[3];
 
-	QUnit.test("Up-to-date breast cancer screening", function (assert) {
+	QUnit.test("Breast cancer screening", function (assert) {
 		assert.ok(
 							//current date, age, sex, mammogram date (36 months difference)
 			BreastCancer.rule("Oct 21, 2014", 50, "F", "Oct 21, 2011") === true,
@@ -348,7 +501,7 @@
 			"Age out of range passed!");
 	});
 
-	QUnit.test("Up-to-date cervical cancer screening", function (assert) {
+	QUnit.test("Cervical cancer screening", function (assert) {
 		assert.ok(
 							//current date, age, sex, pap date (36 months)
 			CervicalCancer.rule("Oct 21, 2014", 25, "F", "Oct 21, 2011") === true,
@@ -372,7 +525,7 @@
 	});
 
 
-	QUnit.test("Up-to-date colorectal cancer screening", function (assert) {
+	QUnit.test("Colorectal cancer screening", function (assert) {
 		assert.ok(
 							//current date, age, fobt date (24 months difference)
 			ColorectalCancer.rule("Oct 21, 2014", 50, "Oct 21, 2012") === true,
@@ -388,7 +541,7 @@
 	});
 
 
-	QUnit.test("Up-to-date influenza vaccine", function (assert) {
+	QUnit.test("Influenza vaccine", function (assert) {
 		assert.ok(
 							//current date, age, flu date (12 months difference)
 			FluVaccine.rule("Oct 21, 2014", 65, "Oct 21, 2013") === true,
@@ -401,6 +554,25 @@
 							//age too low
 			isNaN(FluVaccine.rule("Oct 21, 2014", 64, "Oct 21, 2013")),
 			"Age out of range passed!");
+	});
+
+
+	var WellBaby = m.ruleList[7]["rules"][0];
+
+	QUnit.test("Well Baby Exam", function (assert) {
+		assert.ok(
+						  //age, A002, Rourke
+			WellBaby.rule("2", "Oct 21, 2014", "Oct 20, 2014"), 
+			"Up-to-date passed!");
+		assert.ok(
+			WellBaby.rule("3", "Oct 21, 2014", "Oct 20, 2014"), 
+			"Up-to-date passed!");
+		assert.ok(
+			isNaN(WellBaby.rule("4", "Oct 21, 2014", "Oct 20, 2014")), 
+			"Out of age-range passed!");
+		assert.ok(
+			isNaN(WellBaby.rule("1", "Oct 21, 2014", "Oct 20, 2014")), 
+			"Out of age-range passed!");
 	});
 
 })();
