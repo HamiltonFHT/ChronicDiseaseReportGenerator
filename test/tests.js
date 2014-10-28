@@ -464,6 +464,24 @@
 
 
 	/*
+	Immunizations Tests
+		[0] ruleHeightWeightLastVaccination
+		[1] ruleInfantVaccinations
+		[2] ruleChildVaccinations
+		[3] ruleTeenagerVaccinations
+	*/
+
+	var immun = m.ruleList[2]["rules"];
+
+	var HtWtLastVac = immun[0];
+	var InfantVac = immun[1];
+	var ChildVac = immun[2];
+	var TeenVac = immun[3];
+
+	QUnit
+
+
+	/*
 	Cancer Screening Tests
 		[0] ruleBreastCancer
 		[1]	ruleCervicalCancer

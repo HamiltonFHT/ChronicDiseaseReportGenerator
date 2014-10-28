@@ -1033,7 +1033,7 @@ var mdsViewer = (function() {
 										  })
 				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 				.attr("text-anchor", function(d) {
-											if (d<15) { return "left"; }
+											if (d<15) { return "start"; }
 											else { return "middle"; } 
 				})
 				.style("font-family", "Arial")
