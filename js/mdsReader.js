@@ -534,8 +534,11 @@ var mdsReader = (function() {
 						var fileDate = "";
 						var currentDate = mParsedData[i]["Current Date"][0];
 						if (currentDate.toString().match(/\d{2}[/-]\d{2}[/-]\d{4}/)){
-			 				var parsedDate = currentDate.split("/");
+			 				var parsedDate = currentDate.split(new RegExp("[-/]"));
 			 				fileDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
+			 			} else if (currentDate.toString().match(/\d{4}-\d{2}-\d{2}/)){
+			 				var parsedDate = currentDate.split("-");
+			 				fileDate = new Date(parsedDate[0], parsedDate[1]-1, parsedDate[2]);
 			 			} else {
 			 				fileDate = new Date(currentDate + " EST");
 			 			}
