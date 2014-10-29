@@ -672,7 +672,7 @@ var mdsIndicators =  (function(){
 		rule: function(ageStr,	measles, diphtheria,  
 					   varicella, polio) {
 			try {
-				//if younger than 18 than not included
+				//if younger than 18 then not included
 				var age = getAgeFromMonths(ageStr);
 				if (age < this.minAge || age > this.maxAge) {
 					return NaN;
@@ -751,8 +751,9 @@ var mdsIndicators =  (function(){
 			try {
 				if (Number(age) < this.age) {
 					return NaN;
-				} else if (isOSCAR() && factors != "") {
-					return true;
+				} else if (isOSCAR()) {
+					if (factors != "") return true;
+					else return false;
 				}
 				return factors.toLowerCase().indexOf('smok') != -1;
 			} catch (err) {

@@ -2,6 +2,8 @@
 
 	var m = mdsIndicators;
 
+	var oscarDefault = mdsViewer.getEMR()["Oscar"];
+
 
 	/*
 		Diabetes Tests
@@ -210,6 +212,14 @@
 		assert.ok(
 			isNaN(SmokingStatusRecorded.rule("", "10")),
 			"Child no smoking status");
+		mdsViewer.getEMR()["Oscar"] = true;
+		assert.ok(
+			SmokingStatusRecorded.rule("anything, already filtered", "12") === true,
+			"Oscar status passed");
+		assert.ok(
+			SmokingStatusRecorded.rule("", "12") === false,
+			"Oscar no status passed");
+		mdsViewer.getEMR()["Oscar"] = oscarDefault;
 	});
 
 	QUnit.test("Smoking Cessation Attempted", function (assert) {
@@ -371,7 +381,6 @@
 	});
 
 
-
 	QUnit.test("Infant Immunizations", function (assert) {
 		assert.ok(
 											//"Age", "measles", "diphtheria",
@@ -446,8 +455,6 @@
 	/* Depression 
 		PHQ-9
 	*/
-
-
 
 	var depression = m.ruleList[5]["rules"];
 

@@ -342,24 +342,27 @@ var mdsReader = (function() {
 
 		// Split the socialHistory by "\n" and only take the ones with however they code smoking status 
 		var temp = [];
-		var smk = /smk/i;
-		var skst = /skst/i;
+		var smoke = /smk|skst|smok/i;
+		var noSmoke = /no|ex|quit|stopped|never/i;
 
 		for (var i=0; i<hasSocialHistory.length; i++) {
 			temp = socialHistory[hasSocialHistory[i]].split("\\n");
 
 			// Filter entries to only keep the ones that deal with smoking
-			for (var j=0; j<temp.length; j++) {
-				if (!smk.test(temp[j]) && !skst.test(temp[j]))
-					delete temp[j];
+			for (var j=temp.length-1; j>=0; j--) {
+				if (!smoke.test(temp[j]))
+					temp.splice(j,1);
 			}
 
 			// Save only the latest entry
 			socialHistory[hasSocialHistory[i]] = temp[temp.length-1];
 
-			// If the entry is not "non-smoker", replace it with "yes"
-			if (!/no/i.test(socialHistory[hasSocialHistory[i]]))
+			// If the entry is not in var noSmoke, replace it with "yes"
+			if (!noSmoke.test(socialHistory[hasSocialHistory[i]]) && typeof socialHistory[hasSocialHistory[i]] !== 'undefined') {
 				socialHistory[hasSocialHistory[i]] = "yes";
+			} else if (typeof socialHistory[hasSocialHistory[i]] === 'undefined') {
+				socialHistory[hasSocialHistory[i]] = "";
+			}
 		}
 
 		// Add a "Risk Factors" object to mFilteredData and copy socialHistory to it
@@ -367,15 +370,6 @@ var mdsReader = (function() {
 		
 	};
 
-	/*
-	 * Convert dates from Oscar files from DD/MM/YYYY to YYYY-MM-DD
-	 * No longer used?
-	 */
-	/*function convertDate(date) {
-		for (var i=0; i<date.length; i++) {
-			date[i] = parseDate(date[i]);
-		}
-	};*/
 
 	/*
 	 * Pull out each prevention into their own columns
