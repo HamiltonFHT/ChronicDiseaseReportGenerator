@@ -360,6 +360,14 @@
 											 "", "", "", "", "",
 											 "", "", "") === false,
 			"Height/weight out-of-date w/ no immus passed!");
+		assert.ok(
+			isNaN(HeightWeightLastVaccination.rule("", "", "Oct 21, 2014",
+											//"measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
+											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
+											 //"pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"
+											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011")),
+			"No height/weight passed!");
+			
 	});
 
 
