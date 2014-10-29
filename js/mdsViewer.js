@@ -612,6 +612,8 @@ var mdsViewer = (function() {
 		updateDropdownIndicators();
 	}
 	
+
+	//Remove and re-add indicator dropdown using indicators in mCalculatedData
 	function updateDropdownIndicators() {
 		
 		if ($("#indicatorEditor").length === 0) {
@@ -648,6 +650,7 @@ var mdsViewer = (function() {
 		});
 	}
 	
+	// Update indicators with values from indicator editor
 	function updateIndicator() {
 		var params_updated = 0;
 		
@@ -668,6 +671,7 @@ var mdsViewer = (function() {
 		}
 	}
 	
+	//Call reset on the currently selected indicator
 	function resetIndicator() {
 		var currentIndicator = getInternalRuleIndex();
 		
@@ -686,10 +690,14 @@ var mdsViewer = (function() {
 		addIndicatorElements();
 	}
 	
+
+	//Re-add dropdown with indicators
+	//Recalculate graph, preserving currently selected indicator
+	//Re-add indicator editor
 	function addIndicatorElements(){
 		updateDropdownIndicators();
 		
-		currentIndicator = mCurrentIndicator;
+		var currentIndicator = mCurrentIndicator;
 		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		mCurrentIndicator = currentIndicator;
 		
@@ -748,11 +756,8 @@ var mdsViewer = (function() {
 			}
 			
 			if (redraw) {
-				//$("#canvasSVG").prop("width", mCanvasWidth);
 				clearCanvas();
 				if (mMode === 'snapshot') {
-					
-
 					generateSnapshot(0);
 				} else {
 					generateTracking();
@@ -1388,12 +1393,10 @@ var mdsViewer = (function() {
 					.attr("class", "g_main")
 					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 
-		//mMode = "snapshot";
-		//clearCanvas();
-		//$("#dropdownIndicators").hide();
 		//Add the snapshot graph to the extra canvas
-		generateSnapshot(mCurrentDateIndex, true); //todo need this and "this"
-		
+		if (mode == "tracking")
+			generateSnapshot(mCurrentDateIndex, true);
+
 		//Scroll to the new canvas
 		if (!canvas.inViewport() && mFirstScrollView) {
 			canvas.scrollView();
@@ -1514,12 +1517,92 @@ var mdsViewer = (function() {
 
 	}; //end toggleDataLabels
 	
+
+
+	function histogram(values) {
+
+		var svg = $("#canvasContainer_extra");
+		//Empty the extra canvas
+		svg.empty();
+		
+		//Recreate the extra canvas
+		svg = d3.select("#canvasContainer_extra").append("svg")
+			.attr("id", "canvasSVGExtra")
+			.attr("width", mCanvasWidth)
+			.attr("height", DEFAULT_CANVAS_HEIGHT)
+			.style("border", "1px solid lightgray")
+			.append("g")
+				.attr("class", "g_main")
+				.attr("transform", "translate(" + DEFAULT_PADDING_LEFT_TRACKING + ", " + DEFAULT_PADDING_TOP_TRACKING + ")");		
+			    
+
+		// A formatter for counts.
+		var formatCount = d3.format(",.0f");
+
+		var xScale = d3.scale.linear()
+		    .domain(d3.extent(values))
+		    .range([0, mGraphWidthTracking])
+		    .nice();
+
+		var xAxis = d3.svg.axis()
+		    .scale(xScale)
+		    .orient("bottom");
+
+		// Generate a histogram using twenty uniformly-spaced bins.
+		var data = d3.layout.histogram()
+		    .bins(xScale.ticks(20))
+		    (values);
+
+		var yScale = d3.scale.linear()
+		    .domain([0, d3.max(data, function(d) { return d.y; })])
+		    .range([DEFAULT_GRAPH_HEIGHT_TRACKING, 0]);
+
+		var yAxis = d3.svg.axis()
+			.scale(yScale)
+			.orient("left");
+		
+	    svg.append("g")
+	    	.attr("class", "xaxis")
+			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
+			.call(xAxis);
+
+		svg.append("g")
+			.attr("class", "yaxis")
+			.call(yAxis);
+
+
+		var bar = svg.selectAll(".bar")
+		    .data(data)
+		  .enter().append("g")
+		    .attr("class", "bar")
+		    .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; });
+
+		bar.append("rect")
+			    .attr("x", 1)
+			    .attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
+				.attr("width", mCanvasWidth / 20 - 1)
+			    //.attr("width", x(data[0].dx) - 1)
+			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); });
+
+
+
+		// bar.append("text")
+		//     .attr("dy", ".75em")
+		//     .attr("y", 6)
+		//     .attr("x", x(data[0].dx) / 2)
+		//     .attr("text-anchor", "middle")
+		//     .text(function(d) { return formatCount(d.y); });
+
+	}; //end histogram
+
+
 	return {
 		generateCharts: generateCharts,
 		clearCanvas: clearCanvas,
 		mode: mMode,
 		getEMR: function() {return mEMR;},
 		setEMR: setEMR,
+		histogram: histogram
 	};
 	
 })();
