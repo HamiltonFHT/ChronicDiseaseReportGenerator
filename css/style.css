@@ -32,6 +32,11 @@ body {
 	float:right;
 }
 
+.axis,
+.tick {
+	shape-rendering: crispEdges;
+}
+
 #measuresSection {
 	display: inline-block;
 }

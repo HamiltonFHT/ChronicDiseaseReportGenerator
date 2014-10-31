@@ -17,7 +17,6 @@ var mdsIndicators =  (function(){
 	// Default comparison values for diabetic measures, based on Clinical Practice Guidelines and what we are asked to tracked in the report generator.
 	// NOTE: These are the DEFAULT values for comparison. There will be a settings menu to allow the user to modify these comparison values based on 
 	// their clinical judgement and what they want to track.
-	// TO CHANGE: Other chronic conditions will have other constant values
 	
 	function removeMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
@@ -191,6 +190,27 @@ var mdsIndicators =  (function(){
 		}	
 		return results;
 	};
+
+
+	//Returns an array of properly formatted data (either date or numeric) for plotting as a histogram
+	function getHistogramData(indicator) {
+
+		var col = indicator.histogram[0];
+		var type = indicator.histogram[1];
+
+		var data = [];
+
+		if (type === "numeric") {
+			for (var row=0; row<csvObject[col].length; row++)
+				data.push(+csvObject[col][row]);
+		} else if (type === "date") {
+			for (var row=0; row<csvObject[col].length; row++)
+				data.push(new Date(csvObject[col][row]));
+		}
+
+		return data;
+	}
+
 	
 	/* 
 	 * Inspect header of text file to guess which indicator set is most appropriate
@@ -282,6 +302,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["months"],
 		defaults: [6],
 	 	col: ["Current Date", "Date Hb A1C"],
+	 	histogram: ["Date Hb A1C", "date"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
@@ -299,6 +320,7 @@ var mdsIndicators =  (function(){
 		months: 6,
 		modifiable: ["months", "target"],
 		defaults: [6, 0.08],
+		histogram: ["Hb A1C", "numeric"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
@@ -1133,6 +1155,7 @@ var mdsIndicators =  (function(){
 		resetToDefault: resetToDefault,
 		getCurrentRuleSet: getCurrentRuleSet,
 		lookupVarNameTable: lookupVarNameTable,
+		getHistogramData: getHistogramData
 	};
 	
 })();

@@ -1095,6 +1095,12 @@ var mdsViewer = (function() {
 		} else {
 			removeIndicatorEditor();
 		}
+
+		//If we're in snapshot mode and the bar is clicked, see if a histogram can be plotted in the extra plotting area
+		if (mMode == "snapshot" && currentIndicator.hasOwnProperty("histogram")) {
+			var data = mdsIndicators.getHistogramData(currentIndicator);
+			histogram(data);
+		}
 	}
 	
 	function generateTracking() {
@@ -1217,160 +1223,158 @@ var mdsViewer = (function() {
 			paths[i].setAttribute("vector-effect", "non-scaling-stroke");
 		}
 		
-		// Append lines between data points
-		mCanvas.selectAll(".dataPointConnector")
-			.data(new Array(arrayData.length - 1))
-			.enter().append("line")
-				.attr("class", "dataPointConnector")
-				.attr("x1", function (d, i) { return xScaleTracking(arrayDates[i]); })
-				.attr("x2", function (d, i) { return xScaleTracking(arrayDates[i + 1]); })
-				.attr("y1", function (d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]); })
-				.attr("y2", function (d, i) { return yScaleTracking(arrayData[i + 1][mCurrentIndicator]); })
-				.attr("stroke", DEFAULT_COLOURS[mCurrentIndSetIndex])
-				.attr("stroke-width", 2);
-		
-		// Append data points
-		mCanvas.selectAll(".dataPoint")
-			.data(arrayData)
-			.enter().append("circle")
-				.attr("class", "dataPoint")
-				.attr("cx", function (d, i) { return xScaleTracking(arrayDates[i]); })
-				.attr("cy", function(d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]); })
-				.attr("r", 5)
-				.attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-				.on("mouseover", function(d) {
-					d3.select(this)
-						.attr("r", 7)
-						.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex]);
-				})
-				.on("mouseout", function(d) {
-					d3.select(this)
-						.attr("r", 5)
-						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
-				})
-				.on("click", function(d, i) {
-					d3.selectAll(".dataPoint")
-						.attr("class", "dataPoint")
-						.attr("r", 5)
-						.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-						.on("mouseout", function(d) {
-							d3.select(this)
-								.attr("r", 5)
-								.style("fill", DEFAULT_COLOURS[mCurrentIndSetIndex]);
-						});
-					d3.select(this).attr("class", "dataPoint selected")
-									.attr("r", 7)
-									.style("fill", HIGHLIGHT_COLOURS[mCurrentIndSetIndex])
-									.on("mouseout", function() {});
-									
-					mCurrentDateIndex = i;
-					generateExtraCanvas();
-				});
-				
-		// Add x axis label
-		mCanvas.append("text")
-			.attr("class", "xAxisLabel")
-			.attr("x", mGraphWidthTracking / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING + 40)
-			.attr("text-anchor", "middle")
-			.style("font-weight", "bold")
-			.style("font-size", "14px")
-			.style("font-family", "Arial")
-			.text("Date");
-		
-		// Add y axis label
-		mCanvas.append("text")
-			.attr("class", "yAxisLabel")
-			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING / 2)
-			.attr("y", -DEFAULT_PADDING_LEFT_TRACKING / 2)
-			.attr("text-anchor", "middle")
-			.style("font-weight", "bold")
-			.style("font-size", "14px")
-			.style("font-family", "Arial")
-			.text("% of patients");
-			
-		// Add graph title
-		mCanvas.append("text")
-			.attr("class", "graphTitle")
-			.attr("x", mGraphWidthTracking / 2)
-			.attr("y", -DEFAULT_PADDING_TOP_TRACKING / 2)
-			.attr("text-anchor", "middle")
-			.style("font-size", "14px")
-			.style("font-family", "sans-serif")
-			.style("font-weight", "bold")
-			.text(function() {
-				var indicator = mCalculatedData[0][mCurrentIndicator].desc;
-				var title = indicator + " for Doctor";
-				var arraySelectedOnly = [];
 
-				for (var doc in mSelectedPhysicians) {
-					if (mSelectedPhysicians[doc] == true)
-						arraySelectedOnly.push(doc);
-				}
-							
-				if (arraySelectedOnly.length > 1) title += "s ";
-				else title += " ";
-				for (var i = 0; i < arraySelectedOnly.length; i++) {
-					if (i == arraySelectedOnly.length - 2)
-						title += arraySelectedOnly[i] + " and ";
-					else if (i == arraySelectedOnly.length - 1)
-						title += arraySelectedOnly[i];
-					else title += arraySelectedOnly[i] + ", ";	
-				}
-
-				mReportTitle = title;
-				
-				return title;
-			});
-
-		mCanvas.selectAll('.graphTitle').each(function () { splitText(d3.select(this), 180, true); });
-		
-		// Add labels for data points
-		mCanvas.selectAll(".dataLabelTracking")
-			.data(arrayData)
-			.enter().append("text")
-				.attr("class", "dataLabelTracking")
-				.attr("x", function(d, i) { return xScaleTracking(arrayDates[i]); })
-				.attr("y", function(d, i) { 
-					// If small value, place label above point
-					if ((arrayData[i][0]) < 10)
-						return yScaleTracking(arrayData[i][0]) - 15;
-					// Else	
-					else {
-						// For first data point
-						if (i == 0) {
-							// If adjacent point is above, place label below, vice versa
-							if (arrayData[1][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
-						}
-						// For last point, compare with second last point
-						else if (i == arrayData.length - 1) {
-							if (arrayData[arrayData.length - 2][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
-						}
-						// Else all points in between, check both sides
-						else {
-							// If both adjacent points are above, place below
-							if (arrayData[i - 1][0] >= arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
-							// Else if both are below, place above	
-							else if (arrayData[i - 1][0] < arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] < arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
-							// Else just place above
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
-						}
-					}
-				}) 
+			// Add x axis label
+			mCanvas.append("text")
+				.attr("class", "xAxisLabel")
+				.attr("x", mGraphWidthTracking / 2)
+				.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING + 40)
 				.attr("text-anchor", "middle")
-				.style("fill", "black")
-				.style("font-size", "13px")
+				.style("font-weight", "bold")
+				.style("font-size", "14px")
 				.style("font-family", "Arial")
-				.text(function(d, i) { 
-					return arrayLabels[i][mCurrentIndicator];
+				.text("Date");
+			
+			// Add y axis label
+			mCanvas.append("text")
+				.attr("class", "yAxisLabel")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING / 2)
+				.attr("y", -DEFAULT_PADDING_LEFT_TRACKING / 2)
+				.attr("text-anchor", "middle")
+				.style("font-weight", "bold")
+				.style("font-size", "14px")
+				.style("font-family", "Arial")
+				.text("% of patients");
+				
+			// Add graph title
+			mCanvas.append("text")
+				.attr("class", "graphTitle")
+				.attr("x", mGraphWidthTracking / 2)
+				.attr("y", -DEFAULT_PADDING_TOP_TRACKING / 2)
+				.attr("text-anchor", "middle")
+				.style("font-size", "14px")
+				.style("font-family", "sans-serif")
+				.style("font-weight", "bold")
+				.text(function() {
+					var indicator = mCalculatedData[0][mCurrentIndicator].desc;
+					var title = indicator + " for Doctor";
+					var arraySelectedOnly = [];
+
+					for (var doc in mSelectedPhysicians) {
+						if (mSelectedPhysicians[doc] == true)
+							arraySelectedOnly.push(doc);
+					}
+								
+					if (arraySelectedOnly.length > 1) title += "s ";
+					else title += " ";
+					for (var i = 0; i < arraySelectedOnly.length; i++) {
+						if (i == arraySelectedOnly.length - 2)
+							title += arraySelectedOnly[i] + " and ";
+						else if (i == arraySelectedOnly.length - 1)
+							title += arraySelectedOnly[i];
+						else title += arraySelectedOnly[i] + ", ";	
+					}
+
+					mReportTitle = title;
+					
+					return title;
 				});
+
+			mCanvas.selectAll('.graphTitle').each(function () { splitText(d3.select(this), 180, true); });
+
+
+		//TODO: Special case to plot all indicators on some graph.
+
+		for (var ind=0; ind < arrayData[0].length; ind++) {
+
+			// Append lines between data points
+			mCanvas.selectAll(".dataPointConnector" + ind)
+				.data(new Array(arrayData.length - 1))
+				.enter().append("line")
+					.attr("class", "dataPointConnector" + ind)
+					.attr("x1", function (d, i) { return xScaleTracking(arrayDates[i]); })
+					.attr("x2", function (d, i) { return xScaleTracking(arrayDates[i + 1]); })
+					.attr("y1", function (d, i) { return yScaleTracking(arrayData[i][ind]); })
+					.attr("y2", function (d, i) { return yScaleTracking(arrayData[i + 1][ind]); })
+					.attr("stroke", DEFAULT_COLOURS[ind])
+					.attr("stroke-width", 2);
+			
+			// Append data points
+			mCanvas.selectAll(".dataPoint" + ind)
+				.data(arrayData)
+				.enter().append("circle")
+					.attr("class", "dataPoint" + ind)
+					.attr("cx", function (d, i) { return xScaleTracking(arrayDates[i]); })
+					.attr("cy", function(d, i) { return yScaleTracking(arrayData[i][ind]); })
+					.attr("r", 5)
+					.attr("fill", DEFAULT_COLOURS[ind])
+					.on("mouseover", function(d) {
+						d3.select(this)
+							.attr("r", 7)
+					})
+					.on("mouseout", function(d) {
+						d3.select(this)
+							.attr("r", 5)
+					})
+					.on("click", function(d, i) {
+						d3.selectAll(".dataPoint" + ind)
+							.attr("class", "dataPoint" + ind)
+							.attr("r", 5)
+						d3.select(this).attr("class", "dataPoint" + ind + " selected")
+										.attr("r", 7)
+										
+						mCurrentDateIndex = i;
+						generateExtraCanvas();
+					});
+					
+			
+			// Add labels for data points
+			mCanvas.selectAll(".dataLabelTracking" + ind)
+				.data(arrayData)
+				.enter().append("text")
+					.attr("class", "dataLabelTracking")
+					.attr("x", function(d, i) { return xScaleTracking(arrayDates[i]); })
+					.attr("y", function(d, i) { 
+						// If small value, place label above point
+						if ((arrayData[i][ind]) < 10)
+							return yScaleTracking(arrayData[i][ind]) - 15;
+						// Else	
+						else {
+							// For first data point
+							if (i == 0) {
+								// If adjacent point is above, place label below, vice versa
+								if (arrayData[1][ind] >= arrayData[i][ind])
+									return yScaleTracking(arrayData[i][ind]) + 25;
+								else return yScaleTracking(arrayData[i][ind]) - 15;
+							}
+							// For last point, compare with second last point
+							else if (i == arrayData.length - 1) {
+								if (arrayData[arrayData.length - 2][0] >= arrayData[i][ind])
+									return yScaleTracking(arrayData[i][ind]) + 25;
+								else return yScaleTracking(arrayData[i][ind]) - 15;
+							}
+							// Else all points in between, check both sides
+							else {
+								// If both adjacent points are above, place below
+								if (arrayData[i - 1][ind] >= arrayData[i][ind] && arrayData[i + 1][ind] >= arrayData[i][ind])
+									return yScaleTracking(arrayData[i][ind]) + 25;
+								// Else if both are below, place above	
+								else if (arrayData[i - 1][ind] < arrayData[i][ind] && arrayData[i + 1][ind] < arrayData[i][ind])
+									return yScaleTracking(arrayData[i][ind]) - 15;
+								// Else just place above
+								else return yScaleTracking(arrayData[i][ind]) - 15;
+							}
+						}
+					}) 
+					.attr("text-anchor", "middle")
+					.style("fill", "black")
+					.style("font-size", "13px")
+					.style("font-family", "Arial")
+					.text(function(d, i) { 
+						return arrayLabels[i][ind];
+					});
+		}
 				
 		if (mCanvasExtra != null) {
 			generateExtraCanvas();
@@ -1394,7 +1398,7 @@ var mdsViewer = (function() {
 					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 
 		//Add the snapshot graph to the extra canvas
-		if (mode == "tracking")
+		if (mMode == "tracking")
 			generateSnapshot(mCurrentDateIndex, true);
 
 		//Scroll to the new canvas
