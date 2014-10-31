@@ -778,9 +778,9 @@ var mdsIndicators =  (function(){
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				factors = factors.toLowerCase();
-				if ((factors.indexOf("current smoker") === -1 ||     //If they don't smoke (PSS), or
+				if ((isPSS() && factors.indexOf("current smoker") === -1) ||     //If they don't smoke (PSS), or
 					(isOSCAR() && factors.indexOf("yes") === -1) ||  //They don't smoke (OSCAR), or
-					!withinDateRange(currentDate,this.months,lastSeenDate))) // They haven't been in in more than 15 months
+					!withinDateRange(currentDate,this.months,lastSeenDate)) // They haven't been in in more than 15 months
 				{
 					return NaN;
 				} else {
@@ -806,7 +806,7 @@ var mdsIndicators =  (function(){
 				//Only people older than 18 who are current smokers qualify
 				if (Number(age) <= this.minAge || 
 						(isPSS() && factors.indexOf("current smoker") === -1) ||
-						(isOSCAR() && (factors.indexOf("current") === -1 || 
+						(isOSCAR() && (factors.indexOf("current") === -1 && 
 									   factors.indexOf("yes") === -1))){
 					return NaN;
 				} else {

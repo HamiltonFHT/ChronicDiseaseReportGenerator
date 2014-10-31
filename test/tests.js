@@ -3,6 +3,17 @@
 	var m = mdsIndicators;
 
 	var oscarDefault = mdsViewer.getEMR()["Oscar"];
+	var PSSDefault = mdsViewer.getEMR()["PSS"];
+
+	function setOscar () {
+		mdsViewer.getEMR()["Oscar"] = true;
+		mdsViewer.getEMR()["PSS"] = false;
+	};
+
+	function setDefault () {
+		mdsViewer.getEMR()["Oscar"] = oscarDefault;
+		mdsViewer.getEMR()["PSS"] = PSSDefault;
+	};
 
 
 	/*
@@ -212,14 +223,14 @@
 		assert.ok(
 			isNaN(SmokingStatusRecorded.rule("", "10")),
 			"Child no smoking status");
-		mdsViewer.getEMR()["Oscar"] = true;
+		setOscar();
 		assert.ok(
 			SmokingStatusRecorded.rule("anything, already filtered", "12") === true,
 			"Oscar status passed");
 		assert.ok(
 			SmokingStatusRecorded.rule("", "12") === false,
 			"Oscar no status passed");
-		mdsViewer.getEMR()["Oscar"] = oscarDefault;
+		setDefault();
 	});
 
 	QUnit.test("Smoking Cessation Attempted", function (assert) {
@@ -242,6 +253,15 @@
 		assert.ok(
 			isNaN(SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2012", "Oct 21, 2014")),
 			"Current smoker, not seen recently");
+		
+		setOscar();
+		assert.ok(
+			isNaN(SmokingCessation.rule("not smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
+			"Non smoker");
+		assert.ok(
+			isNaN(SmokingCessation.rule("yes", "Aug 21, 2014", "Jan 21, 2012", "Oct 21, 2014")),
+			"Smoker, not seen recently");
+		setDefault();
 	});
 
 	QUnit.test("Adult Smokers Pneumovax", function (assert) {
@@ -261,6 +281,21 @@
 		assert.ok(
 			AdultSmokersPneumovax.rule("19", "Current Smoker", "0") === false,
 			"Adult current smoker, no pneumovax");
+
+		setOscar();
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("19", "non smoker", 1)),
+			"Adult non smoker, pneumovax");
+		assert.ok(
+			isNaN(AdultSmokersPneumovax.rule("19", "non smoker", 0)),
+			"Adult non smoker, no pneumovax");
+		assert.ok(
+			AdultSmokersPneumovax.rule("19", "yes", 1) === true,
+			"Adult smoker, pneumovax");
+		assert.ok(
+			AdultSmokersPneumovax.rule("19", "anything but yes", 0) === false,
+			"Adult smoker, no pneumovax");
+		setDefault();
 	});
 
 	QUnit.test("Senior Pneumovax", function (assert) {
