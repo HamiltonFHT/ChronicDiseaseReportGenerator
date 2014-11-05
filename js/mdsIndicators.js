@@ -236,8 +236,8 @@ var mdsIndicators =  (function(){
 	}
 	
 	var ruleDMPastNMonths = {
-		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
-		long_desc: function(){return "% of patients who have had a diabetic assessment in the past " + this.months + " months"; },
+		desc: function(){return "Diabetic Visit in past " + this.months + " months"; },
+		long_desc: function(){return "% of patients who have had a diabetic visit (diagnostic code 250) in the past " + this.months + " months"; },
 	 	months: 12,
 	 	modifiable: ["months"],
 	 	defaults: [12],
@@ -275,6 +275,44 @@ var mdsIndicators =  (function(){
 	 	}
 	};
 	
+	var ruleDMPastNMonthsBilling = {
+		desc: function(){return "Diabetic Assessment in past " + this.months + " months"; },
+		long_desc: function(){return "% of patients who have had a diabetic assessment (K030/Q040) in the past " + this.months + " months"; },
+	 	months: 12,
+	 	modifiable: ["months"],
+	 	defaults: [12],
+	 	col: ["Current Date", "K030A", "Q040A"],
+	 	rule: function(currentDate, k, q) {
+	 		try {
+	 			if (k === "" && q === "") {
+	 				return false;
+	 			}
+	 			// Using diabetic assessment billing codes
+	 			// K030A -- quarterly, Q040 -- annual
+	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
+	 				var parsedFields = currentDate.split("/");
+	 				var parsedDate = new Date(parsedFields[2], parsedFields[1]-1, parsedFields[0])
+	 				var targetDate = removeMonths(parsedDate, this.months);
+		 		} else {
+		 			var parsedDate = new Date(currentDate)
+		 			var targetDate = removeMonths(new Date(currentDate), this.months);
+		 		}
+
+		 		//All measurements should be older than the current date
+		 		if (new Date(k) > parsedDate || new Date(q) > parsedDate) {
+		 			return NaN;
+		 		}
+
+		 		return (mostRecentDate([k, q]) >= targetDate.getTime());
+
+	 		} catch (err) {
+	 			console.log(err.message);
+	 			return NaN;
+	 		}
+	 	}
+	};
+
+
 	var ruleA1CPastNMonths = {
 		desc: function(){ return "A1C measured in last " + this.months + " months"; },
 		long_desc: function(){ return "% of patients with A1C measured in last " +  this.months + " months"; },
@@ -1060,14 +1098,14 @@ var mdsIndicators =  (function(){
 	};
 
 	//Assemble rules into sets
-	var diabetesRules = [ruleDMPastNMonths,
+	var diabetesRules = [ruleDMPastNMonthsBilling,
 						 ruleA1CPastNMonths, 
 						 ruleA1CLessThanEqualToXPastNMonths,
 						 ruleLDLPastNMonths
 					     ];
 						 
 		//Assemble rules into sets
-	var diabetesExtendedRules = [ruleDMPastNMonths,
+	var diabetesExtendedRules = [ruleDMPastNMonthsBilling,
 								 ruleA1CPastNMonths, 
 								 ruleA1CLessThanEqualToXPastNMonths,
 								 ruleBPPastNMonths, 

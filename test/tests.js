@@ -21,39 +21,67 @@
 	*/
 	var diabetes = m.ruleList[0]["rules"];
 
-	var DMPastNMonths = diabetes[0];
+	var DMPastNMonthsBilling = diabetes[0];
 	var A1CPastNMonths = diabetes[1];
 	var A1CLTEXPastNMonths = diabetes[2];
 	var LDLPastNMonths = diabetes[3];
 
-	// DM Past N Months
+	// DM Past N Months  -- Using Diabetic Assessment field from PSS (diagnostic code 250)
+	// QUnit.test("DM Past N Months", function (assert) {
+	// 	assert.ok(
+	// 						//current date, measured date
+	// 		DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2014") === true,
+	// 		"Up-to-date passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2013") === false,
+	// 		"Out-of-date passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("Oct 21, 2014", "") === false,
+	// 		"No Date passed");
+	// 	assert.ok(
+	// 		isNaN(DMPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014")),
+	// 		"Future date passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("2014/10/21", "Sept 21, 2014") === true,
+	// 		"YYYY/MM/DD up-to-date passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("2014/10/21", "Sept 21, 2013") === false,
+	// 		"YYYY/MM/DD out-of-date passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("Oct 21, 2014", "6") === true,
+	// 		"Up-to-date (compat) passed");
+	// 	assert.ok(
+	// 		DMPastNMonths.rule("Oct 21, 2014", "13") === false,
+	// 		"Out-of-date (compat) passed");
+	// });
+
+
+	//DM Past N Months Billing -- Using K030/Q040 billing codes
 	QUnit.test("DM Past N Months", function (assert) {
 		assert.ok(
-							//current date, measured date
-			DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2014") === true,
-			"Up-to-date passed");
+							//current date, k030 date, q040 (annual) date
+			DMPastNMonthsBilling.rule("Oct 21, 2014", "Sept 21, 2014", "Sept 21, 2013") === true,
+			"Quarterly Up-to-date passed");
 		assert.ok(
-			DMPastNMonths.rule("Oct 21, 2014", "Sept 21, 2013") === false,
+			DMPastNMonthsBilling.rule("Oct 21, 2014", "Sept 21, 2013", "Sept 21, 2014") === true,
+			"Annual Up-to-date passed");
+		assert.ok(
+			DMPastNMonthsBilling.rule("Oct 21, 2014", "Sept 21, 2013", "") === false,
 			"Out-of-date passed");
 		assert.ok(
-			DMPastNMonths.rule("Oct 21, 2014", "") === false,
+			DMPastNMonthsBilling.rule("Oct 21, 2014", "", "") === false,
 			"No Date passed");
 		assert.ok(
-			isNaN(DMPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014")),
+			isNaN(DMPastNMonthsBilling.rule("Oct 21, 2014", "Nov 21, 2014", "Nov 21, 2013")),
 			"Future date passed");
 		assert.ok(
-			DMPastNMonths.rule("2014/10/21", "Sept 21, 2014") === true,
+			DMPastNMonthsBilling.rule("2014/10/21", "Sept 21, 2014", "Jan 21, 2014") === true,
 			"YYYY/MM/DD up-to-date passed");
 		assert.ok(
-			DMPastNMonths.rule("2014/10/21", "Sept 21, 2013") === false,
+			DMPastNMonthsBilling.rule("2014/10/21", "Sept 21, 2013", "Sept 21, 2013") === false,
 			"YYYY/MM/DD out-of-date passed");
-		assert.ok(
-			DMPastNMonths.rule("Oct 21, 2014", "6") === true,
-			"Up-to-date (compat) passed");
-		assert.ok(
-			DMPastNMonths.rule("Oct 21, 2014", "13") === false,
-			"Out-of-date (compat) passed");
 	});
+
 
 	//A1C Past N Months
 	QUnit.test("A1C Past N Months", function (assert) {
