@@ -132,6 +132,20 @@ var mdsIndicators =  (function(){
 		'age': 'Age'
 	};
 
+	var LHINAverages = {
+		'DiabeticAssessment': 0.30, //percent
+		'DateHbA1C': 0.50, //% HbA1c done twice in past year
+		'LDL': 0.67, //% measured in past twelve months
+		'BPUnderControl': 0.66, //% patients with BP < 140/90
+		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
+		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
+		'Mammograms': 0.60,
+		'Pap': 0.66,
+		'FOBT': 0.32,
+	};
+	
+
+
 	// fileNumber for Oscar CYMH
 	var fileNumber;
 	
@@ -282,6 +296,7 @@ var mdsIndicators =  (function(){
 	 	modifiable: ["months"],
 	 	defaults: [12],
 	 	col: ["Current Date", "K030A", "Q040A"],
+	 	average: LHINAverages.DiabeticAssessment,
 	 	rule: function(currentDate, k, q) {
 	 		try {
 	 			if (k === "" && q === "") {
@@ -320,6 +335,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["months"],
 		defaults: [6],
 	 	col: ["Current Date", "Date Hb A1C"],
+	 	average: LHINAverages.DateHbA1C,
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
