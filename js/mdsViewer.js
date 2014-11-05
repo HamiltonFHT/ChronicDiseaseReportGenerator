@@ -26,6 +26,7 @@ var mdsViewer = (function() {
 	
 	var mMode = ""; //either "snapshot" or "tracking"
 	var mDataLabels = true; //either true or false (not currently used)
+	var mShowAverages = true;
 	var mReportTitle = "";
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
 	var mSelectedPhysicians = {}; // selected physicians object [{docnumber: true/false}, ...]
@@ -306,7 +307,14 @@ var mdsViewer = (function() {
 		} else {
 			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules[arguments[0]];
 		}
-		
+	}
+
+	function getIndicatorSet(){
+		if (arguments.length === 0) {
+			return mdsIndicators.ruleList[mCurrentIndSetIndex].rules;
+		} else {
+			return mdsIndicators.ruleList[arguments[0]].rules;
+		}
 	}
 	
 	/*
@@ -561,7 +569,6 @@ var mdsViewer = (function() {
 		//Reset indicator editor bar
 		removeIndicatorEditor();
 
-		//currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator];
 		currentIndicator = getIndicator();
 		if (!currentIndicator.hasOwnProperty("modifiable")) {
 			return false;
@@ -673,18 +680,20 @@ var mdsViewer = (function() {
 	
 	//Call reset on the currently selected indicator
 	function resetIndicator() {
-		var currentIndicator = getInternalRuleIndex();
+		//var currentIndicator = getInternalRuleIndex();
 		
-		mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[currentIndicator]);
+		mdsIndicators.resetToDefault(getIndicator());
 		
 		addIndicatorElements();
 	}
 	
 	function resetAllIndicators() {
+
+		var indicators = getIndicatorSet();
 		//Loop through all rules and Reset if they have a 'defaults' property			
-		for (var i = 0; i < mdsIndicators.ruleList[mCurrentIndSetIndex].rules.length; i++){
-			if (mdsIndicators.ruleList[mCurrentIndSetIndex].rules[i].hasOwnProperty('defaults')) {
-				mdsIndicators.resetToDefault(mdsIndicators.ruleList[mCurrentIndSetIndex].rules[i]);
+		for (var i = 0; i < indicators.length; i++){
+			if (indicators[i].hasOwnProperty('defaults')) {
+				mdsIndicators.resetToDefault(indicators[i]);
 			}
 		}
 		addIndicatorElements();
@@ -1026,6 +1035,72 @@ var mdsViewer = (function() {
 				})
 				.append("svg:title")
 					.text(function(d, i) { return arrayTooltip[i]; });
+
+
+		//Display LHIN 4 Average for this indicator (if available)
+		if (mShowAverages) {
+
+			var indexes = [];
+			for (var i in data){
+				indexes.push(data[i].index);
+			}
+
+			var yScaleAverages = d3.scale.linear()
+				.domain([0, 100])
+				.range([0, mGraphHeight]);
+
+			var indicatorSet = getIndicatorSet();
+
+			var averages = []
+			for (var i in indexes) {
+				if (indicatorSet[indexes[i]].hasOwnProperty("average")) {
+					averages.push(+indicatorSet[indexes[i]].average);
+				} else {
+					averages.push(0);
+				}
+			}
+		
+
+			//For tooltip
+			canvas.selectAll("averageRect")
+				.data(averages)
+				.enter().append("rect")
+					.attr("class", "averageRect")
+					.attr("width", xScaleSnapshot(5))
+					.attr("height", yScaleSnapshot.rangeBand())
+					.attr("x", function (d, i) { 
+						return xScaleSnapshot(100*d - 2.5); })
+					.attr("y", function (d, i) { 
+						return yScaleSnapshot(arrayDesc[i]); })
+					.attr("fill", function (d, i) { 
+						return DEFAULT_COLOURS[mCurrentIndSetIndex]; })
+					.attr("visibility", function(d,i) {
+						if (d == 0) return "hidden";
+					})
+                    .append("svg:title")
+						.text("LHIN 4 Average");
+
+			canvas.selectAll("averageLine")
+				.data(averages)
+				.enter().append("line")
+					.attr("class", "averageLine")
+					.attr("x1", function(d) { return xScaleSnapshot(100*d); })
+					.attr("x2", function(d) { return xScaleSnapshot(100*d); })
+					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[i]); })
+					.attr("y2", function (d, i) { return yScaleSnapshot.rangeBand()+yScaleSnapshot(arrayDesc[i]); })
+					.attr("stroke-width", 2)
+                    .attr("stroke", "gold")
+                    .attr("visibility", function(d,i) {
+						if (d == 0) return "hidden";
+					})
+                    .append("svg:title")
+						.text("LHIN 4 Average");
+
+			d3.selectAll("line[visibility=hidden]").remove();
+			d3.selectAll("rect[visibility=hidden]").remove();
+
+		}
+
 		
 		//Labels for each bar
 		canvas.selectAll("onTargetLabel")
