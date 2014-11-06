@@ -1040,65 +1040,41 @@ var mdsViewer = (function() {
 		//Display LHIN 4 Average for this indicator (if available)
 		if (mShowAverages) {
 
+			var yScaleAverages = d3.scale.linear()
+				.domain([0, 100])
+				.range([0, mGraphHeight]);
+
 			var indexes = [];
 			for (var i in data){
 				indexes.push(data[i].index);
 			}
 
-			var yScaleAverages = d3.scale.linear()
-				.domain([0, 100])
-				.range([0, mGraphHeight]);
-
+			
 			var indicatorSet = getIndicatorSet();
 
-			var averages = []
+			var averages = [];
 			for (var i in indexes) {
 				if (indicatorSet[indexes[i]].hasOwnProperty("average")) {
-					averages.push(+indicatorSet[indexes[i]].average);
-				} else {
-					averages.push(0);
+					averages.push({"index": indexes[i], 
+									"avg": +indicatorSet[indexes[i]].average });
 				}
 			}
 		
-
-			//For tooltip
-			canvas.selectAll("averageRect")
-				.data(averages)
-				.enter().append("rect")
-					.attr("class", "averageRect")
-					.attr("width", xScaleSnapshot(5))
-					.attr("height", yScaleSnapshot.rangeBand())
-					.attr("x", function (d, i) { 
-						return xScaleSnapshot(100*d - 2.5); })
-					.attr("y", function (d, i) { 
-						return yScaleSnapshot(arrayDesc[i]); })
-					.attr("fill", function (d, i) { 
-						return DEFAULT_COLOURS[mCurrentIndSetIndex]; })
-					.attr("visibility", function(d,i) {
-						if (d == 0) return "hidden";
-					})
-                    .append("svg:title")
-						.text("LHIN 4 Average");
-
 			canvas.selectAll("averageLine")
 				.data(averages)
 				.enter().append("line")
 					.attr("class", "averageLine")
-					.attr("x1", function(d) { return xScaleSnapshot(100*d); })
-					.attr("x2", function(d) { return xScaleSnapshot(100*d); })
-					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[i]); })
-					.attr("y2", function (d, i) { return yScaleSnapshot.rangeBand()+yScaleSnapshot(arrayDesc[i]); })
+					.attr("x1", function(d) { return xScaleSnapshot(100*d.avg); })
+					.attr("x2", function(d) { return xScaleSnapshot(100*d.avg); })
+					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("y2", function (d, i) { return yScaleSnapshot.rangeBand()+yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("stroke-width", 2)
                     .attr("stroke", "gold")
-                    .attr("visibility", function(d,i) {
-						if (d == 0) return "hidden";
-					})
                     .append("svg:title")
 						.text("LHIN 4 Average");
 
-			d3.selectAll("line[visibility=hidden]").remove();
-			d3.selectAll("rect[visibility=hidden]").remove();
 
+			/* Continued after labels are inserted!! */
 		}
 
 		
@@ -1140,6 +1116,27 @@ var mdsViewer = (function() {
 				.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
 				// don't display off target labels
 				.attr("display", "none");
+
+
+		//Rectangles are added here so that they lay on top of the labels
+		if (mShowAverages) {
+						//For tooltip
+			canvas.selectAll("averageRect")
+				.data(averages)
+				.enter().append("rect")
+					.attr("class", "averageRect")
+					.attr("width", xScaleSnapshot(5))
+					.attr("height", yScaleSnapshot.rangeBand())
+					.attr("x", function (d, i) { 
+						return xScaleSnapshot(100*d.avg - 2.5); })
+					.attr("y", function (d, i) { 
+						return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("fill", "rgba(0, 0, 0, 0)")
+					.append("svg:title")
+						.text("LHIN 4 Average");
+
+		}
+
 	};
 	
 	function handleBarClick(i, y) {

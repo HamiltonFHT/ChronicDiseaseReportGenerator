@@ -389,6 +389,7 @@ var mdsIndicators =  (function(){
 		diasTarget: 80,
 	 	modifiable: ["months", "sysTarget", "diasTarget"],
 	 	defaults: [6, 130, 80],
+	 	average:0.3,
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
@@ -533,6 +534,7 @@ var mdsIndicators =  (function(){
 		desc: function(){return "Current Smokers"; },
 		long_desc: function() { return "% of patients who are coded as current smokers"; },
 		col: ["Risk Factors"],
+		average: LHINAverages.Smokers,
 		rule: function(factors) {
 			try {
 				return (factors.toLowerCase().indexOf("current smoker") != -1);
@@ -599,6 +601,7 @@ var mdsIndicators =  (function(){
 		diasTarget: 90,
 		modifiable: ["sysTarget", "diasTarget"],
 		defaults: [140, 90],
+		average: LHINAverages.BPUnderControl,
 		rule: function(sysValue, diasValue, icd9) {
 			try {
 				if (icd9.indexOf("401") == -1 || sysValue === "") {
@@ -829,6 +832,7 @@ var mdsIndicators =  (function(){
 				"Smoking Cessation Date",   //smoking intervention date (billing code or relevant documentation)
 				"Last Seen Date", 			//last patient visit
 				"Current Date"],			// date of report
+		averages: LHINAverages.SmokingCessation,
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				factors = factors.toLowerCase();
@@ -1035,6 +1039,7 @@ var mdsIndicators =  (function(){
 		maxAge:69,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 50 , 69],
+		averages: LHINAverages.Mammograms,
 		rule: function(currentDate, age, sex, mammDate) {
 			try {
 				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
@@ -1057,6 +1062,7 @@ var mdsIndicators =  (function(){
 		maxAge:69,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 25, 69],
+		averages: LHINAverages.Pap,
 		rule: function(currentDate, age, sex, papDate) {
 			try {
 				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
@@ -1078,6 +1084,7 @@ var mdsIndicators =  (function(){
 		minAge:50,
 		modifiable: ["months", "minAge"],
 		defaults: [2*12, 50],
+		averages: LHINAverages.FOBT,
 		rule: function(currentDate, age, fobtDate) {
 			try {
 				if (Number(age) < this.minAge)
