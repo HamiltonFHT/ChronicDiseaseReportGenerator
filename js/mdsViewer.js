@@ -351,11 +351,66 @@ var mdsViewer = (function() {
 		$("#btnSavePDF").click(function() {	saveFile('pdf'); });
 				
 
-		var btnDownloadPatients = '<button class="pure-button actionButton" id="btnDownloadPatients"><i class="fa fa-file-text"></i>Download Patient Info</button>'
+		var btnDownloadPatients = '<button class="pure-button actionButton" id="btnDownloadPatients"><i class="fa fa-file-text"></i> Download Patient Info</button>'
 		$("#save").append(btnDownloadPatients);
 		$("#btnDownloadPatients").unbind();
 		$("#btnDownloadPatients").click(function() {
-			var data = mdsIndicators.getData();
+			var indicator = getIndicator();
+			var cols = indicator.col;
+			
+			//Remove current date from indicator columns
+			var hasCurrentDate = $.inArray("Current Date", cols);
+			if (hasCurrentDate >= 0) {
+				cols.splice(hasCurrentDate, 1 );
+			}
+			
+			//get the data
+			var data = mdsReader.getData()[mCurrentDateIndex];
+
+			//store it once in a variable
+			var currentDate = data["Current Date"][0];
+
+			//Add patient ID to patient list
+			var patientList = {}
+			patientList['PatientID'] = data['Patient #'];
+
+						
+			for (i in cols) {
+				patientList[cols[i]] = data[cols[i]];
+			}
+
+
+			var patientsIndex = mCalculatedData[mCurrentDateIndex][mCurrentIndicator].passedIndex;
+
+			csvPatientList = [];
+
+			for (var r=0; r < patientsIndex.length; r++) {
+				//Skip patients who are meeting criteria
+				if (patientsIndex[r] === true)
+					continue
+
+				//Store information for patients not meeting criteria
+				var row = [];
+				row.push(patientList["PatientID"][r]);
+				for (var i in cols) {
+					row.push(patientList[cols[i]][r])
+				}
+				csvPatientList.push([row.join(", ")]);
+			}
+
+			console.log("------")
+			console.log(indicator.desc());
+			console.log("Data Extracted On: " + currentDate);
+			var header = ["Patient ID"];
+			for (var h in cols) {
+				header.push(cols[h]);
+			}
+			console.log(header.join(", "));
+
+			for (var p in csvPatientList) {
+				console.log(csvPatientList[p].toString());
+			}
+			
 		});
 
 		// Toggle data labels

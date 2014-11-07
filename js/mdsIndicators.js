@@ -207,6 +207,7 @@ var mdsIndicators =  (function(){
 					index: r,
 					desc: currentRule.desc(),
 					tooltip: currentRule.long_desc(),
+					passedIndex: passed,
 				  	passed: passed.filter(function(e) { return (e == true); }).length,
 				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
 			});
