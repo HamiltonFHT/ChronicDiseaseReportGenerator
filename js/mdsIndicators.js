@@ -14,10 +14,42 @@
 */
 
 var mdsIndicators =  (function(){
-	// Default comparison values for diabetic measures, based on Clinical Practice Guidelines and what we are asked to tracked in the report generator.
-	// NOTE: These are the DEFAULT values for comparison. There will be a settings menu to allow the user to modify these comparison values based on 
-	// their clinical judgement and what they want to track.
-	// TO CHANGE: Other chronic conditions will have other constant values
+	
+	var lookupVarNameTable = {
+		'minAge': 'Minimum Age',
+		'maxAge': 'Maximum Age',
+		'months': 'Months Since',
+		'minAgeMonths': 'Minimum Age (months)',
+		'maxAgeMonths': 'Maximum Age (months)',
+		'sysTarget': 'Systolic BP Target',
+		'diasTarget': 'Diastolic BP Target',
+		'age': 'Age'
+	};
+
+	var LHINAverages = {
+		'DiabeticAssessment': 0.30, //percent
+		'DateHbA1C': 0.50, //% HbA1c done twice in past year
+		'LDL': 0.67, //% measured in past twelve months
+		'BPUnderControl': 0.66, //% patients with BP < 140/90
+		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
+		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
+		'Mammograms': 0.60,
+		'Pap': 0.66,
+		'FOBT': 0.32,
+	};
+
+	//Currently made up data!
+	var HFHTGoal = {
+		'DiabeticAssessment': 0.70, //percent
+		'DateHbA1C': 0.50, //% HbA1c done twice in past year
+		'LDL': 0.67, //% measured in past twelve months
+		'BPUnderControl': 0.6, //% patients with BP < 140/90
+		'SmokingCessation': 0.75, //% receiving advice to quit smoking in past year
+		'Mammograms': 0.5,
+		'Pap': 0.5,
+		'FOBT': 0.5,
+		'CYMHScreening': 0.9
+	};
 	
 	function removeMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
@@ -81,8 +113,8 @@ var mdsIndicators =  (function(){
 
 	function resetToDefault(rule) {
 		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
-			fields = rule.modifiable;
-			defaults = rule.defaults;
+			var fields = rule.modifiable;
+			var defaults = rule.defaults;
 			for (var i = 0; i < fields.length; i++) {
 				rule[fields[i]] = defaults[i];
 			}
@@ -120,30 +152,6 @@ var mdsIndicators =  (function(){
 	function isPSS(){;
 		return mdsViewer.getEMR()["PSS"];
 	}
-
-	var lookupVarNameTable = {
-		'minAge': 'Minimum Age',
-		'maxAge': 'Maximum Age',
-		'months': 'Months Since',
-		'minAgeMonths': 'Minimum Age (months)',
-		'maxAgeMonths': 'Maximum Age (months)',
-		'sysTarget': 'Systolic BP Target',
-		'diasTarget': 'Diastolic BP Target',
-		'age': 'Age'
-	};
-
-	var LHINAverages = {
-		'DiabeticAssessment': 0.30, //percent
-		'DateHbA1C': 0.50, //% HbA1c done twice in past year
-		'LDL': 0.67, //% measured in past twelve months
-		'BPUnderControl': 0.66, //% patients with BP < 140/90
-		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
-		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
-		'Mammograms': 0.60,
-		'Pap': 0.66,
-		'FOBT': 0.32,
-	};
-	
 
 
 	// fileNumber for Oscar CYMH
@@ -297,6 +305,7 @@ var mdsIndicators =  (function(){
 	 	defaults: [12],
 	 	col: ["Current Date", "K030A", "Q040A"],
 	 	average: LHINAverages.DiabeticAssessment,
+	 	goal: HFHTGoal.DiabeticAssessment,
 	 	rule: function(currentDate, k, q) {
 	 		try {
 	 			if (k === "" && q === "") {
@@ -336,6 +345,7 @@ var mdsIndicators =  (function(){
 		defaults: [6],
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	average: LHINAverages.DateHbA1C,
+	 	goal: 0.6,
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
@@ -602,6 +612,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["sysTarget", "diasTarget"],
 		defaults: [140, 90],
 		average: LHINAverages.BPUnderControl,
+		goal: HFHTGoal.BPUnderControl,
 		rule: function(sysValue, diasValue, icd9) {
 			try {
 				if (icd9.indexOf("401") == -1 || sysValue === "") {
@@ -1015,6 +1026,7 @@ var mdsIndicators =  (function(){
 		years:2,
 		modifiable: ["years"],
 		defaults: [2],
+		goal: HFHTGoal.CYMHScreening,
 		rule: function(currentDate, referralDate, lastScreening) {
 			try {
 				if (referralDate == "") {

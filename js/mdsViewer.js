@@ -27,6 +27,7 @@ var mdsViewer = (function() {
 	var mMode = ""; //either "snapshot" or "tracking"
 	var mDataLabels = true; //either true or false (not currently used)
 	var mShowAverages = true;
+	var mShowTargets = true;
 	var mReportTitle = "";
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
 	var mSelectedPhysicians = {}; // selected physicians object [{docnumber: true/false}, ...]
@@ -349,6 +350,14 @@ var mdsViewer = (function() {
 		$("#btnSavePDF").unbind();
 		$("#btnSavePDF").click(function() {	saveFile('pdf'); });
 				
+
+		var btnDownloadPatients = '<button class="pure-button actionButton" id="btnDownloadPatients"><i class="fa fa-file-text"></i>Download Patient Info</button>'
+		$("#save").append(btnDownloadPatients);
+		$("#btnDownloadPatients").unbind();
+		$("#btnDownloadPatients").click(function() {
+			var data = mdsIndicators.getData();
+		});
+
 		// Toggle data labels
 		var btnToggleLabels = '<button class="pure-button actionButton" id="btnToggleLabels"><i class="fa fa-check-square-o"></i> Toggle data labels</button>';
 		$("#save").append(btnToggleLabels);
@@ -359,6 +368,7 @@ var mdsViewer = (function() {
 			return false;
 		});
 		
+
 		/*
 		 * Mode dropdown
 		 */
@@ -1077,6 +1087,48 @@ var mdsViewer = (function() {
 			/* Continued after labels are inserted!! */
 		}
 
+
+		//Display HFHT Targets for this indicator (if available)
+		if (mShowTargets) {
+
+			var yScaleAverages = d3.scale.linear()
+				.domain([0, 100])
+				.range([0, mGraphHeight]);
+
+			var indexes = [];
+			for (var i in data){
+				indexes.push(data[i].index);
+			}
+
+			
+			var indicatorSet = getIndicatorSet();
+
+			var targets = [];
+			for (var i in indexes) {
+				if (indicatorSet[indexes[i]].hasOwnProperty("goal")) {
+					targets.push({"index": indexes[i], 
+									"goal": +indicatorSet[indexes[i]].goal });
+				}
+			}
+		
+			canvas.selectAll("targetLine")
+				.data(targets)
+				.enter().append("line")
+					.attr("class", "targetLine")
+					.attr("x1", function(d) { return xScaleSnapshot(100*d.goal); })
+					.attr("x2", function(d) { return xScaleSnapshot(100*d.goal); })
+					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("y2", function (d, i) { return yScaleSnapshot.rangeBand()+yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("stroke-width", 2)
+                    .attr("stroke", "silver")
+                    .append("svg:title")
+						.text("HFHT Target");
+
+
+			/* Continued after labels are inserted!! */
+		}
+
+
 		
 		//Labels for each bar
 		canvas.selectAll("onTargetLabel")
@@ -1134,6 +1186,25 @@ var mdsViewer = (function() {
 					.attr("fill", "rgba(0, 0, 0, 0)")
 					.append("svg:title")
 						.text("LHIN 4 Average");
+
+		}
+
+		//Rectangles are added here so that they lay on top of the labels
+		if (mShowTargets) {
+						//For tooltip
+			canvas.selectAll("targetRect")
+				.data(targets)
+				.enter().append("rect")
+					.attr("class", "targetRect")
+					.attr("width", xScaleSnapshot(5))
+					.attr("height", yScaleSnapshot.rangeBand())
+					.attr("x", function (d, i) { 
+						return xScaleSnapshot(100*d.goal - 2.5); })
+					.attr("y", function (d, i) { 
+						return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("fill", "rgba(0, 0, 0, 0)")
+					.append("svg:title")
+						.text("HFHT Targets");
 
 		}
 
