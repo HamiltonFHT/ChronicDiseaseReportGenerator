@@ -398,19 +398,25 @@ var mdsViewer = (function() {
 				csvPatientList.push([row.join(", ")]);
 			}
 
-			console.log("------")
-			console.log(indicator.desc());
-			console.log("Data Extracted On: " + currentDate);
+			var message = [];
+			message.push("------")
+			message.push(indicator.desc());
+			message.push("Data Extracted On: " + currentDate);
 			var header = ["Patient ID"];
 			for (var h in cols) {
 				header.push(cols[h]);
 			}
-			console.log(header.join(", "));
+			message.push(header.join(", "));
 
 			for (var p in csvPatientList) {
-				console.log(csvPatientList[p].toString());
+				message.push(csvPatientList[p].toString());
 			}
-			
+
+			var text = new Blob([message.join("\n")], {type:'text/plain'});
+
+			var textFile = window.URL.createObjectURL(text);
+
+			return textFile;
 		});
 
 		// Toggle data labels
