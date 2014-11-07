@@ -399,7 +399,6 @@ var mdsViewer = (function() {
 			}
 
 			var message = [];
-			message.push("------")
 			message.push(indicator.desc());
 			message.push("Data Extracted On: " + currentDate);
 			var header = ["Patient ID"];
@@ -414,9 +413,7 @@ var mdsViewer = (function() {
 
 			var text = new Blob([message.join("\n")], {type:'text/plain'});
 
-			var textFile = window.URL.createObjectURL(text);
-
-			return textFile;
+			saveAs(text, 'patientList.txt');
 		});
 
 		// Toggle data labels
