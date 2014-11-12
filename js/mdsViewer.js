@@ -413,7 +413,7 @@ var mdsViewer = (function() {
 
 			var text = new Blob([message.join("\n")], {type:'text/plain'});
 
-			saveAs(text, 'patientList.txt');
+			saveAs(text, 'patientList.csv');
 		});
 
 		// Toggle data labels
