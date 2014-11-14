@@ -361,7 +361,7 @@ var mdsViewer = (function() {
 			//Remove current date from indicator columns
 			var hasCurrentDate = $.inArray("Current Date", cols);
 			if (hasCurrentDate >= 0) {
-				cols.splice(hasCurrentDate, 1 );
+				var cols = cols.slice(hasCurrentDate, 1 );
 			}
 			
 			//get the data
@@ -375,14 +375,14 @@ var mdsViewer = (function() {
 			patientList['PatientID'] = data['Patient #'];
 
 						
-			for (i in cols) {
+			for (var i in cols) {
 				patientList[cols[i]] = data[cols[i]];
 			}
 
 
 			var patientsIndex = mCalculatedData[mCurrentDateIndex][mCurrentIndicator].passedIndex;
 
-			csvPatientList = [];
+			var csvPatientList = [];
 
 			for (var r=0; r < patientsIndex.length; r++) {
 				//Skip patients who are meeting criteria
