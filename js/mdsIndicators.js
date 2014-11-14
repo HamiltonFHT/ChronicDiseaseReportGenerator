@@ -580,7 +580,7 @@ var mdsIndicators =  (function(){
 
 	//Patients with hypertension and an elevated blood pressure have come in for a regular checkup
 	var ruleElevatedBPRegularVisit = {
-		desc: function(){return "Hypertensive patients with last visit within " + this.months + " months if BP > " + this.sysTarget + "/" + this.diasTarget; },
+		desc: function(){return "Hypertensive patients with BP > " + this.sysTarget + "/" + this.diasTarget + " who visited within " + this.months + " months"; },
 		long_desc: function() { return "% of patients diagnosed with hypertension and with BP over " + this.sysTarget + "/" + this.diasTarget + 
 										" who have had a visit within the past " + this.months + " months"; },
 		col: ["Current Date", "Last Seen Date", "Systolic BP", "Diastolic BP", "Problem List"],
@@ -629,7 +629,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleInfantVaccinations = {
-		desc: function(){return "Infant immunization schedule up to date"; },
+		desc: function(){return "Infant(" + this.minAge + "-" + this.maxAge + ") immunization schedule up to date"; },
 		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
 										" years with immunization schedule up to date"; },
 		col: ["Age", "measles", "diphtheria",
@@ -668,7 +668,7 @@ var mdsIndicators =  (function(){
 	
 	//Does not account for boosters
 	var ruleChildVaccinations = {
-		desc: function(){return "Children with all immunizations"; },
+		desc: function(){return "Children " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
 		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
 			  "measles", "diphtheria", "varicella",
@@ -716,7 +716,7 @@ var mdsIndicators =  (function(){
 
 	//Does not account for boosters
 	var ruleTeenagerVaccinations = {
-		desc: function(){return "Adults with all immunizations"; },
+		desc: function(){return "Adults " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
 		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
 		col: ["Age",
 			  "measles", "diphtheria", "varicella",
@@ -810,7 +810,7 @@ var mdsIndicators =  (function(){
 	};	
 
 	var ruleSmokingStatusRecorded = {
-		desc: function(){return "Smoking Status Recorded"; },
+		desc: function(){return "Smoking Status Recorded for patients > " + this.age; },
 		long_desc: function() { return "Smoking Status Recorded in Risk Factors for patients over the age of " + this.age; },
 		age: 12,
 		col: ["Risk Factors", "Age"],
@@ -834,7 +834,7 @@ var mdsIndicators =  (function(){
 	
     //Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
 	var ruleSmokingCessation = {
-		desc: function(){return "Smoking Cessation Attempted"; },
+		desc: function(){return "Smoking Cessation Attempted within " + this.months + " months"; },
 		long_desc: function() { return "Smoking Cessation form performed within last " + this.months + 
 									   " months for smokers who have seen their doctor in that time"; },
 		months: 15,
@@ -864,7 +864,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleAdultSmokersPneumovax = {
-		desc: function(){return "Adult Smokers vaccinated with Pneumovax"; },
+		desc: function(){return "Smokers > " + this.minAge + " vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who smoke and are vaccinated for pneumonia"; },
 		col: ["Age", "Risk Factors", "pneumococcal polysaccharide"],
 		minAge: 18,
@@ -891,7 +891,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleSeniorsPneumovax = {
-		desc: function(){return "Seniors vaccinated with Pneumovax"; },
+		desc: function(){return "Seniors > " + this.minAge + " vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " and are vaccinated for pneumonia"; },
 		col: ["Age", "pneumococcal polysaccharide"],
 		minAge: 65,
@@ -915,7 +915,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleLungDiseasePneumovax = {
-		desc: function(){return "Adults with COPD or Asthma vaccinated with Pneumovax"; },
+		desc: function(){return "Adults > " + this.minAge + " with COPD/Asthma vaccinated with Pneumovax"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + 
 									   " who have COPD or asthma and are vaccinated for pneumonia"; },
 		col: ["Age", "Problem List", "pneumococcal polysaccharide"],
@@ -942,7 +942,7 @@ var mdsIndicators =  (function(){
 	};
 		
 	var ruleLungHealthScreen = {
-		desc: function(){return "Lung Health Screening Performed"; },
+		desc: function(){return "Lung Health Screening for > " + this.age; },
 		long_desc: function() { return "Lung Health Screening performed for smokers over the age of " + this.age; },
 		age: 40,
 		months: 24,
@@ -1043,7 +1043,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleBreastCancer = {
-		desc: function(){return "Up-to-date breast cancer screening"; },
+		desc: function(){return "Breast cancer screening within " + this.months/12 + " years"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
 										" who received a mammogram in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Mammogram"],
@@ -1067,7 +1067,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleCervicalCancer = {
-		desc: function(){return "Up-to-date cervical cancer screening"; },
+		desc: function(){return "Cervical cancer screening within " + this.months/12 + " years"; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Pap Test Report"],
 		months:3*12,
@@ -1090,7 +1090,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleColorectalCancer = {
-		desc: function(){return "Up-to-date colorectal cancer screening"; },
+		desc: function(){return "Colorectal cancer screening within " + this.months/12 + " years"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who performed an FOBT in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "FOBT"],
 		months:2*12,
@@ -1112,7 +1112,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleFluVaccine = {
-		desc: function(){return "Up-to-date influenza vaccine"; },
+		desc: function(){return "Influenza vaccine within past year"; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who received a flu vaccine in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "influenza date"],
 		months:12,
