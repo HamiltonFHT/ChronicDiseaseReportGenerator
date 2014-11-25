@@ -763,18 +763,20 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleHeightWeightLastVaccination = {
-		desc: function(){ return "Height and Weight at last immunization"; },
+		desc: function(){ return "Height and Weight at last immunization, patients " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Height and Weight measured at last immunization. Only applies to patients with height and weight measured on the same day"; },
 		months: 12,
-		modifiable: ["months"],
-		defaults: [12],
-		col: ["height date", "weight date", "Current Date",
+		minAge: 2,
+		maxAge: 18,
+		modifiable: ["months", "minAge", "maxAge"],
+		defaults: [12, 2, 18],
+		col: ["Age", "height date", "weight date", "Current Date",
 			  "measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
 			  "pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"],
-		rule: function(heightDate, weightDate, currentDate,
+		rule: function(age, heightDate, weightDate, currentDate,
 						measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib) {
 			try {
-				if (heightDate != weightDate || heightDate == "") {
+				if (heightDate != weightDate || heightDate == "" || Number(age) < this.minAge || Number(age) > this.maxAge) {
 					return NaN;
 				} else {
 					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) == 0 && !withinDateRange(currentDate, this.months, heightDate)) {
@@ -1043,7 +1045,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleBreastCancer = {
-		desc: function(){return "Breast cancer screening within " + this.months/12 + " years, patients " + this.minAge + " to " + this.maxAge; },
+		desc: function(){return "Breast cancer screening within " + this.months/12 + " years, females " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
 										" who received a mammogram in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Mammogram"],
@@ -1067,7 +1069,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleCervicalCancer = {
-		desc: function(){return "Cervical cancer screening within " + this.months/12 + " years, patients " + this.minAge + " to " + this.maxAge; },
+		desc: function(){return "Cervical cancer screening within " + this.months/12 + " years, females " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Pap Test Report"],
 		months:3*12,
@@ -1097,7 +1099,7 @@ var mdsIndicators =  (function(){
 		minAge:50,
 		maxAge:74,
 		modifiable: ["months", "minAge", "maxAge"],
-		defaults: [2*12, 50],
+		defaults: [2*12, 50, 74],
 		averages: LHINAverages.FOBT,
 		rule: function(currentDate, age, fobtDate) {
 			try {
