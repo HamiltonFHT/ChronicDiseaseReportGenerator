@@ -942,7 +942,7 @@ var mdsIndicators =  (function(){
 	};
 		
 	var ruleLungHealthScreen = {
-		desc: function(){return "Lung Health Screening for > " + this.age; },
+		desc: function(){return "Lung Health Screening for smokers > " + this.age; },
 		long_desc: function() { return "Lung Health Screening performed for smokers over the age of " + this.age; },
 		age: 40,
 		months: 24,
@@ -1043,15 +1043,15 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleBreastCancer = {
-		desc: function(){return "Breast cancer screening within " + this.months/12 + " years"; },
+		desc: function(){return "Breast cancer screening within " + this.months/12 + " years, patients " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + 
 										" who received a mammogram in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Mammogram"],
 		months:3*12,
 		minAge:50,
-		maxAge:69,
+		maxAge:74,
 		modifiable: ["months", "minAge", "maxAge"],
-		defaults: [3*12, 50 , 69],
+		defaults: [3*12, 50 , 74],
 		averages: LHINAverages.Mammograms,
 		rule: function(currentDate, age, sex, mammDate) {
 			try {
@@ -1067,14 +1067,14 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleCervicalCancer = {
-		desc: function(){return "Cervical cancer screening within " + this.months/12 + " years"; },
+		desc: function(){return "Cervical cancer screening within " + this.months/12 + " years, patients " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Patients aged " + this.minAge + " to " + this.maxAge + " who received a Pap test in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "Sex", "Pap Test Report"],
 		months:3*12,
-		minAge:25,
+		minAge:21,
 		maxAge:69,
 		modifiable: ["months", "minAge", "maxAge"],
-		defaults: [3*12, 25, 69],
+		defaults: [3*12, 21, 69],
 		averages: LHINAverages.Pap,
 		rule: function(currentDate, age, sex, papDate) {
 			try {
@@ -1090,17 +1090,18 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleColorectalCancer = {
-		desc: function(){return "Colorectal cancer screening within " + this.months/12 + " years"; },
+		desc: function(){return "Colorectal cancer screening within " + this.months/12 + " years, patients " + this.minAge + " to " + this.maxAge; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who performed an FOBT in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "FOBT"],
 		months:2*12,
 		minAge:50,
-		modifiable: ["months", "minAge"],
+		maxAge:74,
+		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [2*12, 50],
 		averages: LHINAverages.FOBT,
 		rule: function(currentDate, age, fobtDate) {
 			try {
-				if (Number(age) < this.minAge)
+				if (Number(age) < this.minAge || Number(age) > this.maxAge)
 					return NaN;
 				else
 					return	withinDateRange(currentDate, this.months, fobtDate)
@@ -1112,7 +1113,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleFluVaccine = {
-		desc: function(){return "Influenza vaccine within past year"; },
+		desc: function(){return "Influenza vaccine within past year, patients > " + this.minAge; },
 		long_desc: function() { return "Patients over the age of " + this.minAge + " who received a flu vaccine in the past " + this.months + " months"; },
 		col: ["Current Date", "Age", "influenza date"],
 		months:12,
@@ -1121,7 +1122,7 @@ var mdsIndicators =  (function(){
 		defaults: [12, 65],
 		rule: function(currentDate, age, fluDate) {
 			try {
-				if (Number(age) < this.minAge) {
+				if (Number(age) <= this.minAge) {
 					return NaN;
 				} else {
 					return withinDateRange(currentDate, this.months, fluDate);
