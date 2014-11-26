@@ -50,6 +50,10 @@ var mdsIndicators =  (function(){
 		'FOBT': 0.5,
 		'CYMHScreening': 0.9
 	};
+
+
+	// File Number for Oscar CYMH
+	var mFileNumber;
 	
 	function removeMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
@@ -121,6 +125,56 @@ var mdsIndicators =  (function(){
 		}
 	}
 
+
+	//Expect indicator to have property 'histogram' of type
+	// histogram: ['column name', 'data type']
+	function getHistogramData(indicator) {
+
+		var col = indicator.histogram[0];
+		var type = indicator.histogram[1];
+
+		var data = [];
+
+		if (type === "numeric") {
+			for (var row=0; row<csvObject[col].length; row++)
+				data.push(+csvObject[col][row]);
+		} else if (type === "date") {
+			for (var row=0; row<csvObject[col].length; row++)
+				data.push(new Date(csvObject[col][row]));
+		}
+		return data;
+	}
+
+	//Expect indicator to have property 'scatter' of type
+	// scatter: ['x column name', 'y column name', 'x data type', 'y data type']
+	function getScatterData(indicator) {
+
+		var xcol = indicator.histogram[0];
+		var ycol = indicator.histogram[1];
+		var xtype = indicator.histogram[2];
+		var ytype = indicator.histogram[3];
+
+		var xdata = [];
+		if (xtype === "numeric") {
+			for (var row=0; row<csvObject[xcol].length; row++)
+				xdata.push(+csvObject[xcol][row]);
+		} else if (xtype === "date") {
+			for (var row=0; row<csvObject[xcol].length; row++)
+				xdata.push(new Date(csvObject[xcol][row]));
+		}
+
+		var ydata = [];
+		if (ytype === "numeric") {
+			for (var row=0; row<csvObject[ycol].length; row++)
+				ydata.push(+csvObject[ycol][row]);
+		} else if (ytype === "date") {
+			for (var row=0; row<csvObject[ycol].length; row++)
+				ydata.push(new Date(csvObject[ycol][row]));
+		}
+
+		return [xdata, ydata];
+	}
+
 /*  Unused
 	var ICD9Regex = /\d+(\.\d+)*:/g
 	function extractICD9(prob) {
@@ -152,10 +206,6 @@ var mdsIndicators =  (function(){
 	function isPSS(){;
 		return mdsViewer.getEMR()["PSS"];
 	}
-
-
-	// fileNumber for Oscar CYMH
-	var fileNumber;
 	
 	
 	function applyRules(ruleListIndex, filteredData) {
@@ -166,7 +216,7 @@ var mdsIndicators =  (function(){
 		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
-			fileNumber = i;
+			mFileNumber = i;
 			results.push(checkRules(filteredData[i], currentRuleList.rules));
 		}
 		
@@ -1006,12 +1056,12 @@ var mdsIndicators =  (function(){
 		rule: function(currentDate, lastSeenDate, patientNumber) {
 
 			// Get mFilteredData for Oscar
-			var mFilteredData = mdsReader.getmFilteredData();
+			var mFilteredData = mdsReader.getData();
 
 			try {
 				if (isPSS()) {
 					return withinDateRange(currentDate, this.months, lastSeenDate);
-				} else if (mFilteredData[fileNumber]["Filtered Patients"].indexOf(patientNumber) != -1) {
+				} else if (mFilteredData[mFileNumber]["Filtered Patients"].indexOf(patientNumber) != -1) {
 					return withinDateRange(currentDate, this.months, lastSeenDate);
 				}
 			} catch (err) {
