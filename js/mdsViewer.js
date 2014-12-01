@@ -1291,6 +1291,13 @@ var mdsViewer = (function() {
 		
 		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
 		var currentIndicator = getIndicator();
+
+		var data = mdsIndicators.getPlotData(currentIndicator)
+
+		if (data != null) {
+			generateDetailPlot(data);
+		}
+
 		if (currentIndicator.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {

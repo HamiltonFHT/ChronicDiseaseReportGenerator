@@ -93,7 +93,7 @@ var mdsIndicators =  (function(){
 		var parsedDateArray = [];
 		for (var i=0; i < dateArray.length; i++) {
 			if (dateArray[i].toString().length === 0) {
-				parsedDateArray.push(new Date(0)); // Dec 31, 1969
+				parsedDateArray.push(null);
 			} else if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
 				var parsedDate = dateArray[i].split("/");
 				parsedDateArray.push(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]));
@@ -102,7 +102,11 @@ var mdsIndicators =  (function(){
 			}
 		}
 		
-		return new Date(Math.max.apply(null,parsedDateArray)).getTime();
+		if (Math.max.apply(null, parsedDateArray) === 0) {
+			return null;
+		}
+
+		return Math.max.apply(null,parsedDateArray);
 	}
 
 
@@ -123,6 +127,17 @@ var mdsIndicators =  (function(){
 				rule[fields[i]] = defaults[i];
 			}
 		}
+	}
+
+	function getPlotData(indicator) {
+		var data = null;
+
+		if (indicator.hasOwnProperty('histogram')) {
+			data = getHistogramData(indicator);
+		} else if (indicator.hasOwnProperty('scatter')) {
+			data = getScatterData(indicator);
+		}
+		return data;
 	}
 
 
@@ -315,6 +330,7 @@ var mdsIndicators =  (function(){
 	 	modifiable: ["months"],
 	 	defaults: [12],
 	 	col: ["Current Date", "DM Months"],
+	 	histogram: ["DM Months", "date"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			if (measuredDate == "") {
@@ -357,6 +373,8 @@ var mdsIndicators =  (function(){
 	 	col: ["Current Date", "K030A", "Q040A"],
 	 	average: LHINAverages.DiabeticAssessment,
 	 	goal: HFHTGoal.DiabeticAssessment,
+	 	histogram: [ ["K030A", "Q040A"], 
+	 				 function(k, q) { return mostRecentDate([k, q]);} ],
 	 	rule: function(currentDate, k, q) {
 	 		try {
 	 			if (k === "" && q === "") {
@@ -378,7 +396,7 @@ var mdsIndicators =  (function(){
 		 			return NaN;
 		 		}
 
-		 		return (mostRecentDate([k, q]) >= targetDate.getTime());
+		 		return (mostRecentDate([k, q]) >= targetDate);
 
 	 		} catch (err) {
 	 			console.log(err.message);
@@ -829,10 +847,10 @@ var mdsIndicators =  (function(){
 				if (heightDate != weightDate || heightDate == "" || Number(age) < this.minAge || Number(age) > this.maxAge) {
 					return NaN;
 				} else {
-					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) == 0 && !withinDateRange(currentDate, this.months, heightDate)) {
+					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) === null && !withinDateRange(currentDate, this.months, heightDate)) {
 						return false;
 					} else
-					return (new Date(heightDate).getTime() >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
+					return (new Date(heightDate) >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -1260,6 +1278,7 @@ var mdsIndicators =  (function(){
 		resetToDefault: resetToDefault,
 		getCurrentRuleSet: getCurrentRuleSet,
 		lookupVarNameTable: lookupVarNameTable,
+		getPlotData: getPlotData
 	};
 	
 })();

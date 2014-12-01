@@ -396,45 +396,45 @@
 	QUnit.test("Height & Weight Last Immunization", function (assert) {
 		assert.ok(
 											//height date, weight date, current date							
-			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 21, 2014",
+			HeightWeightLastVaccination.rule(12, "Oct 21, 2013", "Oct 21, 2013", "Oct 21, 2014",
 											//"measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
 											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
 											 //"pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"
 											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011") === true,
 			"Up-to-date passed!");
 		assert.ok(
-			HeightWeightLastVaccination.rule("Oct 20, 2013", "Oct 20, 2013", "Oct 22, 2013",
+			HeightWeightLastVaccination.rule(12, "Oct 20, 2013", "Oct 20, 2013", "Oct 22, 2013",
 											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
 											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011") === false,
 			"Height/weight older than vaccinations passed!");
 		assert.ok(
-			isNaN(HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 22, 2013", "Oct 22, 2013",
+			isNaN(HeightWeightLastVaccination.rule(12, "Oct 21, 2013", "Oct 22, 2013", "Oct 22, 2013",
 											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
 											 "Oct 21, 2013", "Oct 21, 2011", "Oct 21, 2011")),
 			"Height/weight different dates passed!");
 		assert.ok(
-			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
+			HeightWeightLastVaccination.rule(12, "Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
 											 "Oct 21, 2011", "", "Oct 21, 2011", "", "Oct 21, 2011",
 											 "Oct 21, 2013", "Oct 21, 2011", "") === true,
 			"Height/weight w/ missing immus passed!");
 		assert.ok(
-			HeightWeightLastVaccination.rule("Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
+			HeightWeightLastVaccination.rule(12, "Oct 21, 2013", "Oct 21, 2013", "Oct 22, 2013",
 											 "", "", "", "", "",
 											 "", "", "") === true,
 			"Height/weight w/ no immus passed!");
 
 		assert.ok(
-			isNaN(HeightWeightLastVaccination.rule("Oct 20, 2013", "Oct 21, 2013", "Oct 22, 2013",
+			isNaN(HeightWeightLastVaccination.rule(12, "Oct 20, 2013", "Oct 21, 2013", "Oct 22, 2013",
 											 "", "", "", "", "",
 											 "", "", "")),
 			"Height/weight diff dates w/ no immus passed!");
 		assert.ok(
-			HeightWeightLastVaccination.rule("Oct 20, 2012", "Oct 20, 2012", "Oct 22, 2013",
+			HeightWeightLastVaccination.rule(12, "Oct 20, 2012", "Oct 20, 2012", "Oct 22, 2013",
 											 "", "", "", "", "",
 											 "", "", "") === false,
 			"Height/weight out-of-date w/ no immus passed!");
 		assert.ok(
-			isNaN(HeightWeightLastVaccination.rule("", "", "Oct 21, 2014",
+			isNaN(HeightWeightLastVaccination.rule(12, "", "", "Oct 21, 2014",
 											//"measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
 											 "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011", "Oct 21, 2011",
 											 //"pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"
@@ -614,7 +614,7 @@
 			"Up-to-date passed!");
 		assert.ok(
 							//24 months +1 day difference
-			ColorectalCancer.rule("Oct 21, 2014", 100, "Oct 20, 2012") === false,
+			ColorectalCancer.rule("Oct 21, 2014", 50, "Oct 20, 2012") === false,
 			"Out-of-date passed!");
 		assert.ok(
 							//age too low
@@ -626,15 +626,15 @@
 	QUnit.test("Influenza vaccine", function (assert) {
 		assert.ok(
 							//current date, age, flu date (12 months difference)
-			FluVaccine.rule("Oct 21, 2014", 65, "Oct 21, 2013") === true,
+			FluVaccine.rule("Oct 21, 2014", 66, "Oct 21, 2013") === true,
 			"Up-to-date passed!");
 		assert.ok(
 							//12 months +1 day difference
-			FluVaccine.rule("Oct 15, 2014", 65, "Sep 30, 2013") === false,
+			FluVaccine.rule("Oct 15, 2014", 66, "Sep 30, 2013") === false,
 			"Out-of-date passed!");
 		assert.ok(
 							//age too low
-			isNaN(FluVaccine.rule("Oct 21, 2014", 64, "Oct 21, 2013")),
+			isNaN(FluVaccine.rule("Oct 21, 2014", 65, "Oct 21, 2013")),
 			"Age out of range passed!");
 	});
 
