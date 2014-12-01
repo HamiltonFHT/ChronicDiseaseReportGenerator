@@ -107,15 +107,6 @@ var mdsViewer = (function() {
 	*/
 	
 	var resizeTimer;
-	window.onresize = function(){
-	    if (resizeTimer){
-	        clearTimeout(resizeTimer);
-	    } 
-	    resizeTimer = setTimeout(function(){
-	        updateCanvasSize(true);
-	        }, 250);
-	};
-	
 	
 	//First time an extra canvas is generated, automatically scroll to it to show user the location
 	//then disable the feature
@@ -246,6 +237,17 @@ var mdsViewer = (function() {
 		updateDropdownMode();
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
+
+
+		//Turn on canvas resizing
+		window.onresize = function(){
+		    if (resizeTimer){
+		        clearTimeout(resizeTimer);
+		    } 
+		    resizeTimer = setTimeout(function(){
+		        updateCanvasSize(true);
+		        }, 250);
+		};
 	};
 
 
