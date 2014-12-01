@@ -51,6 +51,28 @@ var mdsIndicators =  (function(){
 		'CYMHScreening': 0.9
 	};
 
+	var mEMR = {"PSS":true,
+				"Oscar":false};
+
+	function isOSCAR() {
+		return mEMR["Oscar"];
+	}
+
+	function isPSS(){;
+		return mEMR["PSS"];
+	}
+
+	function setEMR(emr) {
+		// Set all values to false
+		for (var key in mEMR) {
+			if (mEMR.hasOwnProperty(key))
+				mEMR[key] = false;
+		}
+
+		// Set the selected EMR as true in mEMR
+		mEMR[emr] = true;
+	}
+
 
 	// File Number for Oscar CYMH
 	var mFileNumber;
@@ -146,7 +168,7 @@ var mdsIndicators =  (function(){
 	function getHistogramData(indicator) {
 
 		var col = indicator.histogram[0];
-		var type = indicator.histogram[1];
+		var method = indicator.histogram[1];
 
 		var data = [];
 
@@ -213,15 +235,6 @@ var mdsIndicators =  (function(){
 		return codeStr;
 	}
 */
-
-	function isOSCAR() {
-		return mdsViewer.getEMR()["Oscar"];
-	}
-
-	function isPSS(){;
-		return mdsViewer.getEMR()["PSS"];
-	}
-	
 	
 	function applyRules(ruleListIndex, filteredData) {
 		//Loop through data from each file
@@ -1278,7 +1291,8 @@ var mdsIndicators =  (function(){
 		resetToDefault: resetToDefault,
 		getCurrentRuleSet: getCurrentRuleSet,
 		lookupVarNameTable: lookupVarNameTable,
-		getPlotData: getPlotData
+		getPlotData: getPlotData,
+		setEMR: setEMR
 	};
 	
 })();

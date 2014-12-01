@@ -2,20 +2,6 @@
 
 	var m = mdsIndicators;
 
-	var oscarDefault = mdsViewer.getEMR()["Oscar"];
-	var PSSDefault = mdsViewer.getEMR()["PSS"];
-
-	function setOscar () {
-		mdsViewer.getEMR()["Oscar"] = true;
-		mdsViewer.getEMR()["PSS"] = false;
-	};
-
-	function setDefault () {
-		mdsViewer.getEMR()["Oscar"] = oscarDefault;
-		mdsViewer.getEMR()["PSS"] = PSSDefault;
-	};
-
-
 	/*
 		Diabetes Tests
 	*/
@@ -251,14 +237,17 @@
 		assert.ok(
 			isNaN(SmokingStatusRecorded.rule("", "10")),
 			"Child no smoking status");
-		setOscar();
+		
+		mdsIndicators.setEMR("Oscar");
+		
 		assert.ok(
 			SmokingStatusRecorded.rule("anything, already filtered", "12") === true,
 			"Oscar status passed");
 		assert.ok(
 			SmokingStatusRecorded.rule("", "12") === false,
 			"Oscar no status passed");
-		setDefault();
+
+		mdsIndicators.setEMR("PSS");
 	});
 
 	QUnit.test("Smoking Cessation Attempted", function (assert) {
@@ -282,14 +271,16 @@
 			isNaN(SmokingCessation.rule("Current Smoker", "Aug 21, 2012", "Aug 21, 2012", "Oct 21, 2014")),
 			"Current smoker, not seen recently");
 		
-		setOscar();
+		mdsIndicators.setEMR("Oscar");
+
 		assert.ok(
 			isNaN(SmokingCessation.rule("not smoker", "Aug 21, 2014", "Aug 21, 2014", "Oct 21, 2014")),
 			"Non smoker");
 		assert.ok(
 			isNaN(SmokingCessation.rule("yes", "Aug 21, 2014", "Jan 21, 2012", "Oct 21, 2014")),
 			"Smoker, not seen recently");
-		setDefault();
+
+		mdsIndicators.setEMR("PSS");
 	});
 
 	QUnit.test("Adult Smokers Pneumovax", function (assert) {
@@ -310,7 +301,8 @@
 			AdultSmokersPneumovax.rule("19", "Current Smoker", "0") === false,
 			"Adult current smoker, no pneumovax");
 
-		setOscar();
+		mdsIndicators.setEMR("Oscar");
+
 		assert.ok(
 			isNaN(AdultSmokersPneumovax.rule("19", "non smoker", 1)),
 			"Adult non smoker, pneumovax");
@@ -323,7 +315,8 @@
 		assert.ok(
 			AdultSmokersPneumovax.rule("19", "anything but yes", 0) === false,
 			"Adult smoker, no pneumovax");
-		setDefault();
+
+		mdsIndicators.setEMR("PSS");
 	});
 
 	QUnit.test("Senior Pneumovax", function (assert) {
