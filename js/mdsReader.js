@@ -583,7 +583,6 @@ var mdsReader = (function() {
 	return {
 		readFiles: readFiles,
 		reCalculate: reCalculate,
-		getmFilteredData: function() { return mFilteredData; },
 		getData: function() { return mFilteredData; }
 	};
 	
