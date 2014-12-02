@@ -109,6 +109,17 @@ var mdsIndicators =  (function(){
 	 	//Make sure measuredDate was measured more recently than the target date.
 	 	return measuredDate >= targetDate;	
 	};
+
+	function monthsDifference(currentDate, measuredDate) {
+		var cd = new Date(currentDate);
+		var md = new Date(measuredDate);
+		//var timeDiff = cd.getTime() - md.getTime();
+		//var monthDiff = Math.ceil(timeDiff / (1000 * 3600 * 24 * 30));
+
+		var monthDiff = moment(md).diff(moment(cd), 'months');
+
+		return monthDiff;
+	}
 	
 	// Returns time String of the most recent date from an array of dates
 	function mostRecentDate(dateArray) {
@@ -152,14 +163,40 @@ var mdsIndicators =  (function(){
 	}
 
 	function getPlotData(indicator) {
-		var data = null;
 
 		if (indicator.hasOwnProperty('histogram')) {
-			data = getHistogramData(indicator);
+			var cols = indicator.histogram[0];
+			var rule = indicator.histogram[1];
 		} else if (indicator.hasOwnProperty('scatter')) {
-			data = getScatterData(indicator);
+			var cols = indicator.scatter[0];
+			var rule = indicator.scatter[1];
+		} else {
+			return null;
 		}
-		return data;
+
+		var values = [];
+		var data = mdsReader.getData();
+		var numParams = cols.length;
+		
+		for (i=0; i<numParams; i++) {
+			if (!data[0].hasOwnProperty(cols[i])) {
+				console.log("File has no column named " + cols[i]);
+				console.log("Can't check rule: " + indicator.desc());
+				return null;
+			}
+		}
+			
+		var numItems = data[cols[0]].length;
+			
+		for (var e = 0; e < numItems; e++) {
+			var argList = [];
+			for (var p=0; p<numParams;p++) {
+				argList.push(data[cols[p]][e]);
+			}
+			values.push(rule.apply(mdsIndicators, argList));
+		}
+		
+		return values;
 	}
 
 
@@ -427,7 +464,7 @@ var mdsIndicators =  (function(){
 		defaults: [6],
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	average: LHINAverages.DateHbA1C,
-	 	goal: 0.6,
+	 	histogram: [["Current Date", "Date Hb A1C"], function(cd, md) { return new Date(date); } ],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
