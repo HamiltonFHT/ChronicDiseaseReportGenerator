@@ -84,7 +84,10 @@ var mdsViewer = (function() {
     var MONTH_NAMES_SHORT = [ "Jan", "Feb", "Mar", "Apr", "May", "June",
     "July", "Aug", "Sept", "Oct", "Nov", "Dec" ];
 
-    
+    //Whether the file has a "Rostered" field, 
+    //used to check whether to make a "Rostered Patients Only" checkbox
+	var hasRosteredField = false;    
+	var mRosteredOnly = false;
 
 	//Used when displaying axis titles
 	/*
@@ -187,6 +190,7 @@ var mdsViewer = (function() {
 
 		clearCanvas();
 		updateCanvasSize();
+		addUserInterface();
 		
 		
 		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
@@ -418,7 +422,9 @@ var mdsViewer = (function() {
 
 		/*
 		 * Mode dropdown
+		 * Not currently in use - modes set automatically
 		 */
+		/*
 		var dropdownMode = '<select id="dropdownMode" class="settingsDropdown">' +
 							'<option data-mode="snapshot">Snapshot</option>' +
 							'<option data-mode="tracking">Tracking</option>' +
@@ -441,7 +447,9 @@ var mdsViewer = (function() {
 		} else {
 			$("#dropdownMode").prop("disabled", false);
 		}
-		
+		*/
+
+
 		/*
 		 * Rule set dropdown
 		 */
@@ -483,18 +491,38 @@ var mdsViewer = (function() {
 			mdsIndicators.setEMR(this.value);
 			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		});
+
+
+		//Add a checkbox to allow user to filter only rostered patients if that column exists.
+		//mdsReader has public variable that records whether this column exists
+		//If checked, tell mdsIndicators that the user only wants rostered patients
+		if (hasRosteredField) {
+			var rostered = ' <input type="checkbox" id="rostered">' +
+							'Rostered Patients Only' +
+							'</input>';
+			$("#settings").append(rostered);
+			$("#rostered").prop("checked", mRosteredOnly);
+
+			$("#rostered").change(function() {
+				mRosteredOnly = $(this).is(':checked');
+				mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
+			});
+		}
 	};
 
 	function addPhysicianList() {
 
 		$("#selectPhysicians").empty();
 
-		$("#selectPhysicians").append('<li id="mainSelector" class="physicianListItem selected"><span class="checkmark">\u2714</span>Select All</li>');
+		var selected = allEqual(true, mSelectedPhysicians) ? "selected" : "notSelected";
+
+		$("#selectPhysicians").append('<li id="mainSelector" class="physicianListItem ' + selected + '"><span class="checkmark">\u2714</span>Select All</li>');
 		// Loop through 'arrayUniquePhysicians' and create a list item for each element. These will be the physician filters that will appear in the side
 		// panel. There will also be a filter for "All Selected Physicians"
 		//for (var i = 0; i < Object.keys(mSelectedPhysicians).length; i++) {
 		for (doc in mSelectedPhysicians) {
-			$("#selectPhysicians").append('<li class="physicianListItem selected" data-docnumber="'+doc+'"><span class="checkmark">\u2714</span> Doctor Number ' + doc + '</li>');
+			var selected = mSelectedPhysicians[doc] == true ? "selected" : "notSelected";
+			$("#selectPhysicians").append('<li class="physicianListItem ' + selected + '" data-docnumber="'+doc+'"><span class="checkmark">\u2714</span> Doctor Number ' + doc + '</li>');
 		}
 		
 		//}
@@ -524,7 +552,7 @@ var mdsViewer = (function() {
 			}
 			// Otherwise, clicked on an individual doctor
 			else {
-				var doc = $(this).data('docnumber');//.innerHTML.substring(this.innerHTML.indexOf("Doctor") + 14, this.innerHTML.length - 7);
+				var doc = $(this).data('docnumber');
 				mSelectedPhysicians[doc] = !isSelected;
 				$(this).toggleClass('selected notSelected');
 				if(allEqual(true, mSelectedPhysicians)) {
@@ -1797,7 +1825,10 @@ var mdsViewer = (function() {
 		generateCharts: generateCharts,
 		clearCanvas: clearCanvas,
 		mode: mMode,
-		histogram: histogram
+		histogram: histogram,
+		setHasRosteredField: function(x) { hasRosteredField = x; },
+		hasRosteredField: function() { return hasRosteredField; },
+		rosteredOnly: function() { return mRosteredOnly; }
 	};
 	
 })();

@@ -306,25 +306,39 @@ var mdsIndicators =  (function(){
 				}
 			}
 			
-			num_items = csvObject[currentRule.col[0]].length;
-			var num_params = currentRule.col.length;
+			var numPatients = csvObject[currentRule.col[0]].length;
+			var numNonRostered = 0;
+			var numParams = currentRule.col.length;
 			
-			for (var e = 0; e < num_items; e++) {
-				var arg_list = [];
-				for (var p=0; p<num_params;p++) {
-					arg_list.push(csvObject[currentRule.col[p]][e]);
+			for (var p = 0; p < numPatients; p++) {
+				var argList = [];
+				
+				//If the "Rostered" column exists and user wants rostered patients only
+				//then filter them out here and reduce the total number of patients.
+				if (mdsViewer.hasRosteredField() && mdsViewer.rosteredOnly()) {
+					if (csvObject["Rostered"][p] == "false") {
+						numNonRostered++;
+						continue;
+					}
 				}
-				passed.push(currentRule.rule.apply(currentRule, arg_list));
+				
+				for (var c=0; c<numParams;c++) {
+					argList.push(csvObject[currentRule.col[c]][p]);
+				}
+				passed.push(currentRule.rule.apply(currentRule, argList));
 			}
 			
+			//numNonRostered is 0 unless non-rostered patients are to be removed
+			numPatients -= numNonRostered;
+
 			//Count the number of cases that passed the test
 			results.push({	
 					index: r,
 					desc: currentRule.desc(),
 					tooltip: currentRule.long_desc(),
 					passedIndex: passed,
-				  	passed: passed.filter(function(e) { return (e == true); }).length,
-				  	total: num_items - passed.filter(function(e) { return isNaN(e); }).length
+				  	passed: passed.filter(function(p) { return (p == true); }).length,
+				  	total: numPatients - passed.filter(function(p) { return isNaN(p); }).length
 			});
 		}	
 		return results;

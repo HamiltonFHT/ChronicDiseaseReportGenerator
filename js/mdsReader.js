@@ -164,6 +164,13 @@ var mdsReader = (function() {
 		if (!csvObject.hasOwnProperty("Current Date")) {
 			csvObject["Current Date"] = repeat(csvObject["fileLastModified"], arrData.length);
 		}
+
+		//If file has a rostered column, tell mdsViewer so it can make the appropriate UI component
+		if (csvObject.hasOwnProperty("Rostered")) {
+			mdsViewer.setHasRosteredField(true);
+		} else { 
+			mdsViewer.setHasRosteredField(false);
+		}
 		
 		return csvObject;
 	};
@@ -583,7 +590,7 @@ var mdsReader = (function() {
 	return {
 		readFiles: readFiles,
 		reCalculate: reCalculate,
-		getData: function() { return mFilteredData; }
+		getData: function() { return mFilteredData; },
 	};
 	
 })();
