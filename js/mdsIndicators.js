@@ -116,7 +116,7 @@ var mdsIndicators =  (function(){
 		//var timeDiff = cd.getTime() - md.getTime();
 		//var monthDiff = Math.ceil(timeDiff / (1000 * 3600 * 24 * 30));
 
-		var monthDiff = moment(md).diff(moment(cd), 'months');
+		var monthDiff = moment(cd).diff(moment(md), 'months');
 
 		return monthDiff;
 	}
@@ -167,9 +167,11 @@ var mdsIndicators =  (function(){
 		if (indicator.hasOwnProperty('histogram')) {
 			var cols = indicator.histogram[0];
 			var rule = indicator.histogram[1];
+			var label = indicator.histogram[3];
 		} else if (indicator.hasOwnProperty('scatter')) {
 			var cols = indicator.scatter[0];
 			var rule = indicator.scatter[1];
+			var label = indicator.scatter[3];
 		} else {
 			return null;
 		}
@@ -186,17 +188,17 @@ var mdsIndicators =  (function(){
 			}
 		}
 			
-		var numItems = data[cols[0]].length;
+		var numItems = data[0][cols[0]].length;
 			
 		for (var e = 0; e < numItems; e++) {
 			var argList = [];
 			for (var p=0; p<numParams;p++) {
-				argList.push(data[cols[p]][e]);
+				argList.push(data[0][cols[p]][e]);
 			}
 			values.push(rule.apply(mdsIndicators, argList));
 		}
 		
-		return values;
+		return [values.filter(function(e) { return !isNaN(e); }), label];
 	}
 
 
@@ -478,7 +480,7 @@ var mdsIndicators =  (function(){
 		defaults: [6],
 	 	col: ["Current Date", "Date Hb A1C"],
 	 	average: LHINAverages.DateHbA1C,
-	 	histogram: [["Current Date", "Date Hb A1C"], function(cd, md) { return new Date(date); } ],
+	 	histogram: [["Current Date", "Date Hb A1C"], function(cd, md) { return monthsDifference(cd, md); }, "Months Ago"],
 	 	rule: function(currentDate, measuredDate) {
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
@@ -496,6 +498,7 @@ var mdsIndicators =  (function(){
 		months: 6,
 		modifiable: ["months", "target"],
 		defaults: [6, 0.08],
+		histogram: [["Hb A1C"], function(v) { return +v; }, "Hb A1C"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
