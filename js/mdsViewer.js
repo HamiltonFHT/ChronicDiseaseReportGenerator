@@ -48,7 +48,7 @@ var mdsViewer = (function() {
 	var mCanvasHeight = DEFAULT_CANVAS_HEIGHT;
 
 	
-	var DEFAULT_PADDING_LEFT_SNAPSHOT = 300;
+	var DEFAULT_PADDING_LEFT_SNAPSHOT = 250;
 	var mSnapshotPaddingLeft = DEFAULT_PADDING_LEFT_SNAPSHOT * mCanvasScale;
 	var DEFAULT_PADDING_TOP_SNAPSHOT = 50;
 	
@@ -418,36 +418,6 @@ var mdsViewer = (function() {
 			$(this).find("i").toggleClass("fa-check-square-o fa-square-o");
 			return false;
 		});
-		
-
-		/*
-		 * Mode dropdown
-		 * Not currently in use - modes set automatically
-		 */
-		/*
-		var dropdownMode = '<select id="dropdownMode" class="settingsDropdown">' +
-							'<option data-mode="snapshot">Snapshot</option>' +
-							'<option data-mode="tracking">Tracking</option>' +
-							'</select>';
-		$("#settings").append(dropdownMode);
-		
-		if(mMode === "snapshot") {
-			$("#dropdownMode").val("Snapshot");
-		} else {
-			$("#dropdownMode").val("Tracking");
-		}
-		
-		$("#dropdownMode").change(function() {
-			mMode = $(this).find(':selected').data('mode');
-			updateCharts();
-		});
-		
-		if (mArrayDates.length == 1) {
-			$("#dropdownMode").prop("disabled", true);
-		} else {
-			$("#dropdownMode").prop("disabled", false);
-		}
-		*/
 
 
 		/*
@@ -827,11 +797,11 @@ var mdsViewer = (function() {
 		
 	function updateCanvasSize(redraw) {
 		var prevScale = mCanvasScale;
-		if (window.innerWidth >= 1024) {
+		if (window.innerWidth >= 960) {
 			mCanvasScale = 1;
-		} else if (window.innerWidth < 1024 && window.innerWidth >= 501) {
+		} else if (window.innerWidth < 960 && window.innerWidth >= 780) {
 			mCanvasScale = 0.8;
-		} else if (window.innerWidth < 501) {
+		} else if (window.innerWidth < 780) {
 			mCanvasScale = 0.6;
 		}
 		
@@ -842,12 +812,6 @@ var mdsViewer = (function() {
 			mGraphWidthTracking = Math.floor(DEFAULT_GRAPH_WIDTH_TRACKING*mCanvasScale);
 			mSnapshotPaddingLeft = Math.floor(DEFAULT_PADDING_LEFT_SNAPSHOT*mCanvasScale);
 			mYAxisCharLength = Math.floor(DEFAULT_YAXIS_CHAR_LENGTH*mCanvasScale);
- 			
-			if (mCanvasScale == 0.6) {
-				mXAxisCharLength = 3;
-			} else {
-				mXAxisCharLength = 8;
-			}
 			
 			if (redraw) {
 				clearCanvas();
@@ -991,21 +955,6 @@ var mdsViewer = (function() {
 			.style("font-family", "Arial")
 			.text("% of Patients");
 			
-		// Add y axis label
-		canvas.append("text")
-			.attr("class", "yAxisLabel")
-			.attr("transform", "rotate(-90)")
-			.attr("x", -mGraphHeight / 2)
-			.attr("y", -mSnapshotPaddingLeft / 2 - (125 * mCanvasScale))
-			.attr("text-anchor", "middle")
-			.style("font-weight", "bold")
-			.style("font-size", "14px")
-			.style("font-family", "Arial")
-			.text( (function() {
-				return getCurrentIndSetName() + " Measure"; 
-			}));
-		
-	
 		// Graph title text
 		canvas.append("text")
 			.attr("class", "graphTitle")
@@ -1211,39 +1160,22 @@ var mdsViewer = (function() {
 			.enter().append("text")
 				.attr("class", "dataLabelSnapshot")
 				.attr("x", function(d, i) { 
-											if (d<15) { return xScaleSnapshot(d+2); } 
+											if (d<20) { return xScaleSnapshot(d+2); } 
 											else { return xScaleSnapshot(d/2);	} 
 										  })
 				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
 				.attr("text-anchor", function(d) {
-											if (d<15) { return "start"; }
+											if (d<20) { return "start"; }
 											else { return "middle"; } 
 				})
 				.style("font-family", "Arial")
 				.style("font-size", "13px")
 				.attr("dy", ".35em")
 				.style("fill", function(d, i) { 
-												if (d<15) { return "black"; } 
+												if (d<20) { return "black"; } 
 												else { return "white";	} 
 											  })
 				.text(function(d, i) { return arrayLabels[i]; });
-				
-		
-		canvas.selectAll("offTargetLabel")
-			.data(arrayData)
-			.enter().append("text")
-				.attr("class", "dataLabelSnapshot")
-				.attr("x", function(d) { return xScaleSnapshot((100 - d)/2 + parseFloat(d)); })
-				.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
-				.attr("text-anchor", "middle")
-				.attr("dy", ".35em")
-				.style("fill", "black")
-				.style("font-family", "Arial")
-				.style("font-size", "13px")
-				.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "%"; })
-				// don't display off target labels
-				.attr("display", "none");
-
 
 		//Rectangles are added here so that they lay on top of the labels
 		if (mShowAverages) {
@@ -1309,10 +1241,14 @@ var mdsViewer = (function() {
 		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
 		var currentIndicator = getIndicator();
 
+		//data contains an array of values and axis label(s)
+		//[ [values], label]
+		//label can be an array of [x-label, y-label] or just a x-label for histograms
+		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
 		var data = mdsIndicators.getPlotData(currentIndicator)
 
 		if (data != null) {
-			generateDetailPlot(data);
+			histogram(data);
 		}
 
 		if (currentIndicator.hasOwnProperty("modifiable")) {
@@ -1667,34 +1603,23 @@ var mdsViewer = (function() {
 					.enter().append("text")
 						.attr("class", "dataLabelSnapshot")
 						.attr("x", function(d, i) { 
-											if (d<15) { return xScaleSnapshot(Math.ceil(d)+10); } 
-											else { return xScaleSnapshot(d/2);	}  
+											if (d<20) { return xScaleSnapshot(d+2); } 
+											else { return xScaleSnapshot(d/2);	} 
 										  })
 						.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
-						.attr("text-anchor", "middle")
+						.attr("text-anchor", function(d) {
+											if (d<20) { return "start"; }
+											else { return "middle"; } 
+						})
 						.style("font-family", "Arial")
 						.style("font-size", "13px")
 						.attr("dy", ".35em")
 						.style("fill", function(d, i) { 
-												if (d<15) { return "black"; } 
+												if (d<20) { return "black"; } 
 												else { return "white";	} 
 											  })
 						.text(function(d, i) { return arrayLabels[i]; });
-				
-				mCanvas.selectAll("offTargetLabel")
-					.data(arrayData)
-					.enter().append("text")
-						.attr("class", "dataLabelSnapshot")
-						.attr("x", function(d) { return xScaleSnapshot((100 - d)/2 + parseFloat(d)); })
-						.attr("y", function(d, i) { return yScaleSnapshot(arrayDesc[i]) + (yScaleSnapshot.rangeBand()/2); })
-						.attr("text-anchor", "middle")
-						.attr("dy", ".35em")
-						.style("fill", "black")
-						.style("font-family", "Arial")
-						.style("font-size", "13px")
-						.text(function(d) { if (100 - d < 100) return (100 - d).toFixed(1) + "0%"; })
-						// don't display off target labels
-						.attr("display", "none");
+
 			}
 		} else {
 			if (d3.selectAll(".dataLabelTracking")[0].length > 0) {
@@ -1744,7 +1669,10 @@ var mdsViewer = (function() {
 	
 
 
-	function histogram(values) {
+	function histogram(data) {
+
+		var values = data[0];
+		var label = data[1];
 
 		var svg = $("#canvasContainer_extra");
 		//Empty the extra canvas
@@ -1774,18 +1702,43 @@ var mdsViewer = (function() {
 		    .orient("bottom");
 
 		// Generate a histogram using twenty uniformly-spaced bins.
-		var data = d3.layout.histogram()
+		var histdata = d3.layout.histogram()
 		    .bins(xScale.ticks(20))
 		    (values);
 
 		var yScale = d3.scale.linear()
-		    .domain([0, d3.max(data, function(d) { return d.y; })])
+		    .domain([0, d3.max(histdata, function(d) { return d.y; })])
 		    .range([DEFAULT_GRAPH_HEIGHT_TRACKING, 0]);
 
 		var yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("left");
 		
+
+		// Add x axis label
+		svg.append("text")
+			.attr("class", "xAxisLabel")
+			.attr("x", mGraphWidthSnapshot / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT + 40)
+			.attr("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "14px")
+			.style("font-family", "Arial")
+			.text(label);
+			
+		// Add y axis label
+		svg.append("text")
+			.attr("class", "yAxisLabel")
+			.attr("transform", "rotate(-90)")
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT / 2)
+			.attr("y", -mSnapshotPaddingLeft / 2 - (125 * mCanvasScale))
+			.attr("text-anchor", "middle")
+			.style("font-weight", "bold")
+			.style("font-size", "14px")
+			.style("font-family", "Arial")
+			.text("# of Patients");
+
+
 	    svg.append("g")
 	    	.attr("class", "xaxis")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
@@ -1797,7 +1750,7 @@ var mdsViewer = (function() {
 
 
 		var bar = svg.selectAll(".bar")
-		    .data(data)
+		    .data(histdata)
 		  .enter().append("g")
 		    .attr("class", "bar")
 		    .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; });
