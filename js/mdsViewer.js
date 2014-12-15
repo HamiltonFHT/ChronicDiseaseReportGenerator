@@ -149,7 +149,6 @@ var mdsViewer = (function() {
 	    return true;
 	}
 
-
 	/* 
 	 * Called by mdsReader
 	 * Removes and reinitializes UI elements and chart
@@ -241,7 +240,6 @@ var mdsViewer = (function() {
 		};
 	};
 
-
 	/*
 	 * Remove graph and user interface elements
 	 * Called when chart needs to be refreshed or cleared
@@ -280,7 +278,6 @@ var mdsViewer = (function() {
 		$("#settings").empty();
 		$("#save").empty();
 	}
-	
 	
 	function allEqual(val, obj){
 		for (k in obj) {
@@ -673,7 +670,6 @@ var mdsViewer = (function() {
 		
 		updateDropdownIndicators();
 	}
-	
 
 	//Remove and re-add indicator dropdown using indicators in mCalculatedData
 	function updateDropdownIndicators() {
@@ -753,7 +749,6 @@ var mdsViewer = (function() {
 		}
 		addIndicatorElements();
 	}
-	
 
 	//Re-add dropdown with indicators
 	//Recalculate graph, preserving currently selected indicator
@@ -793,7 +788,6 @@ var mdsViewer = (function() {
 			return 0;
 		}
 	}
-	
 		
 	function updateCanvasSize(redraw) {
 		var prevScale = mCanvasScale;
@@ -823,7 +817,6 @@ var mdsViewer = (function() {
 			}
 		}
 	}
-
 
 
 	function splitText(textElement, lineLength, title) {
@@ -880,8 +873,6 @@ var mdsViewer = (function() {
 	
 	function generateSnapshot(selectedDate, extraCanvas){
 
-		//updateCanvasSize();
-		
 		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
 
 		var data = mCalculatedData[selectedDate];
@@ -1713,31 +1704,52 @@ var mdsViewer = (function() {
 		var yAxis = d3.svg.axis()
 			.scale(yScale)
 			.orient("left");
-		
+
+		svg.selectAll(".tickline")
+			.data(yScale.ticks(10))
+			.enter().append("line")
+				.attr("x1", 0)
+				.attr("x2", mGraphWidthTracking)
+				.attr("y1", yScale)
+				.attr("y2", yScale)
+				.style("stroke", "#ccc")
+				.style("stroke-width", 1)
+				.style("opacity", 0.7);
 
 		// Add x axis label
 		svg.append("text")
 			.attr("class", "xAxisLabel")
-			.attr("x", mGraphWidthSnapshot / 2)
-			.attr("y", DEFAULT_GRAPH_HEIGHT_SNAPSHOT + 40)
+			.attr("x", mGraphWidthTracking / 2)
+			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING + 40)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.text(label);
-			
+		
 		// Add y axis label
 		svg.append("text")
 			.attr("class", "yAxisLabel")
 			.attr("transform", "rotate(-90)")
-			.attr("x", -DEFAULT_GRAPH_HEIGHT_SNAPSHOT / 2)
-			.attr("y", -mSnapshotPaddingLeft / 2 - (125 * mCanvasScale))
+			.attr("x", -DEFAULT_GRAPH_HEIGHT_TRACKING / 2)
+			.attr("y", -DEFAULT_PADDING_LEFT_TRACKING / 2)
 			.attr("text-anchor", "middle")
 			.style("font-weight", "bold")
 			.style("font-size", "14px")
 			.style("font-family", "Arial")
 			.text("# of Patients");
 
+
+		// Add graph title
+		svg.append("text")
+			.attr("class", "graphTitle")
+			.attr("x", mGraphWidthTracking / 2)
+			.attr("y", -DEFAULT_PADDING_TOP_TRACKING / 2)
+			.attr("text-anchor", "middle")
+			.style("font-size", "14px")
+			.style("font-family", "sans-serif")
+			.style("font-weight", "bold")
+			.text(getIndicator().desc());
 
 	    svg.append("g")
 	    	.attr("class", "xaxis")
@@ -1747,7 +1759,6 @@ var mdsViewer = (function() {
 		svg.append("g")
 			.attr("class", "yaxis")
 			.call(yAxis);
-
 
 		var bar = svg.selectAll(".bar")
 		    .data(histdata)
@@ -1762,7 +1773,18 @@ var mdsViewer = (function() {
 			    //.attr("width", x(data[0].dx) - 1)
 			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); });
 
+		// Add styling and attributes for axes paths
+		var paths = document.getElementsByClassName("domain");
+		for (var i = 0; i < paths.length; i++) {
+			paths[i].setAttribute("style", "fill:none; stroke:black");
+			paths[i].setAttribute("shape-rendering", "crispEdges");
+		}
 
+
+		//Scroll to the new canvas
+		if (!svg.inViewport()) {
+			svg.scrollView();
+		}
 
 		// bar.append("text")
 		//     .attr("dy", ".75em")

@@ -167,11 +167,11 @@ var mdsIndicators =  (function(){
 		if (indicator.hasOwnProperty('histogram')) {
 			var cols = indicator.histogram[0];
 			var rule = indicator.histogram[1];
-			var label = indicator.histogram[3];
+			var label = indicator.histogram[2];
 		} else if (indicator.hasOwnProperty('scatter')) {
 			var cols = indicator.scatter[0];
 			var rule = indicator.scatter[1];
-			var label = indicator.scatter[3];
+			var label = indicator.scatter[2];
 		} else {
 			return null;
 		}
