@@ -33,7 +33,7 @@ var mdsIndicators =  (function(){
 		'BPUnderControl': 0.66, //% patients with BP < 140/90
 		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
 		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
-		'Mammograms': 0.60,
+		'Mamm': 0.60,
 		'Pap': 0.66,
 		'FOBT': 0.32,
 	};
@@ -45,7 +45,7 @@ var mdsIndicators =  (function(){
 		'LDL': 0.67, //% measured in past twelve months
 		'BPUnderControl': 0.6, //% patients with BP < 140/90
 		'SmokingCessation': 0.75, //% receiving advice to quit smoking in past year
-		'Mammograms': 0.5,
+		'Mamm': 0.5,
 		'Pap': 0.5,
 		'FOBT': 0.5,
 		'CYMHScreening': 0.9
@@ -323,7 +323,7 @@ var mdsIndicators =  (function(){
 				//If the "Rostered" column exists and user wants rostered patients only
 				//then filter them out here and reduce the total number of patients.
 				if (mdsViewer.hasRosteredField() && mdsViewer.rosteredOnly()) {
-					if (csvObject["Rostered"][p] == "false") {
+					if (csvObject["Rostered"][p].toUpperCase() == "FALSE") {
 						numNonRostered++;
 						continue;
 					}
@@ -505,7 +505,7 @@ var mdsIndicators =  (function(){
 		months: 6,
 		modifiable: ["months", "target"],
 		defaults: [6, 0.08],
-		histogram: [["Hb A1C"], function(v) { return +v; }, "Hb A1C"],
+		histogram: [["Hb A1C"], function(v) { return +v; }, "Hb A1C (%)"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
@@ -560,6 +560,7 @@ var mdsIndicators =  (function(){
 		months: 12,
 		modifiable: ["months"],
 		defaults: [12],
+		histogram: [["Current Date", "Date LDL"], function(cd, md) { return monthsDifference(cd, md); }, "Months Ago"],
 		rule: function(currentDate, measuredDate) {
 			 try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
@@ -578,6 +579,7 @@ var mdsIndicators =  (function(){
 		target: 2.0,
 		modifiable: ["months", "target"],
 		defaults: [12, 2.0],
+		histogram: [["LDL"], function(v) { return +v; }, "LDL"],
 		rule: function(currentDate, measuredDate, value) {
 			 try {
 	 			//new Date accepts date string in format YYYY-MM-DD
@@ -706,6 +708,9 @@ var mdsIndicators =  (function(){
 		age: 40,
 		modifiable: ["months", "age"],
 		defaults: [12, 40],
+		histogram: [["Current Date", "Date Systolic BP", "Age"], 
+					function(cd, md, age) { if (+age >= this.age) { return monthsDifference(cd, md); } else { return NaN; }}, 
+					"Months Ago"],
 		rule: function(currentDate, measuredDate, age) {
 			try {
 				if (Number(age) < this.age) {
@@ -771,7 +776,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleInfantVaccinations = {
-		desc: function(){return "Infant(" + this.minAge + "-" + this.maxAge + ") immunization schedule up to date"; },
+		desc: function(){return "Infants " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
 		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
 										" years with immunization schedule up to date"; },
 		col: ["Age", "measles", "diphtheria",
@@ -905,7 +910,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleHeightWeightLastVaccination = {
-		desc: function(){ return "Height and Weight at last immunization, patients " + this.minAge + " to " + this.maxAge; },
+		desc: function(){ return "Height and Weight at last immunization, patients " + this.minAge + "-" + this.maxAge; },
 		long_desc: function() { return "Height and Weight measured at last immunization. Only applies to patients with height and weight measured on the same day"; },
 		months: 12,
 		minAge: 2,
@@ -989,6 +994,7 @@ var mdsIndicators =  (function(){
 				"Last Seen Date", 			//last patient visit
 				"Current Date"],			// date of report
 		averages: LHINAverages.SmokingCessation,
+		goal: HFHTGoal.SmokingCessation,
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				factors = factors.toLowerCase();
@@ -1196,7 +1202,8 @@ var mdsIndicators =  (function(){
 		maxAge:74,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 50 , 74],
-		averages: LHINAverages.Mammograms,
+		averages: LHINAverages.Mamm,
+		goal: HFHTGoal.Mamm,
 		rule: function(currentDate, age, sex, mammDate) {
 			try {
 				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
@@ -1220,6 +1227,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [3*12, 21, 69],
 		averages: LHINAverages.Pap,
+		goal: HFHTGoal.Pap,
 		rule: function(currentDate, age, sex, papDate) {
 			try {
 				if (Number(age) < this.minAge || Number(age) > this.maxAge || sex != "F")
@@ -1243,6 +1251,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [2*12, 50, 74],
 		averages: LHINAverages.FOBT,
+		goal: HFHTGoal.FOBT,
 		rule: function(currentDate, age, fobtDate) {
 			try {
 				if (Number(age) < this.minAge || Number(age) > this.maxAge)
