@@ -111,6 +111,11 @@ var mdsIndicators =  (function(){
 	};
 
 	function monthsDifference(currentDate, measuredDate) {
+
+		if (currentDate == null || measuredDate == null) {
+			return NaN;
+		}
+
 		var cd = new Date(currentDate);
 		var md = new Date(measuredDate);
 		//var timeDiff = cd.getTime() - md.getTime();
@@ -439,8 +444,10 @@ var mdsIndicators =  (function(){
 	 	col: ["Current Date", "K030A", "Q040A"],
 	 	average: LHINAverages.DiabeticAssessment,
 	 	goal: HFHTGoal.DiabeticAssessment,
-	 	histogram: [ ["K030A", "Q040A"], 
-	 				 function(k, q) { return mostRecentDate([k, q]);} ],
+	 	histogram: [ ["Current Date", "K030A", "Q040A"], 
+	 				 function(c, k, q) { return monthsDifference(c, mostRecentDate([k, q]));},
+	 				 "Months Ago" 
+	 			   ],
 	 	rule: function(currentDate, k, q) {
 	 		try {
 	 			if (k === "" && q === "") {

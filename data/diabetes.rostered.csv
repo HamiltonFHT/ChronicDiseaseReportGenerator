@@ -1,75 +1,74 @@
-
-Patient #,Age,Sex,Doctor Number,DM Months,Hb A1C,Date Hb A1C,Systolic BP,Date Systolic BP,LDL,Date LDL,CHOL/HDL,Date CHOL/HDL,Microalbumin/Creatinine Ratio,Date Microalbumin/Creatinine Ratio,eGFR,Date eGFR,Risk Factors,Diastolic BP,Date Diastolic BP,Retinopathy,Foot Check,Self-Management,Current Date,Privacy,Last Seen Date,Q040A,K030A,Rostered,
-111,28,F,1,"Dec 29, 2008",8,"Oct 25, 2012",122,"May 10, 2008",4.1,"Oct 23, 2012",never done,,never done,,never done,,current recreational drug use: BZO; previous intravenous      dangerous sports - hunting ,80,"May 10, 2008",28,28,28,09/12/2014,,"Dec 29, 2008",,,false,
-121,64,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,pap high risk patient is HIV positive,never done,,64,64,64,09/12/2014,,,,,false,
-128,65,M,1,,never done,,130,"Dec 17, 1999",never done,,never done,,never done,,never done,,never done,85,"Dec 17, 1999",65,65,65,09/12/2014,,,,,false,
-138,85,M,1,,0.083,"Nov 14, 2007",120,"Nov 20, 2008",never done,,never done,,never done,,never done,,current smoker test,90,"Nov 20, 2008",85,85,85,09/12/2014,,"Feb 10, 2009",,,false,
-142,24,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,second-hand smoke exposure      second-hand smoke exposure ,never done,,24,24,24,09/12/2014,,"Jan 1, 2007",,,false,
-144,74,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA      ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,"Jun 6, 2008",74,74,74,09/12/2014,,"Jan 1, 2007",,,false,
-146,8,M,1,,never done,,never done,,never done,,never done,,2.9,"Jan 14, 2013",never done,,consommation d'alcool rare      Anorexie      mod√©r√© exercice: 234 minutes par session ,never done,,8,8,8,09/12/2014,,"Jan 1, 2007",,,false,
-156,78,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,"Jun 6, 2008",78,78,78,09/12/2014,,"Jan 1, 2007",,,false,
-158,63,F,1,,7,"Sep 22, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,63,63,63,09/12/2014,,"Jan 1, 2007",,,false,
-159,52,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,52,52,52,09/12/2014,,"Jan 1, 2007",,,false,
-160,59,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,59,59,59,09/12/2014,,"Jan 1, 2007",,,false,
-168,74,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"ex-smoker      never smoked      rare alcohol consumption      previous recreational drug use: THC, COC ",72,"Jun 6, 2008",74,74,74,09/12/2014,,"Jan 1, 2007",,,false,
-171,69,F,1,,5,"Aug 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,69,69,69,09/12/2014,,"Jan 1, 2007",,,false,
-172,76,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,"Jun 6, 2008",76,76,76,09/12/2014,,"Jan 1, 2007",,,false,
-176,64,F,1,,3,"Jul 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,64,64,64,09/12/2014,,"Jan 1, 2007",,,false,
-177,63,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,63,63,63,09/12/2014,,"Jan 1, 2007",,,false,
-194,85,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"current smoker - 30 cigarettes/day, uses pipe, second-hand smoke exposure ",72,"Jun 6, 2008",85,85,85,09/12/2014,,"Feb 10, 2009",,,false,
-195,71,F,1,,4,"Jun 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,71,71,71,09/12/2014,,"Jan 1, 2007",,,false,
-197,60,F,1,,5,"May 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,60,60,60,09/12/2014,,"Jan 1, 2007",,,false,
-199,69,F,1,,8,"Apr 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,69,69,69,09/12/2014,,"Jan 1, 2007",,,false,
-203,59,F,1,,2,"Mar 25, 2012",never done,,never done,,never done,,never done,,never done,,"current smoker - 10 cigarettes/day, uses pipe ",never done,,59,59,59,09/12/2014,,"Jan 1, 2007",,,false,
-205,89,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",89,89,89,09/12/2014,,"Jan 1, 2007",,,false,
-206,58,F,1,,4,"Feb 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,58,58,58,09/12/2014,,"Jan 1, 2007",,,false,
-215,84,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",84,84,84,09/12/2014,,"Jan 1, 2007",,,false,
-219,85,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",85,85,85,09/12/2014,,"Jan 1, 2007",,,false,
-226,25,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,second-hand smoke exposure ,never done,,25,25,25,09/12/2014,,"Jan 1, 2007",,,false,
-231,94,F,1,,never done,,130,"Nov 21, 2008",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,90,"Nov 21, 2008",94,94,94,09/12/2014,,"Nov 21, 2008",,,false,
-232,98,M,1,,0.083,"Nov 14, 2000",130,"Nov 20, 2008",never done,,never done,,never done,,never done,,never done,0.0,"Nov 20, 2008",98,98,98,09/12/2014,,"Jan 1, 2007",,,false,
-239,53,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,53,53,53,09/12/2014,,"Jan 1, 2007",,,false,
-243,65,F,1,,3,"Jan 25, 2012",never done,,never done,,never done,,never done,,never done,,never done,never done,,65,65,65,09/12/2014,,"Jan 1, 2007",,,false,
-251,64,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,64,64,64,09/12/2014,,"Jan 1, 2007",,,false,
-253,60,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,60,60,60,09/12/2014,,"Jan 1, 2007",,,false,
-257,72,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,72,72,72,09/12/2014,,"Jan 1, 2007",,,false,
-261,74,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,74,74,74,09/12/2014,,"Jan 1, 2007",,,false,
-262,58,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,58,58,58,09/12/2014,,"Jan 1, 2007",,,false,
-263,68,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,68,68,68,09/12/2014,,"Jan 1, 2007",,,false,
-267,104,M,1,,0.083,"Nov 14, 2000",140,"May 25, 2001",never done,,never done,,never done,,never done,,never done,80,"May 25, 2001",104,104,104,09/12/2014,,"Jan 1, 2007",,,false,
-272,102,M,1,,0.083,"Nov 14, 2000",130,"Nov 11, 2008",never done,,never done,,never done,,never done,,never done,60,"Nov 11, 2008",102,102,102,09/12/2014,,"Nov 11, 2008",,,false,
-277,84,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",84,84,84,09/12/2014,,"Jan 1, 2007",,,false,
-278,80,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,"Jun 6, 2008",80,80,80,09/12/2014,,"Jan 1, 2007",,,false,
-287,80,F,1,,never done,,120,"Nov 21, 2008",never done,,never done,,never done,,never done,,never done,90,"Nov 21, 2008",80,80,80,09/12/2014,,"Jan 1, 2007",,,false,
-291,82,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",82,82,82,09/12/2014,,"Jan 1, 2007",,,false,
-295,74,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,74,74,74,09/12/2014,,"Jan 1, 2007",,,false,
-297,80,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,80,80,80,09/12/2014,,"Jan 1, 2007",,,false,
-305,78,F,1,,never done,,45,"Jun 2, 2014",never done,,never done,,never done,,never done,,"18 alcoholic drinks per week      vigorous exercise: 60 minutes, 1 time per week ",0.0,"Jun 2, 2014",78,78,78,09/12/2014,,"Jan 1, 2007",,,false,
-316,83,F,1,,never done,,125,"Mar 15, 1996",5.34,"Apr 4, 1995",7.10,"Apr 4, 1995",never done,,never done,,never done,75,"Mar 15, 1996",83,83,83,09/12/2014,,"Jan 1, 2007",,,false,
-322,93,M,1,,0.083,"Nov 14, 2000",140,"May 25, 2001",never done,,never done,,never done,,never done,,never done,80,"May 25, 2001",93,93,93,09/12/2014,,"Jan 1, 2007",,,false,
-332,53,M,1,,never done,,never done,,2.03,"Dec 7, 2006",never done,,never done,,never done,,never done,never done,,53,53,53,09/12/2014,,"Jan 1, 2007",,,false,
-113,40,M,1,,6,"Nov 25, 2012",112,"Jul 29, 2002",never done,,never done,,never done,,never done,,current smoker ,80,"Jul 29, 2002",40,40,40,09/12/2014,Private Chart,,,,false,
-115,36,M,1,"Feb 6, 2008",never done,,110,"May 28, 2008",never done,,never done,,never done,,never done,,current smoker - 15 cigarettes/day ,60,"May 28, 2008",36,36,36,09/12/2014,,"Sep 10, 2014",,,false,
-337,49,M,2,,never done,,never done,,never done,,never done,,never done,,never done,,"work: physical repetition: Transforms every day, heavy lifting, 90 hours per week      Discussed Smoking Cessation      regular alcohol consumption      non-gambler      current smoker ",never done,,49,49,49,09/12/2014,,"Jan 18, 2013",,,false,
-164,12,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,12,12,12,09/12/2014,,"Jan 1, 2007",,,true,
-344,5, ,0,,never done,,never done,,never done,,never done,,never done,,never done,,Family Cat ,never done,,5,5,5,09/12/2014,,,,,false,
-350,15,M,1,,never done,,120,"Oct 1, 2014",never done,,never done,,never done,,never done,,Unhealthy eating habits      sedentary lifestyle except for participation in extreme sports (carpet flying)      ex-smoker      no recreational drug use      no known genetic risks      does not wear bike helmet ,80,"Oct 1, 2014",15,15,15,09/12/2014,,,,,true,
-117,36,F,1,,never done,,35,"Jan 1, 2013",never done,,never done,,never done,,never done,,never done,0.0,"Jan 1, 2013",36,36,36,09/12/2014,,"Mar 29, 2008",,,false,
-362,26,F,0,,0.07,"Jul 31, 2014",120,"Apr 12, 2013",2,"Jul 31, 2014",never done,,never done,,65,"Jul 31, 2014",Threat of Kidnapping      Rug Burn Flys on magical carpet excessively     ex-smoker ,80,"Apr 12, 2013",26,26,26,09/12/2014,,,,,false,
-276,48,M,1,,never done,,135,"Sep 23, 2007",3.03,"Oct 28, 2007",5.07,"Oct 28, 2007",never done,,never done,,"Obesity      sedentary lifestyle      current smoker - 10 cigarettes/day, uses pipe ",95,"Sep 23, 2007",48,48,48,09/12/2014,,"Jan 1, 2007",,,false,
-319,32,F,1,"Aug 19, 2014",0.065,"Sep 2, 2014",150,"Sep 5, 2014",1.5,"Aug 19, 2014",never done,,never done,,65,"Aug 19, 2014",ex-smoker      Discussed Smoking Cessation      Discussed Smoking Cessation      Discussed Smoking Cessation ,92,"Sep 5, 2014",32,32,32,09/12/2014,,"Aug 19, 2014","Aug 19, 2014","Aug 19, 2014",true,
-336,24,F,0,,never done,,130,"Jul 12, 2013",never done,,never done,,never done,,never done,,no dietary concerns      Dietary      Dietary ,85,"Jul 12, 2013",24,24,24,09/12/2014,,,,,false,
-123,10,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,10,10,10,09/12/2014,,,,,false,
-292,45,F,1,,never done,,135,"Sep 21, 2008",never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,"Sep 21, 2008",45,45,45,09/12/2014,,"Jan 1, 2007",,,false,
-236,12,F,1,,never done,,128,"Jun 14, 2013",never done,,never done,,never done,,never done,,"current smoker, second-hand smoke exposure      Discussed Smoking Cessation      Discussed Smoking Cessation ",87,"Jun 14, 2013",12,12,12,09/12/2014,,"Jan 1, 2007",,,false,
-209,39,M,1,,never done,,never done,,3.03,"Oct 28, 2007",5.07,"Oct 28, 2007",never done,,never done,,never done,never done,,39,39,39,09/12/2014,,"Jan 1, 2007",,,false,
-147,40,F,1,,never done,,135,"Sep 21, 2008",never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,"Sep 21, 2008",40,40,40,09/12/2014,,"Jan 1, 2007",,,false,
-289,21,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,21,21,21,09/12/2014,,"Jan 1, 2007",,,false,
-315,28,F,1,,never done,,135,"Sep 21, 2008",never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,"Sep 21, 2008",28,28,28,09/12/2014,,"Jan 1, 2007",,,false,
-240,22,F,1,,never done,,130,"May 5, 2014",never done,,never done,,never done,,never done,,Discussed Smoking Cessation ,85,"May 5, 2014",22,22,22,09/12/2014,,"Jan 1, 2007",,,true,
-163,42,M,1,,never done,,140,"Sep 15, 2014",3.03,"Oct 28, 2007",5.07,"Oct 28, 2007",never done,,never done,,dangerous sports carpet flying     current smoker - 5 cigarettes/day ,95,"Sep 15, 2014",42,42,42,09/12/2014,,"Sep 12, 2014",,,false,
-192,79,M,1,,never done,,120,"Jun 6, 2008",3.58,"Jan 25, 2001",7.75,"Jan 25, 2001",never done,,never done,,current smoker ,72,"Jun 6, 2008",79,79,79,09/12/2014,,"Jan 1, 2007",,,false,
-379,24,M,1,"Dec 3, 2014",never done,,never done,,never done,,never done,,never done,,never done,,current smoker ,never done,,24,24,24,09/12/2014,,"Dec 3, 2014","Oct 30, 2014","Dec 3, 2014",false,
-377,25,M,0,,never done,,never done,,never done,,never done,,never done,,never done,,"work: physical stress, frostbite ",never done,,25,25,25,09/12/2014,,,,,false,
-325,86,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,86,86,86,09/12/2014,,"Jan 1, 2007",,,false,
-368,35 mo,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,2,2,2,09/12/2014,,"Sep 8, 2014",,,false,
+Patient #,Age,Sex,Doctor Number,DM Months,Hb A1C,Date Hb A1C,Systolic BP,Date Systolic BP,LDL,Date LDL,CHOL/HDL,Date CHOL/HDL,Microalbumin/Creatinine Ratio,Date Microalbumin/Creatinine Ratio,eGFR,Date eGFR,Risk Factors,Diastolic BP,Date Diastolic BP,Retinopathy,Foot Check,Self-Management,Current Date,Privacy,Last Seen Date,Q040A,K030A,Rostered
+111,28,F,1,29-Dec-08,0.08,25-Oct-12,122,10-May-08,4.1,23-Oct-12,never done,,never done,,never done,,current recreational drug use: BZO; previous intravenous      dangerous sports - hunting ,80,10-May-08,28,28,28,9/12/2014,,29-Dec-08,,,FALSE
+121,64,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,pap high risk patient is HIV positive,never done,,64,64,64,9/12/2014,,,,,FALSE
+128,65,M,1,,never done,,130,17-Dec-99,never done,,never done,,never done,,never done,,never done,85,17-Dec-99,65,65,65,9/12/2014,,,,,FALSE
+138,85,M,1,,0.083,14-Nov-07,120,20-Nov-08,never done,,never done,,never done,,never done,,current smoker test,90,20-Nov-08,85,85,85,9/12/2014,,10-Feb-09,,,FALSE
+142,24,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,second-hand smoke exposure      second-hand smoke exposure ,never done,,24,24,24,9/12/2014,,1-Jan-07,,,FALSE
+144,74,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA      ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,6-Jun-08,74,74,74,9/12/2014,,1-Jan-07,,,FALSE
+146,8,M,1,,never done,,never done,,never done,,never done,,2.9,14-Jan-13,never done,,consommation d'alcool rare      Anorexie      mod√©r√© exercice: 234 minutes par session ,never done,,8,8,8,9/12/2014,,1-Jan-07,,,FALSE
+156,78,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,6-Jun-08,78,78,78,9/12/2014,,1-Jan-07,,,FALSE
+158,63,F,1,,0.07,22-Sep-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,63,63,63,9/12/2014,,1-Jan-07,,,FALSE
+159,52,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,52,52,52,9/12/2014,,1-Jan-07,,,FALSE
+160,59,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,59,59,59,9/12/2014,,1-Jan-07,,,FALSE
+168,74,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"ex-smoker      never smoked      rare alcohol consumption      previous recreational drug use: THC, COC ",72,6-Jun-08,74,74,74,9/12/2014,,1-Jan-07,,,FALSE
+171,69,F,1,,0.05,25-Aug-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,69,69,69,9/12/2014,,1-Jan-07,,,FALSE
+172,76,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,6-Jun-08,76,76,76,9/12/2014,,1-Jan-07,,,FALSE
+176,64,F,1,,0.03,25-Jul-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,64,64,64,9/12/2014,,1-Jan-07,,,FALSE
+177,63,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,63,63,63,9/12/2014,,1-Jan-07,,,FALSE
+194,85,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"current smoker - 30 cigarettes/day, uses pipe, second-hand smoke exposure ",72,6-Jun-08,85,85,85,9/12/2014,,10-Feb-09,,,FALSE
+195,71,F,1,,0.04,25-Jun-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,71,71,71,9/12/2014,,1-Jan-07,,,FALSE
+197,60,F,1,,0.05,25-May-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,60,60,60,9/12/2014,,1-Jan-07,,,FALSE
+199,69,F,1,,0.08,25-Apr-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,69,69,69,9/12/2014,,1-Jan-07,,,FALSE
+203,59,F,1,,0.02,25-Mar-12,never done,,never done,,never done,,never done,,never done,,"current smoker - 10 cigarettes/day, uses pipe ",never done,,59,59,59,9/12/2014,,1-Jan-07,,,FALSE
+205,89,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,89,89,89,9/12/2014,,1-Jan-07,,,FALSE
+206,58,F,1,,0.04,25-Feb-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,58,58,58,9/12/2014,,1-Jan-07,,,FALSE
+215,84,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,84,84,84,9/12/2014,,1-Jan-07,,,FALSE
+219,85,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,85,85,85,9/12/2014,,1-Jan-07,,,FALSE
+226,25,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,second-hand smoke exposure ,never done,,25,25,25,9/12/2014,,1-Jan-07,,,FALSE
+231,94,F,1,,never done,,130,21-Nov-08,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,90,21-Nov-08,94,94,94,9/12/2014,,21-Nov-08,,,FALSE
+232,98,M,1,,0.083,14-Nov-00,130,20-Nov-08,never done,,never done,,never done,,never done,,never done,0,20-Nov-08,98,98,98,9/12/2014,,1-Jan-07,,,FALSE
+239,53,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,53,53,53,9/12/2014,,1-Jan-07,,,FALSE
+243,65,F,1,,0.03,25-Jan-12,never done,,never done,,never done,,never done,,never done,,never done,never done,,65,65,65,9/12/2014,,1-Jan-07,,,FALSE
+251,64,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,64,64,64,9/12/2014,,1-Jan-07,,,FALSE
+253,60,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,60,60,60,9/12/2014,,1-Jan-07,,,FALSE
+257,72,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,72,72,72,9/12/2014,,1-Jan-07,,,FALSE
+261,74,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,74,74,74,9/12/2014,,1-Jan-07,,,FALSE
+262,58,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,58,58,58,9/12/2014,,1-Jan-07,,,FALSE
+263,68,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,68,68,68,9/12/2014,,1-Jan-07,,,FALSE
+267,104,M,1,,0.083,14-Nov-00,140,25-May-01,never done,,never done,,never done,,never done,,never done,80,25-May-01,104,104,104,9/12/2014,,1-Jan-07,,,FALSE
+272,102,M,1,,0.083,14-Nov-00,130,11-Nov-08,never done,,never done,,never done,,never done,,never done,60,11-Nov-08,102,102,102,9/12/2014,,11-Nov-08,,,FALSE
+277,84,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,84,84,84,9/12/2014,,1-Jan-07,,,FALSE
+278,80,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,"ASHD (FH: father, 1 brother)      Smoking Risk=1 pack/day*50 yrs      unstable gait 2√Ç¬∞ CVA ",72,6-Jun-08,80,80,80,9/12/2014,,1-Jan-07,,,FALSE
+287,80,F,1,,never done,,120,21-Nov-08,never done,,never done,,never done,,never done,,never done,90,21-Nov-08,80,80,80,9/12/2014,,1-Jan-07,,,FALSE
+291,82,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,82,82,82,9/12/2014,,1-Jan-07,,,FALSE
+295,74,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,74,74,74,9/12/2014,,1-Jan-07,,,FALSE
+297,80,F,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,80,80,80,9/12/2014,,1-Jan-07,,,FALSE
+305,78,F,1,,never done,,45,2-Jun-14,never done,,never done,,never done,,never done,,"18 alcoholic drinks per week      vigorous exercise: 60 minutes, 1 time per week ",0,2-Jun-14,78,78,78,9/12/2014,,1-Jan-07,,,FALSE
+316,83,F,1,,never done,,125,15-Mar-96,5.34,4-Apr-95,7.1,4-Apr-95,never done,,never done,,never done,75,15-Mar-96,83,83,83,9/12/2014,,1-Jan-07,,,FALSE
+322,93,M,1,,0.083,14-Nov-00,140,25-May-01,never done,,never done,,never done,,never done,,never done,80,25-May-01,93,93,93,9/12/2014,,1-Jan-07,,,FALSE
+332,53,M,1,,never done,,never done,,2.03,7-Dec-06,never done,,never done,,never done,,never done,never done,,53,53,53,9/12/2014,,1-Jan-07,,,FALSE
+113,40,M,1,,0.06,25-Nov-12,112,29-Jul-02,never done,,never done,,never done,,never done,,current smoker ,80,29-Jul-02,40,40,40,9/12/2014,Private Chart,,,,FALSE
+115,36,M,1,6-Feb-08,never done,,110,28-May-08,never done,,never done,,never done,,never done,,current smoker - 15 cigarettes/day ,60,28-May-08,36,36,36,9/12/2014,,10-Sep-14,,,FALSE
+337,49,M,2,,never done,,never done,,never done,,never done,,never done,,never done,,"work: physical repetition: Transforms every day, heavy lifting, 90 hours per week      Discussed Smoking Cessation      regular alcohol consumption      non-gambler      current smoker ",never done,,49,49,49,9/12/2014,,18-Jan-13,,,FALSE
+164,12,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,12,12,12,9/12/2014,,1-Jan-07,,,TRUE
+344,5, ,0,,never done,,never done,,never done,,never done,,never done,,never done,,Family Cat ,never done,,5,5,5,9/12/2014,,,,,FALSE
+350,15,M,1,,never done,,120,1-Oct-14,never done,,never done,,never done,,never done,,Unhealthy eating habits      sedentary lifestyle except for participation in extreme sports (carpet flying)      ex-smoker      no recreational drug use      no known genetic risks      does not wear bike helmet ,80,1-Oct-14,15,15,15,9/12/2014,,,,,TRUE
+117,36,F,1,,never done,,35,1-Jan-13,never done,,never done,,never done,,never done,,never done,0,1-Jan-13,36,36,36,9/12/2014,,29-Mar-08,,,FALSE
+362,26,F,0,,0.07,31-Jul-14,120,12-Apr-13,2,31-Jul-14,never done,,never done,,65,31-Jul-14,Threat of Kidnapping      Rug Burn Flys on magical carpet excessively     ex-smoker ,80,12-Apr-13,26,26,26,9/12/2014,,,,,FALSE
+276,48,M,1,,never done,,135,23-Sep-07,3.03,28-Oct-07,5.07,28-Oct-07,never done,,never done,,"Obesity      sedentary lifestyle      current smoker - 10 cigarettes/day, uses pipe ",95,23-Sep-07,48,48,48,9/12/2014,,1-Jan-07,,,FALSE
+319,32,F,1,19-Aug-14,0.065,2-Sep-14,150,5-Sep-14,1.5,19-Aug-14,never done,,never done,,65,19-Aug-14,ex-smoker      Discussed Smoking Cessation      Discussed Smoking Cessation      Discussed Smoking Cessation ,92,5-Sep-14,32,32,32,9/12/2014,,19-Aug-14,19-Aug-14,19-Aug-14,TRUE
+336,24,F,0,,never done,,130,12-Jul-13,never done,,never done,,never done,,never done,,no dietary concerns      Dietary      Dietary ,85,12-Jul-13,24,24,24,9/12/2014,,,,,FALSE
+123,10,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,10,10,10,9/12/2014,,,,,FALSE
+292,45,F,1,,never done,,135,21-Sep-08,never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,21-Sep-08,45,45,45,9/12/2014,,1-Jan-07,,,FALSE
+236,12,F,1,,never done,,128,14-Jun-13,never done,,never done,,never done,,never done,,"current smoker, second-hand smoke exposure      Discussed Smoking Cessation      Discussed Smoking Cessation ",87,14-Jun-13,12,12,12,9/12/2014,,1-Jan-07,,,FALSE
+209,39,M,1,,never done,,never done,,3.03,28-Oct-07,5.07,28-Oct-07,never done,,never done,,never done,never done,,39,39,39,9/12/2014,,1-Jan-07,,,FALSE
+147,40,F,1,,never done,,135,21-Sep-08,never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,21-Sep-08,40,40,40,9/12/2014,,1-Jan-07,,,FALSE
+289,21,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,21,21,21,9/12/2014,,1-Jan-07,,,FALSE
+315,28,F,1,,never done,,135,21-Sep-08,never done,,never done,,never done,,never done,,current smoker - 20 cigarettes/day ,95,21-Sep-08,28,28,28,9/12/2014,,1-Jan-07,,,FALSE
+240,22,F,1,,never done,,130,5-May-14,never done,,never done,,never done,,never done,,Discussed Smoking Cessation ,85,5-May-14,22,22,22,9/12/2014,,1-Jan-07,,,TRUE
+163,42,M,1,,never done,,140,15-Sep-14,3.03,28-Oct-07,5.07,28-Oct-07,never done,,never done,,dangerous sports carpet flying     current smoker - 5 cigarettes/day ,95,15-Sep-14,42,42,42,9/12/2014,,12-Sep-14,,,FALSE
+192,79,M,1,,never done,,120,6-Jun-08,3.58,25-Jan-01,7.75,25-Jan-01,never done,,never done,,current smoker ,72,6-Jun-08,79,79,79,9/12/2014,,1-Jan-07,,,FALSE
+379,24,M,1,3-Dec-14,never done,,never done,,never done,,never done,,never done,,never done,,current smoker ,never done,,24,24,24,9/12/2014,,3-Dec-14,30-Oct-14,3-Dec-14,FALSE
+377,25,M,0,,never done,,never done,,never done,,never done,,never done,,never done,,"work: physical stress, frostbite ",never done,,25,25,25,9/12/2014,,,,,FALSE
+325,86,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,86,86,86,9/12/2014,,1-Jan-07,,,FALSE
+368,35 mo,M,1,,never done,,never done,,never done,,never done,,never done,,never done,,never done,never done,,2,2,2,9/12/2014,,8-Sep-14,,,FALSE

@@ -114,7 +114,7 @@ var mdsViewer = (function() {
 	//If element is less than 1/3 (approximately) in view then return true 
 	//(only works if element is below current viewing window)
 	$.fn.inViewport = function () {
-		return $("#canvasContainer_extra").position().top + $("#canvasContainer_extra").height()/3 
+		return $(this).position().top + $(this).height()/3 
 				< (window.innerHeight || document.documentElement.clientHeight) + $(window).scrollTop();
 	};
 
@@ -245,8 +245,6 @@ var mdsViewer = (function() {
 	 * Called when chart needs to be refreshed or cleared
 	 */
 	function clearCanvas() {
-		
-
 		//Only applies to snapshot mode
 		mCanvasHeight = Math.floor(DEFAULT_BAR_WIDTH * mCalculatedData[mCurrentDateIndex].length  + (2*DEFAULT_PADDING_TOP_SNAPSHOT))
 
@@ -1340,7 +1338,6 @@ var mdsViewer = (function() {
 			.style("font-family", "Arial")
 			.call(xAxisTracking);
 			
-		//mCanvas.selectAll('g.xAxis g text').each(function () { splitText(d3.select(this), 3); });
 	    mCanvas.selectAll('g.xAxis g text').each(insertLinebreaks);
 					
 		// Append yAxis to the mCanvas
@@ -1703,18 +1700,10 @@ var mdsViewer = (function() {
 
 		var yAxis = d3.svg.axis()
 			.scale(yScale)
-			.orient("left");
-
-		svg.selectAll(".tickline")
-			.data(yScale.ticks(10))
-			.enter().append("line")
-				.attr("x1", 0)
-				.attr("x2", mGraphWidthTracking)
-				.attr("y1", yScale)
-				.attr("y2", yScale)
-				.style("stroke", "#ccc")
-				.style("stroke-width", 1)
-				.style("opacity", 0.7);
+			.orient("left")
+			.ticks(10)
+			.tickFormat(d3.format("d"))
+			.tickSubdivide(0);
 
 		// Add x axis label
 		svg.append("text")
@@ -1751,11 +1740,13 @@ var mdsViewer = (function() {
 			.style("font-weight", "bold")
 			.text(getIndicator().desc());
 
+		//Add xaxis
 	    svg.append("g")
 	    	.attr("class", "xaxis")
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
 			.call(xAxis);
 
+		//Add yaxis
 		svg.append("g")
 			.attr("class", "yaxis")
 			.call(yAxis);
@@ -1769,9 +1760,12 @@ var mdsViewer = (function() {
 		bar.append("rect")
 			    .attr("x", 1)
 			    .attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-				.attr("width", mCanvasWidth / 20 - 1)
+				.attr("width", mCanvasWidth / 20 - 5)
 			    //.attr("width", x(data[0].dx) - 1)
-			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); });
+			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); })
+			    .style("stroke", "black")
+				.style("stroke-width", "1px")
+				.attr("shape-rendering", "crispEdges");
 
 		// Add styling and attributes for axes paths
 		var paths = document.getElementsByClassName("domain");
@@ -1781,6 +1775,7 @@ var mdsViewer = (function() {
 		}
 
 
+		var svg = $("#canvasContainer_extra");
 		//Scroll to the new canvas
 		if (!svg.inViewport()) {
 			svg.scrollView();
