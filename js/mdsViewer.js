@@ -1235,9 +1235,10 @@ var mdsViewer = (function() {
 		//label can be an array of [x-label, y-label] or just a x-label for histograms
 		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
 		var data = mdsIndicators.getPlotData(currentIndicator)
-
 		if (data != null) {
 			histogram(data);
+		} else {
+			$("#canvasContainer_extra").clear();
 		}
 
 		if (currentIndicator.hasOwnProperty("modifiable")) {
@@ -1780,13 +1781,6 @@ var mdsViewer = (function() {
 		if (!svg.inViewport()) {
 			svg.scrollView();
 		}
-
-		// bar.append("text")
-		//     .attr("dy", ".75em")
-		//     .attr("y", 6)
-		//     .attr("x", x(data[0].dx) / 2)
-		//     .attr("text-anchor", "middle")
-		//     .text(function(d) { return formatCount(d.y); });
 
 	}; //end histogram
 
