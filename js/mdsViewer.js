@@ -1761,7 +1761,7 @@ var mdsViewer = (function() {
 		bar.append("rect")
 			    .attr("x", 1)
 			    .attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-				.attr("width", mCanvasWidth / 20 - 5)
+				.attr("width", xScale(histdata[0].dx) - 2)
 			    //.attr("width", x(data[0].dx) - 1)
 			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); })
 			    .style("stroke", "black")
