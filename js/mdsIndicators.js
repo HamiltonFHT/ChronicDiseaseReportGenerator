@@ -480,8 +480,8 @@ var mdsIndicators =  (function(){
 
 
 	var ruleA1CPastNMonths = {
-		desc: function(){ return "A1C measured in last " + this.months + " months"; },
-		long_desc: function(){ return "% of patients with A1C measured in last " +  this.months + " months"; },
+		desc: function(){ return "A1C measured in past " + this.months + " months"; },
+		long_desc: function(){ return "% of patients with A1C measured in past " +  this.months + " months"; },
 		months: 6,
 		modifiable: ["months"],
 		defaults: [6],
@@ -554,7 +554,7 @@ var mdsIndicators =  (function(){
 	};
 
 	var ruleLDLPastNMonths = {
-		desc: function(){return "LDL measured within the last " + this.months + " months";},
+		desc: function(){return "LDL measured within the past " + this.months + " months";},
 		long_desc: function(){return "% of diabetic patients with LDL measured within the past " + this.months + " months";},
 		col: ["Current Date", "Date LDL"],
 		months: 12,
@@ -609,20 +609,19 @@ var mdsIndicators =  (function(){
 	 	}
 	};
 	
-	var ruleACRMaleLessThanXLastNMonths = {
-		desc: function(){return "ACR Male < " + this.target + " in past " + this.months + " months"; },
-		long_desc: function(){return "% of male patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
+	// ACR should be less than or equal to 2 for both men and women
+	// http://guidelines.diabetes.ca/executivesummary/ch1
+	var ruleACRLessThanEqualToXLastNMonths = {
+		desc: function(){return "ACR \u2264 " + this.target + " in past " + this.months + " months"; },
+		long_desc: function(){return "% of patients with ACR \u2264 " + this.target + " measured in past " + this.months + " months";},
 		months: 12,
 		target: 2.0,
 		modifiable: ["months", "target"],
 		defaults: [12, 2.0],
 	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
 	 	rule: function(currentDate, measuredDate, value, sex) {
-	 		if (sex != "M") {
-	 			return NaN;
-	 		}
 	 		try {
-	 			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) < this.target || value=="<2.0");
+	 			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) <= this.target || value == "<2.0");
 	 		} catch (err) {
 	 			console.log("Error: " + err);
 	 			return false;
@@ -630,26 +629,26 @@ var mdsIndicators =  (function(){
 	 	}
 	};
 	
-	var ruleACRFemaleLessThanXLastNMonths = {
-		desc: function(){return "ACR Female < " + this.target + " in past " + this.months + " months"; },
-		long_desc: function(){return "% of female patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
-		months: 12,
-		target: 2.8,
-		modifiable: ["months", "target"],
-		defaults: [12, 2.8],
-	 	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
-	 	rule: function(currentDate, measuredDate, value, sex) {
-	 		if (sex != "F") {
-	 			return NaN;
-	 		}	 		
-	 		try {
-	  			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) < this.target || value=="<2.8");
-	 		} catch (err) {
-	 			console.log("Error: " + err);
-	 			return false;
-	 		}
-	 	}
-	};
+	// var ruleACRFemaleLessThanXLastNMonths = {
+	// 	desc: function(){return "ACR Female < " + this.target + " in past " + this.months + " months"; },
+	// 	long_desc: function(){return "% of female patients with ACR less than " + this.target + " measured in past " + this.months + " months";},
+	// 	months: 12,
+	// 	target: 2.8,
+	// 	modifiable: ["months", "target"],
+	// 	defaults: [12, 2.8],
+	//  	col: ["Current Date", "Date Microalbumin/Creatinine Ratio", "Microalbumin/Creatinine Ratio", "Sex"],
+	//  	rule: function(currentDate, measuredDate, value, sex) {
+	//  		if (sex != "F") {
+	//  			return NaN;
+	//  		}	 		
+	//  		try {
+	//   			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) >= this.target || value=="<2.8");
+	//  		} catch (err) {
+	//  			console.log("Error: " + err);
+	//  			return false;
+	//  		}
+	//  	}
+	// };
 	
 	var ruleEGFRMeasuredPastNMonths = {
 		desc: function(){return "eGFR measured in past " + this.months + " months";},
@@ -701,7 +700,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleBaselineBP = {
-		desc: function(){return "BP measured in last " + this.months + " months for  adults over " + this.age; },
+		desc: function(){return "BP measured in past " + this.months + " months for  adults over " + this.age; },
 		long_desc: function(){return "% of patients with BP measured in the past " + this.months + " months for adults over " + this.age; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,
@@ -983,8 +982,8 @@ var mdsIndicators =  (function(){
 	
     //Smoking Cessation Form is a count of the number of times LUNG-Smoking_Initial_Assessment_MOHLTC form has been performed
 	var ruleSmokingCessation = {
-		desc: function(){return "Smoking Cessation Attempted within " + this.months + " months"; },
-		long_desc: function() { return "Smoking Cessation form performed within last " + this.months + 
+		desc: function(){return "Smoking Cessation Attempted within past " + this.months + " months"; },
+		long_desc: function() { return "Smoking Cessation form performed within past " + this.months + 
 									   " months for smokers who have seen their doctor in that time"; },
 		months: 15,
 		modifiable: ["months"],
@@ -1303,8 +1302,7 @@ var mdsIndicators =  (function(){
 								 ruleLDLPastNMonths,
 								 ruleLDLLessThanEqualToXPastNMonths, 
 								 ruleACRLastNMonths,
-								 ruleACRFemaleLessThanXLastNMonths,
-								 ruleACRMaleLessThanXLastNMonths,
+								 ruleACRLessThanEqualToXLastNMonths,
 								 ruleEGFRMeasuredPastNMonths, 
 								 ruleEGFRGreaterThanXPastNMonths,
 								 ruleCurrentSmokers];
