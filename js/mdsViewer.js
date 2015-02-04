@@ -89,13 +89,6 @@ var mdsViewer = (function() {
 	var hasRosteredField = false;    
 	var mRosteredOnly = false;
 
-	//Used when displaying axis titles
-	/*
-	String.prototype.replaceAt=function(index, character) {
-	    return this.substr(0, index) + character + this.substr(index+character.length);
-	};
-	*/
-	
 	var resizeTimer;
 	
 	//First time an extra canvas is generated, automatically scroll to it to show user the location
@@ -1133,10 +1126,9 @@ var mdsViewer = (function() {
 					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("y2", function (d, i) { return yScaleSnapshot.rangeBand()+yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("stroke-width", 2)
-                    .attr("stroke", "silver")
+                    .attr("stroke", "#CD7F32")
                     .append("svg:title")
 						.text("HFHT Target");
-
 
 			/* Continued after labels are inserted!! */
 		}
