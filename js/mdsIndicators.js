@@ -27,9 +27,9 @@ var mdsIndicators =  (function(){
 	};
 
 	var LHINAverages = {
-		'DiabeticAssessment': 0.30, //percent
-		'DateHbA1C': 0.50, //% HbA1c done twice in past year
-		'LDL': 0.67, //% measured in past twelve months
+		'DiabeticAssessment': 0.43, //percent
+		'DateHbA1C': 0.59, //% HbA1c done in past 6 months
+		'LDL': 0.71, //% measured in past twelve months
 		'BPUnderControl': 0.66, //% patients with BP < 140/90
 		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
 		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
@@ -38,17 +38,10 @@ var mdsIndicators =  (function(){
 		'FOBT': 0.32,
 	};
 
-	//Currently made up data!
 	var HFHTGoal = {
-		'DiabeticAssessment': 0.70, //percent
-		'DateHbA1C': 0.50, //% HbA1c done twice in past year
-		'LDL': 0.67, //% measured in past twelve months
-		'BPUnderControl': 0.6, //% patients with BP < 140/90
-		'SmokingCessation': 0.75, //% receiving advice to quit smoking in past year
 		'Mamm': 0.5,
 		'Pap': 0.5,
 		'FOBT': 0.5,
-		'CYMHScreening': 0.9
 	};
 
 	var mEMR = {"PSS":true,
@@ -151,6 +144,8 @@ var mdsIndicators =  (function(){
 	function getAgeFromMonths(age){
 		if (age.indexOf('mo') > 0) {
 			return Math.floor(parseInt(age, 10) / 12);
+		} else if (age.indexOf('wk') > 0 || age.indexOf('days') > 0) {
+			return 0;
 		} else {
 			return Number(age);
 		}
@@ -443,7 +438,6 @@ var mdsIndicators =  (function(){
 	 	defaults: [12],
 	 	col: ["Current Date", "K030A", "Q040A"],
 	 	average: LHINAverages.DiabeticAssessment,
-	 	goal: HFHTGoal.DiabeticAssessment,
 	 	histogram: [ ["Current Date", "K030A", "Q040A"], 
 	 				 function(c, k, q) { return monthsDifference(c, mostRecentDate([k, q]));},
 	 				 "Months Ago" 
@@ -542,7 +536,6 @@ var mdsIndicators =  (function(){
 		diasTarget: 80,
 	 	modifiable: ["months", "sysTarget", "diasTarget"],
 	 	defaults: [6, 130, 80],
-	 	average:0.3,
 	 	rule: function(currentDate, measuredDate, sysValue, diasValue) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
@@ -561,6 +554,7 @@ var mdsIndicators =  (function(){
 		modifiable: ["months"],
 		defaults: [12],
 		histogram: [["Current Date", "Date LDL"], function(cd, md) { return monthsDifference(cd, md); }, "Months Ago"],
+		average: LHINAverages.LDL,
 		rule: function(currentDate, measuredDate) {
 			 try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
@@ -700,7 +694,7 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleBaselineBP = {
-		desc: function(){return "BP measured in past " + this.months + " months for  adults over " + this.age; },
+		desc: function(){return "BP measured in past " + this.months + " months for  adults > " + this.age; },
 		long_desc: function(){return "% of patients with BP measured in the past " + this.months + " months for adults over " + this.age; },
 		col: ["Current Date", "Date Systolic BP", "Age"],
 		months: 12,
@@ -759,7 +753,6 @@ var mdsIndicators =  (function(){
 		modifiable: ["sysTarget", "diasTarget"],
 		defaults: [140, 90],
 		average: LHINAverages.BPUnderControl,
-		goal: HFHTGoal.BPUnderControl,
 		rule: function(sysValue, diasValue, icd9) {
 			try {
 				if (icd9.indexOf("401") == -1 || sysValue === "") {
@@ -796,15 +789,14 @@ var mdsIndicators =  (function(){
 			           varicella, rotavirus, polio) {
 			try {
 				var age = getAgeFromMonths(ageStr);
-				if (typeof age === "number") {
-					if (age >= this.minAge && age <= this.maxAge) {
+				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
 						return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
 							Number(varicella) >= this.varicella && 
 							Number(polio) >= this.polio);
-					}
+				} else {
+					return NaN;
 				}
-				return NaN;
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -823,16 +815,12 @@ var mdsIndicators =  (function(){
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
-		tetanus: 5,
-		pertussis: 5,
 		polio: 5,
 		hib: 4,
 		pneuc: 3,
 		rotavirus: 2,
 		mencc: 1,
 		measles: 2,
-		mumps: 2,
-		rubella: 2,
 		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [7, 13],
@@ -841,18 +829,19 @@ var mdsIndicators =  (function(){
 			try {
 				var age = getAgeFromMonths(ageStr);
 				//if younger than 18 than not included
-				if (age < this.minAge || age > this.maxAge) {
-					return NaN;
-				} else {
+				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
 					return (Number(measles) >= this.measles &&
 							Number(diphtheria) >= this.diphtheria && 
-							Number(varicella) >= this.varicella &&
+							//Number(varicella) >= this.varicella &&
 							//Number(rotavirus) >= this.rotavirus &&
 							Number(polio) >= this.polio); //&&
 							//Number(hib) >= this.hib &&
 							//Number(pneuc) >= this.pneuc &&
 							//Number(mencc) >= this.mencc);
-	 			}
+	 			} else {
+	 				return NaN;
+				}
+				
 			} catch (err) {
 				console.log(err);
 				return false;
@@ -860,46 +849,36 @@ var mdsIndicators =  (function(){
 		}
 	};
 
-	//Does not account for boosters
+	// Most vaccinations not recorded because EMR was introduced when patients were
+	// in teenage years. This test will instead make sure that the most recent vaccinations
+	// were given at the age they should have recieved their most recent vaccination
 	var ruleTeenagerVaccinations = {
-		desc: function(){return "Adults " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
+		desc: function(){return "Adults " + this.minAge + "-" + this.maxAge + " with diphtheria booster"; },
 		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
-		col: ["Age",
-			  "measles", "diphtheria", "varicella",
-			  "polio", "haemophilus b conjugate"],
+		col: ["Current Date", "diphtheria date", "Age"],
 			  //"pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
 		maxAge: 25,
-		diphtheria: 6,
-		tetanus: 6,
-		pertussis: 6,
-		polio: 5,
-		hib: 4,
-		pneuc: 3,
-		rotavirus: 2,
-		mencc: 2,
-		measles: 2,
-		mumps: 2,
-		rubella: 2,
-		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [18, 25],
-		rule: function(ageStr,	measles, diphtheria,  
-					   varicella, polio) {
+		rule: function(currentDate, dipDate, ageStr) {
 			try {
 				//if younger than 18 then not included
 				var age = getAgeFromMonths(ageStr);
-				if (age < this.minAge || age > this.maxAge) {
-					return NaN;
-				} else {
-					return (Number(measles) >= this.measles &&
-							Number(diphtheria) >= this.diphtheria && 
-							Number(varicella) >= this.varicella && 
-							//Number(rotavirus) >= this.rotavirus &&
-							Number(polio) >= this.polio);
-							//Number(hib) >= this.hib &&
-							//Number(pneuc) >= this.pneuc &&
-							//Number(mencc) >= this.mencc);
+				var monthsAgo = monthsDifference(currentDate, dipDate);
+				
+				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
+
+					if (isNaN(monthsAgo)) { return false; }
+					//Want to know if they received diphtheria when they were 14-16 
+					//therefore, check that the date of the immunization is more recent than (current age - 14 years) ago
+					
+					//we are theoretically interested in how long ago they were 14, but we can not accurately calculate this
+					//because we only know age to the year, so we calculate 13 instead to make sure we don't miss any vaccinations
+					maxMonthsAgo = (age - 13) * 12
+					return maxMonthsAgo >= monthsAgo;
+	 			} else {
+	 				return NaN;
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -958,7 +937,7 @@ var mdsIndicators =  (function(){
 	};	
 
 	var ruleSmokingStatusRecorded = {
-		desc: function(){return "Smoking Status Recorded for patients > " + this.age; },
+		desc: function(){return "Smoking Status Recorded for patients \u2265 " + this.age; },
 		long_desc: function() { return "Smoking Status Recorded in Risk Factors for patients over the age of " + this.age; },
 		age: 12,
 		col: ["Risk Factors", "Age"],
@@ -993,7 +972,6 @@ var mdsIndicators =  (function(){
 				"Last Seen Date", 			//last patient visit
 				"Current Date"],			// date of report
 		averages: LHINAverages.SmokingCessation,
-		goal: HFHTGoal.SmokingCessation,
 		rule: function(factors, formDate, lastSeenDate, currentDate) {
 			try {
 				factors = factors.toLowerCase();
@@ -1176,7 +1154,6 @@ var mdsIndicators =  (function(){
 		years:2,
 		modifiable: ["years"],
 		defaults: [2],
-		goal: HFHTGoal.CYMHScreening,
 		rule: function(currentDate, referralDate, lastScreening) {
 			try {
 				if (referralDate == "") {

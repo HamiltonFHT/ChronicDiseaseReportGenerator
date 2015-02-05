@@ -1230,7 +1230,7 @@ var mdsViewer = (function() {
 		if (data != null) {
 			histogram(data);
 		} else {
-			$("#canvasContainer_extra").clear();
+			$("#canvasContainer_extra").empty();
 		}
 
 		if (currentIndicator.hasOwnProperty("modifiable")) {

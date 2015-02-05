@@ -483,26 +483,29 @@
 			"Out-of-date passed!");
 	});
 
+	//Fails when diptheria not given since the patient was 13-14 years old
+	//We cannot calculate exactly when they turned 14, so we include 13 years old too
 	QUnit.test("Teen Immunizations", function (assert) {
 		assert.ok(
-											//"Age", "measles", "diphtheria",
-		      								//"varicella", "polio", "hib", "pneuc", "mencc"					
-			TeenagerVaccinations.rule("18", "2", "6", "2", "5") === true,
+									 //Current Date, Diphtheria Date, Age
+									 //diphtheria given 1 year ago, when they were 16
+									 //therefore pass		
+			TeenagerVaccinations.rule("Oct 21, 2014", "Oct 21, 2013", "18") === true,
 			"Up-to-date age 18 passed!");
 		assert.ok(				
-			TeenagerVaccinations.rule("25", "22", "6", "2", "5") === true,
-			"Up-to-date age 25 passed!");
+			TeenagerVaccinations.rule("Oct 21, 2014",  "Oct 21, 2008", "21") === true,
+			"Up-to-date age 21 passed!");
 		assert.ok(				
-			isNaN(TeenagerVaccinations.rule("17", "22", "6", "2", "5")),
+			isNaN(TeenagerVaccinations.rule("Oct 21, 2014",  "Oct 21, 2012", "17")),
 			"Up-to-date age 17 passed!");
 		assert.ok(				
-			isNaN(TeenagerVaccinations.rule("26", "22", "6", "2", "5")),
+			isNaN(TeenagerVaccinations.rule("Oct 21, 2014",  "Oct 21, 2007", "26")),
 			"Up-to-date age 26 passed!");
 		assert.ok(				
-			TeenagerVaccinations.rule("19", "1", "6", "2", "5") === false,
+			TeenagerVaccinations.rule("Oct 21, 2014", "Oct 21, 2002", "18") === false,
 			"Out-of-date passed!");
 		assert.ok(				
-			TeenagerVaccinations.rule("19", "2", "6", "", "") === false,
+			TeenagerVaccinations.rule("Oct 21, 2014", "", "18") === false,
 			"Missing vaccinations passed!");
 	});
 
