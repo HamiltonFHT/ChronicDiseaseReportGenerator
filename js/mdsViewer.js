@@ -87,7 +87,7 @@ var mdsViewer = (function() {
     //Whether the file has a "Rostered" field, 
     //used to check whether to make a "Rostered Patients Only" checkbox
 	var hasRosteredField = false;    
-	var mRosteredOnly = false;
+	var mRosteredOnly = true;
 
 	var resizeTimer;
 	
