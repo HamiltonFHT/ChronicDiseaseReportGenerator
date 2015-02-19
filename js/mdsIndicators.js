@@ -499,7 +499,7 @@ var mdsIndicators =  (function(){
 		months: 6,
 		modifiable: ["months", "target"],
 		defaults: [6, 0.08],
-		histogram: [["Hb A1C"], function(v) { return +v; }, "Hb A1C (%)"],
+		histogram: [["Hb A1C"], function(v) { if (+v > 1) { return (+v / 100); } else { return +v; } }, "Hb A1C (%)"],
 	 	rule: function(currentDate, measuredDate, value) {
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
