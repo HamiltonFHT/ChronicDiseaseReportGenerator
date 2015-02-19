@@ -1700,7 +1700,7 @@ var mdsViewer = (function() {
 
 		// Add x axis label
 		svg.append("text")
-			.attr("class", "xAxisLabel")
+			.attr("class", "xaxis xAxisLabel")
 			.attr("x", mGraphWidthTracking / 2)
 			.attr("y", DEFAULT_GRAPH_HEIGHT_TRACKING + 40)
 			.attr("text-anchor", "middle")
@@ -1739,6 +1739,14 @@ var mdsViewer = (function() {
 			.attr("transform", "translate(0, " + DEFAULT_GRAPH_HEIGHT_TRACKING + ")")
 			.call(xAxis);
 
+		var barWidth = (mGraphWidthTracking / histdata.length) - 4
+
+		// Align xaxis labels with center of bar (opposed to lefthand side)
+		// This is accomplished by moving them by 1/2 the bar width
+		svg.selectAll(".xaxis text")
+			.attr("dx", barWidth / 2);
+
+
 		//Add yaxis
 		svg.append("g")
 			.attr("class", "yaxis")
@@ -1753,7 +1761,7 @@ var mdsViewer = (function() {
 		bar.append("rect")
 			    .attr("x", 1)
 			    .attr("fill", DEFAULT_COLOURS[mCurrentIndSetIndex])
-				.attr("width", xScale(histdata[0].dx) - 2)
+				.attr("width", barWidth)
 			    //.attr("width", x(data[0].dx) - 1)
 			    .attr("height", function(d) { return DEFAULT_GRAPH_HEIGHT_TRACKING - yScale(d.y); })
 			    .style("stroke", "black")
@@ -1765,13 +1773,6 @@ var mdsViewer = (function() {
 		for (var i = 0; i < paths.length; i++) {
 			paths[i].setAttribute("style", "fill:none; stroke:black");
 			paths[i].setAttribute("shape-rendering", "crispEdges");
-		}
-
-
-		var svg = $("#canvasContainer_extra");
-		//Scroll to the new canvas
-		if (!svg.inViewport()) {
-			svg.scrollView();
 		}
 
 	}; //end histogram
