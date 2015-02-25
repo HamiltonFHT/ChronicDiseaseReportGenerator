@@ -1,0 +1,128 @@
+body { 
+	margin-left:1em;
+	height:100%;
+	padding-bottom:5em;
+}
+
+#canvasContainer {
+	width: 940px;
+	margin-right: 5px;
+	float:left;
+}
+
+#description {
+	text-align: justify;
+	display: block;
+	margin-right: 1em;
+	max-width: 1200px;
+}
+
+#actions {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.actionButton {
+	margin-right:0.5em;
+	margin-bottom:0.5em;
+}
+
+.sideBar {
+	float:right;
+}
+
+#measuresSection {
+	display: inline-block;
+}
+
+
+#canvasSVG {
+	display: block;
+	float:left;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top:0.5em;
+}
+
+#settings {
+	margin:0.5em;
+}
+
+#selectPhysicians {
+	padding:0em;
+}
+.physicianListItem {
+	display:inline;
+	list-style-type: none;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	margin-left: 1em;
+	cursor:pointer;
+}
+
+.settingsDropdown {
+	margin-right:0.5em;
+	margin-bottom:0.5em;
+}
+
+
+.buttonSelected {
+	border-style: inset;
+	background-color: darkgray;
+}
+
+.buttonNotSelected {
+	border-style: outset;
+	background-color: gainsboro;
+}
+
+.legendListItem {
+	display: inline-block;
+	min-width: 200px;
+	max-width: 200px;
+}
+
+.legendListItem:hover {
+	background-color: gainsboro;
+}
+
+.selected {
+	opacity: 1.0;
+}
+
+.notSelected {
+	opacity: 0.3;
+}
+
+.offTargetBar:hover {
+	fill: white;
+}
+
+.onTargetBar {
+	pointer-events: all;
+}
+
+#indicatorEditor {
+	width:230px;
+	float:left;
+	position:relative;
+	border:thin solid lightgrey;
+	padding:1em;
+	margin-top:0.5em;
+	display: none;
+}
+
+#dropdownIndicators {
+	margin-bottom:1em;
+	width:inherit;
+}
+
+.indicatorTitle { 
+	font-weight:bold;
+	margin-bottom:1em;
+}
+
+#applybtn {
+	margin-bottom:0.5em;
+}

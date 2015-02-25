@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+		
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=-1" />
+	<title>Chronic Disease Report Generator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+	<link rel="stylesheet" href="css/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<!--[if lte IE 8]>
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-old-ie-min.css">
+	<![endif]-->
+	<!--[if gt IE 8]><!-->
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css">
+	<!--<![endif]-->
+</head>
+
+<body>
+	<div id="container">
+		<div class="content">
+			<div id="description">
+				<h1>Chronic Disease Report Generator v1.5</h1>
+				<!-- TODO: This needs to be updated -->
+				<p>
+						This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
+	                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
+	                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
+	                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
+	                    Each data point may be clicked to show the corresponding snapshot report.
+	                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
+	                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
+				</p>
+				<br />
+			</div>
+		
+			<div id="actions">
+				<div class="actionImport" id="importFiles">
+					<b>Import Report(s):</b><br>
+					<input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="display:none">
+					<input type="button" value="Choose File(s)" onclick='document.getElementById("fileImport").click()'>
+					<span id="filename"></span>
+				</div>
+				<div id="settings"> </div>
+				<div id="save"> </div>
+			</div>
+		
+			<div id="canvasContainer">
+				<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211);"> </svg>
+			</div>
+		
+	
+			<div id="indicatorEditor"> </div>
+			
+			<div id="canvasContainer_extra" style="position:relative; padding-top:1em; clear:both;"> </div>
+			
+			<div id="hidden" style="position:relative; clear:both;">
+				<a href="" download="" id="outputA" style="display: none;">
+					<img src="" id="outputImg" style="display: none;"/>
+				</a>
+			</div>
+		</div> <!-- content -->
+	</div> <!-- container -->
+</body>
+
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
+
+	<!-- jsPDF -->
+	<script type="text/javascript" src="js/jsPDF/jspdf.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.split_text_to_size.js"></script>               
+	<!-- <script type="text/javascript" src="js/jsPDF/jspdf.plugin.from_html.js"></script> -->
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.addimage.js"></script>
+	<script type="text/javascript" src="js/jsPDF/FileSaver.min.js"></script>
+	<script type="text/javascript" src="js/jsPDF/Blob.js"></script>
+	<script type="text/javascript" src="js/jsPDF/canvas-toBlob.js"></script>
+
+	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="js/moment.js"></script>
+	<script type="text/javascript" src = "js/mdsReader.js"> </script>
+	<script type="text/javascript" src = "js/mdsViewer.js"> </script>
+	<script type="text/javascript" src = "js/mdsIndicators.js"> </script>
+</html>
