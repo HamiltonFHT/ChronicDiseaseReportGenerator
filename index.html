@@ -38,7 +38,10 @@
 		
 			<div id="actions">
 				<div class="actionImport" id="importFiles">
-					<b>Import Report(s):</b><br><input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple">
+					<b>Import Report(s):</b><br>
+					<input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="display:none">
+					<input type="button" value="Choose File(s)" onclick='document.getElementById("fileImport").click()'>
+					<div id="filename"></div>
 				</div>
 				<div id="settings"> </div>
 				<div id="save"> </div>

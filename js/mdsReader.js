@@ -65,6 +65,8 @@ var mdsReader = (function() {
 	      
 		for (i = 0; i < files.length; i++) {
 			var f = files[i]; 
+
+			$("#filename").html(f.name);
 			
 			if (!f) {
 			   alert("Failed to load file");
