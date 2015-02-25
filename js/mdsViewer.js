@@ -185,13 +185,6 @@ var mdsViewer = (function() {
 		updateCanvasSize();
 		addUserInterface();
 		
-		
-		if (mArrayDates.length == 1 && $('#dropdownMode').length) {
-			$("#dropdownMode").prop("disabled", true);
-		} else {
-			$("#dropdownMode").prop("disabled", false);
-		}
-		
 		if (mMode === "snapshot") {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
@@ -218,7 +211,6 @@ var mdsViewer = (function() {
 		}
 		
 		addIndicatorEditor();
-		updateDropdownMode();
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
 
@@ -525,15 +517,7 @@ var mdsViewer = (function() {
 			return false; 
 	  	});
 	}
-	
-	function updateDropdownMode() {
-		if(mMode === "snapshot") {
-			$("#dropdownMode").val("Snapshot");
-		} else {
-			$("#dropdownMode").val("Tracking");
-		}
-	}
-	
+
 	/**
 	 * Saves current chart to either PDF or PNG
 	 * @param  {String} fileType Either 'pdf' or 'image'
