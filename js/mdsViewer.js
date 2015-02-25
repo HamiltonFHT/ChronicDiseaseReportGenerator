@@ -42,6 +42,7 @@ var mdsViewer = (function() {
 
 	//Static variables to handle graph dimensions and colors
 	var DEFAULT_CANVAS_WIDTH = 940;
+	var IMAGE_CANVAS_WIDTH = 752;
 	var mCanvasScale = 1;
 	var mCanvasWidth = DEFAULT_CANVAS_WIDTH * mCanvasScale;  		// pixels
 	var DEFAULT_CANVAS_HEIGHT = 480;    	// pixels
@@ -533,14 +534,20 @@ var mdsViewer = (function() {
 		}
 	}
 	
+	/**
+	 * Saves current chart to either PDF or PNG
+	 * @param  {String} fileType Either 'pdf' or 'image'
+	 * @return {boolean}         Always false - required for jQuery callback
+	 */
 	function saveFile(fileType) {
 		
-	    updateCanvasSize(true);
+		//Second true means that we are forcing it to be "MEDIUM" sized
+	    updateCanvasSize(true, "MEDIUM");
 		
 		// Append canvas to the document
 		var canvasHeight = (mMode == 'snapshot' ? mCanvasHeight : DEFAULT_CANVAS_HEIGHT)
 
-		var canvasString = '<canvas id="outputCanvas" width="' + mCanvasWidth + '" height="' + canvasHeight +
+		var canvasString = '<canvas id="outputCanvas" width="' + IMAGE_CANVAS_WIDTH + '" height="' + canvasHeight +
 							'" style="border: 1px solid black; display:none;"></canvas>';
 		
 		$("#outputCanvas").remove();
@@ -597,6 +604,9 @@ var mdsViewer = (function() {
 		}
 		ctx.restore();
 		
+		//Restore canvas to previous size (if it changed)
+		updateCanvasSize(true);
+
 		//For jQuery callback
 		return false;
 	}
@@ -780,16 +790,43 @@ var mdsViewer = (function() {
 		}
 	}
 		
-	function updateCanvasSize(redraw) {
+	/**
+	 * Updates dimensions of drawing canvas based on window size or 
+	 * input parameters and redraws it
+	 * @param  {boolean} redraw     	Clears and redraws canvas if true
+	 * @param  {boolean} canvasSize 	One of ["SMALL", "MEDIUM", "LARGE"] to set canvas size manually
+	 * @return 							Nothing
+	 */
+	function updateCanvasSize(redraw, canvasSize) {
 		var prevScale = mCanvasScale;
-		if (window.innerWidth >= 960) {
-			mCanvasScale = 1;
-		} else if (window.innerWidth < 960 && window.innerWidth >= 780) {
-			mCanvasScale = 0.8;
-		} else if (window.innerWidth < 780) {
-			mCanvasScale = 0.6;
+		var small = 0.6;
+		var medium = 0.8;
+		var large = 1;
+
+		if (arguments.length === 2) {
+			switch(canvasSize){
+				case "LARGE":
+					mCanvasScale = large;
+					break;
+				case "MEDIUM":
+					mCanvasScale = medium;
+					break;
+				case "SMALL":
+					mCanvasScale = small;
+					break;
+				default:
+					mCanvasScale = medium;
+			}	
 		}
-		
+		else {
+			if (window.innerWidth >= 960) {
+			mCanvasScale = large;
+			} else if (window.innerWidth < 960 && window.innerWidth >= 780) {
+				mCanvasScale = medium;
+			} else if (window.innerWidth < 780) {
+				mCanvasScale = small;
+			}
+		}
 		
 		if (prevScale != mCanvasScale) {
 			mCanvasWidth = Math.floor(DEFAULT_CANVAS_WIDTH*mCanvasScale);
