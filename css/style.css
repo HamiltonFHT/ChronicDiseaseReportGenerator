@@ -6,14 +6,17 @@
 
 #canvasContainer {
 	width: 940px;
-	margin-right: 5px;
-	float:left;
+}
+
+.content {
+	width: 1200px;
+	margin-left:auto;
+	margin-right:auto;
 }
 
 #description {
 	text-align: justify;
 	display: block;
-	margin-right: 1em;
 	max-width: 1200px;
 }
 
