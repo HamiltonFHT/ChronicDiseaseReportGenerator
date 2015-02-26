@@ -20,8 +20,6 @@ time, mark, audio, video {
 	font: inherit;
 	font-size: 100%;
 	vertical-align: baseline;
-	/*margin-left: auto;
-	margin-right:auto;*/
 	border: 0;
 }
 /* HTML5 display-role reset for older browsers */
@@ -53,7 +51,7 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, serif;
   font-size: 1em;
   line-height: 1.5;
-  color: #6d6d6d;
+  color: #555555;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
   background: #e7e7e7 url(../images/body-bg.png) 0 0 repeat;
 }

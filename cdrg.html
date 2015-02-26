@@ -43,7 +43,7 @@
 				<div class="actionImport" id="importFiles">
 					<div>Import Report(s):</div>
 					<input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="display:none">
-					<input type="button" value="Browse..." class="actionButton" onclick='document.getElementById("fileImport").click()'>
+					<button class="pure-button actionButton" onclick="document.getElementById(&quot;fileImport&quot;).click()">Browse...</button>
 					<span id="filename"></span>
 				</div>
 				<div id="settings"> </div>
