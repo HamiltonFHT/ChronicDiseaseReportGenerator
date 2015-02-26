@@ -27,9 +27,9 @@ var mdsIndicators =  (function(){
 	};
 
 	var LHINAverages = {
-		'DiabeticAssessment': 0.41, //percent
-		'DateHbA1C': 0.57, //% HbA1c done in past 6 months
-		'LDL': 0.68, //% measured in past twelve months
+		'DiabeticAssessment': 0.433, //percent
+		'DateHbA1C': 0.591, //% HbA1c done in past 6 months
+		'LDL': 0.706, //% measured in past twelve months
 		'BPUnderControl': 0.66, //% patients with BP < 140/90
 		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
 		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
