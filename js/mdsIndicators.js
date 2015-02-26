@@ -195,7 +195,7 @@ var mdsIndicators =  (function(){
 			for (var p=0; p<numParams;p++) {
 				argList.push(data[0][cols[p]][e]);
 			}
-			values.push(rule.apply(mdsIndicators, argList));
+			values.push(rule.apply(indicator, argList));
 		}
 		
 		return [values.filter(function(e) { return !isNaN(e); }), label];
