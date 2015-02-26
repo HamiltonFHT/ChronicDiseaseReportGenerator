@@ -1092,7 +1092,7 @@ var mdsViewer = (function() {
 			var averages = [];
 			for (var i in indexes) {
 				if (indicatorSet[indexes[i]].hasOwnProperty("average")) {
-					averages.push({"index": indexes[i], 
+					averages.push({"index": +i, 
 									"avg": +indicatorSet[indexes[i]].average });
 				}
 			}
@@ -1103,8 +1103,8 @@ var mdsViewer = (function() {
 					.attr("class", "averageLine")
 					.attr("x1", function(d) { return xScaleSnapshot(100*d.avg); })
 					.attr("x2", function(d) { return xScaleSnapshot(100*d.avg); })
-					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[i]); })
-					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[i])+yScaleSnapshot.rangeBand(); })
+					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[d.index])+yScaleSnapshot.rangeBand(); })
 					.attr("stroke-width", 2)
                     .attr("stroke", "gold")
                     .append("svg:title")
