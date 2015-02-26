@@ -1542,9 +1542,7 @@ var mdsViewer = (function() {
 	
 	function generateExtraCanvas() {
 		
-		var canvas = $("#canvasContainer_extra");
-		//Empty the extra canvas
-		canvas.empty();
+		$("#canvasContainer_extra").empty();
 		
 		//Recreate the extra canvas
 		mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
@@ -1676,10 +1674,8 @@ var mdsViewer = (function() {
 		var values = data[0];
 		var label = data[1];
 
-		var svg = $("#canvasContainer_extra");
-		//Empty the extra canvas
-		svg.empty();
-		
+		$("#canvasContainer_extra").empty();
+
 		//Recreate the extra canvas
 		svg = d3.select("#canvasContainer_extra").append("svg")
 			.attr("id", "canvasSVGExtra")
