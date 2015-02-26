@@ -626,9 +626,9 @@ var mdsViewer = (function() {
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentIndicator[item] + '"></div>'); 
 		});
 		
-		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
-		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
-		items.push('<div class="pure-u-1"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
+		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button actionButton">Apply Changes</button></div>');
+		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button actionButton">Reset</button></div>');
+		items.push('<div class="pure-u-1"><button id="resetallbtn" class="pure-button actionButton">Reset All</button></div>');
 		$("#indicatorEditor").append(items.join(''));
 		
 		
