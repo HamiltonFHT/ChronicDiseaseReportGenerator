@@ -30,7 +30,7 @@
 	margin-right:0.5em;
 	margin-bottom:0.5em;
 	border: 1px solid(0, 0, 0, 0.3);
-	background-color: #5195CE;
+	background-color: #4B6D89;
 	border-radius: 5px;
 	color:white;
 }
@@ -109,6 +109,8 @@
 
 .onTargetBar {
 	pointer-events: all;
+	stroke-width: 1.5px;
+	stroke:#fff;
 }
 
 #indicatorEditor {
