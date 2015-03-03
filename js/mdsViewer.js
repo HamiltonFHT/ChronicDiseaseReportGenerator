@@ -163,7 +163,7 @@ var mdsViewer = (function() {
 		mArrayDates = arrayDates;
 		mTotalPatients = totalPatients;
 		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
-		mCurrentIndicator = 0;
+		//mCurrentIndicator = 0;
 				
 
 		$("#canvasContainer_extra").empty();
@@ -1547,7 +1547,7 @@ var mdsViewer = (function() {
 					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 
 		//Add the snapshot graph to the extra canvas
-		if (mode == "tracking")
+		if (mMode == "tracking")
 			generateSnapshot(mCurrentDateIndex, true);
 
 		//Scroll to the new canvas
