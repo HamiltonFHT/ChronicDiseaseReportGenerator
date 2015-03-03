@@ -174,7 +174,7 @@ var mdsViewer = (function() {
 		}
 		
 		if ($("#settings").children().length === 0) {
-			addUserInterface();
+			//addUserInterface();   TPS
 		} else if (isNewFile) {
 			addPhysicianList();
 			mCurrentDateIndex = 0;
@@ -184,7 +184,10 @@ var mdsViewer = (function() {
 		clearCanvas();
 		updateCanvasSize();
 		addUserInterface();
-		
+		if ($('#indicatorEditor').is(':empty')) {
+			addIndicatorEditor();
+		}
+
 		if (mMode === "snapshot") {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
@@ -210,7 +213,7 @@ var mdsViewer = (function() {
 			}
 		}
 		
-		addIndicatorEditor();
+		
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
 
@@ -255,14 +258,7 @@ var mdsViewer = (function() {
 							});		
 	};
 	
-	/*
-	 * Removes user interface elements other than the chart
-	 */
-	function clearUserInterface() {
-		$("#settings").empty();
-		$("#save").empty();
-	}
-	
+
 	function allEqual(val, obj){
 		for (k in obj) {
 			if (obj[k] != val) {
@@ -302,31 +298,30 @@ var mdsViewer = (function() {
 	function addUserInterface() {
 		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 		// physicianSection, measuresSection, settingsSection
-		clearUserInterface();
+		$("#settings").empty();
 	
 		// Adding a panel section for selecting physicians
 		$("#settings").append('<ul id="selectPhysicians"></ul>' +
-							  '<div id="selectRuleSet"></div>' +
-							  '<div id="selectIndicator"></div>' +
-							  '<div id="toggleLabels"></div>');
+							  '<div id="dropdowns"></div>' +
+							  '<div id="actionButtons"></div>');
 		
 		addPhysicianList();
 
 		// Save to PNG
 		var btnSaveImage = '<button class="pure-button actionButton" id="btnSaveImage"><i class="fa fa-file-image-o"></i> Save as image</button>';
-		$("#save").append(btnSaveImage);
+		$("#actionButtons").append(btnSaveImage);
 		$("#btnSaveImage").unbind();
 		$("#btnSaveImage").click(function() { saveFile('image'); });
 		
 
 		var btnSavePDF = '<button class="pure-button actionButton" id="btnSavePDF"><i class="fa fa-file-pdf-o"></i> Save as PDF</button>';
-		$("#save").append(btnSavePDF);
+		$("#actionButtons").append(btnSavePDF);
 		$("#btnSavePDF").unbind();
 		$("#btnSavePDF").click(function() {	saveFile('pdf'); });
 				
 
 		var btnDownloadPatients = '<button class="pure-button actionButton" id="btnDownloadPatients"><i class="fa fa-file-text"></i> Download Patient Info</button>'
-		$("#save").append(btnDownloadPatients);
+		$("#actionButtons").append(btnDownloadPatients);
 		$("#btnDownloadPatients").unbind();
 		$("#btnDownloadPatients").click(function() {
 			var indicator = getIndicator();
@@ -392,7 +387,7 @@ var mdsViewer = (function() {
 
 		// Toggle data labels
 		var btnToggleLabels = '<button class="pure-button actionButton" id="btnToggleLabels"><i class="fa fa-check-square-o"></i> Toggle data labels</button>';
-		$("#save").append(btnToggleLabels);
+		$("#actionButtons").append(btnToggleLabels);
 		$("#btnToggleLabels").unbind();
 		$("#btnToggleLabels").click(function() {
 			toggleDataLabels();
@@ -412,7 +407,7 @@ var mdsViewer = (function() {
 		}
 		dropdownRules.push('</div>');
 		
-		$("#settings").append(dropdownRules.join('\n'));
+		$("#dropdowns").append(dropdownRules.join('\n'));
 		
 		$("#dropdownRules").change(function() {
 			mCurrentIndSetIndex = this.selectedIndex;
@@ -420,7 +415,7 @@ var mdsViewer = (function() {
 			mCurrentIndicator = 0;
 			
 			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
-			updateDropdownIndicators();
+			addIndicatorEditor();
 		});
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
@@ -435,7 +430,7 @@ var mdsViewer = (function() {
 					'<option value="PSS">PSS</option>' +
 					'<option value="Oscar">Oscar</option>' +
 					'</select>';
-		$("#settings").append(dropdownEMR);
+		$("#dropdowns").append(dropdownEMR);
 
 		// Create change function
 		$("#dropdownEMR").change(function() {
@@ -451,7 +446,7 @@ var mdsViewer = (function() {
 			var rostered = ' <input type="checkbox" id="rostered">' +
 							'Rostered Patients Only' +
 							'</input>';
-			$("#settings").append(rostered);
+			$("#dropdowns").append(rostered);
 			$("#rostered").prop("checked", mRosteredOnly);
 
 			$("#rostered").change(function() {
@@ -596,13 +591,11 @@ var mdsViewer = (function() {
 	}
 	
 	function addIndicatorEditor() {
-		
+
 		function capitalize(s){
 			return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
 		};
-		
-		var currentIndicator = getInternalRuleIndex();
-		
+			
 		//Reset indicator editor bar
 		removeIndicatorEditor();
 
@@ -638,18 +631,15 @@ var mdsViewer = (function() {
 				updateIndicator();
 			}
 		});
-				
-		//var $saveChanges = $('<input type="button" id="applybtn" value="Save Changes" />');
-		//$saveChanges.appendTo($("#indicatorParameters"));
 		
-		$("#applybtn").unbind();
-		$("#applybtn").click( function() { updateIndicator(); return false; } );
+		$("#applybtn").unbind("click")
+						.click( function() { updateIndicator();} );
 		
-		$("#resetbtn").unbind();
-		$("#resetbtn").click( function() { resetIndicator(); return false; } );
+		$("#resetbtn").unbind("click")
+						.click( function() { resetIndicator();} );
 		
-		$("#resetallbtn").unbind();
-		$("#resetallbtn").click( function() { resetAllIndicators(); return false; } );
+		$("#resetallbtn").unbind("click")
+							.click( function() { resetAllIndicators();} );
 			
 		$("#indicatorEditor").css("display", "block");
 		
@@ -684,12 +674,8 @@ var mdsViewer = (function() {
 		$("#dropdownIndicators")[0].selectedIndex = mCurrentIndicator;
 		
 		$("#dropdownIndicators").change(function() {
-			clearCanvas();
-			
 			mCurrentIndicator = this.selectedIndex;
-			addIndicatorEditor(getInternalRuleIndex());
-						
- 			updateCharts();
+			updateCharts();
 		});
 	}
 	
@@ -710,7 +696,7 @@ var mdsViewer = (function() {
 		
 		if (params_updated === $('.indicatorValue').length) {
 			
-			addIndicatorElements();
+			recalculateIndicators();
 		}
 	}
 	
@@ -720,7 +706,7 @@ var mdsViewer = (function() {
 		
 		mdsIndicators.resetToDefault(getIndicator());
 		
-		addIndicatorElements();
+		recalculateIndicators();
 	}
 	
 	function resetAllIndicators() {
@@ -732,15 +718,14 @@ var mdsViewer = (function() {
 				mdsIndicators.resetToDefault(indicators[i]);
 			}
 		}
-		addIndicatorElements();
+		recalculateIndicators();
 	}
 
 	//Re-add dropdown with indicators
 	//Recalculate graph, preserving currently selected indicator
 	//Re-add indicator editor
-	function addIndicatorElements(){
-		updateDropdownIndicators();
-		
+	function recalculateIndicators(){
+
 		var currentIndicator = mCurrentIndicator;
 		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		mCurrentIndicator = currentIndicator;
@@ -748,7 +733,7 @@ var mdsViewer = (function() {
 		addIndicatorEditor();
 	}
 	
-	function removeIndicatorEditor(ruleIndex) {
+	function removeIndicatorEditor() {
 		$("#indicatorEditor").empty();
 		$("#indicatorEditor").css("display", "none");
 	}
@@ -888,6 +873,11 @@ var mdsViewer = (function() {
 		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
 
 		var data = mCalculatedData[selectedDate];
+
+		if (data.length === 0) {
+			removeIndicatorEditor();
+			return;
+		}
 
 		var mGraphHeight = DEFAULT_BAR_WIDTH * data.length;
 
