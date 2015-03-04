@@ -60,7 +60,8 @@
 	
 			<div id="indicatorEditor"> </div>
 			
-			<div id="canvasContainer_extra" style="position:relative; clear:both;"> </div>
+			<div id="canvasContainer_snapshot" style="position:relative; clear:both;"> </div>
+			<div id="canvasContainer_histogram" style="position:relative; clear:both;"> </div>
 			
 			<div id="hidden" style="position:relative; clear:both;">
 				<a href="" download="" id="outputA" style="display: none;">
@@ -93,7 +94,25 @@
 		</li>
 	</ol>
 
+	<ol id="joyRideChartArea" style="display:none">
+		<li data-class="indicatorLabel" data-button="Next" data-options="tipLocation:top;">
+			<h2>Indicator</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="onTargetBar" data-button="Next" data-options="tipLocation:top;">
+			<h2>Patients Meeting Target</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="dataLabelSnapshot" data-button="Next" data-options="tipLocation:top;">
+			<h2>Patients</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="averageLine" data-button="Finish" data-options="tipLocation:top;">
+			<h2>LHIN 4 Average</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
 
+	</ol>
 
 	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
@@ -118,15 +137,23 @@
 
 	<script>
      function tutorial(){
+     	if($('.joyride-tip-content')) {
+     		$(window).joyride('destroy')
+     	}
      	$('#joyRideTipContent').joyride({
-          autoStart : true,
-          postStepCallback : function (index, tip) {
-          if (index == 2) {
-            $(this).joyride('set_li', false, 1);
-          }
-        },
-        modal:true,
-        expose: true
+        	modal:true,
+        	autoStart : true,
+        	expose: true
+        });
+     }
+     function chartTutorial(){
+     	if($('.joyride-tip-content')) {
+     		$(window).joyride('destroy')
+     	}
+     	$('#joyRideChartArea').joyride({
+        	modal:true,
+        	autoStart : true,
+        	expose: true
         });
      }
     </script>

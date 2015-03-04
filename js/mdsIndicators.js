@@ -162,7 +162,7 @@ var mdsIndicators =  (function(){
 		}
 	}
 
-	function getPlotData(indicator) {
+	function getPlotData(indicator, dateIndex) {
 
 		if (indicator.hasOwnProperty('histogram')) {
 			var cols = indicator.histogram[0];
@@ -181,19 +181,19 @@ var mdsIndicators =  (function(){
 		var numParams = cols.length;
 		
 		for (i=0; i<numParams; i++) {
-			if (!data[0].hasOwnProperty(cols[i])) {
+			if (!data[dateIndex].hasOwnProperty(cols[i])) {
 				console.log("File has no column named " + cols[i]);
 				console.log("Can't check rule: " + indicator.desc());
 				return null;
 			}
 		}
 			
-		var numItems = data[0][cols[0]].length;
+		var numItems = data[dateIndex][cols[0]].length;
 			
 		for (var e = 0; e < numItems; e++) {
 			var argList = [];
 			for (var p=0; p<numParams;p++) {
-				argList.push(data[0][cols[p]][e]);
+				argList.push(data[dateIndex][cols[p]][e]);
 			}
 			values.push(rule.apply(mdsIndicators, argList));
 		}

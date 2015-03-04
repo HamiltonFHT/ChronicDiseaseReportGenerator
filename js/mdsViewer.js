@@ -166,7 +166,8 @@ var mdsViewer = (function() {
 		//mCurrentIndicator = 0;
 				
 
-		$("#canvasContainer_extra").empty();
+		$("#canvasContainer_snapshot").empty();
+		$("#canvasContainer_histogram").empty();
 
 		if (mCalculatedData == undefined) {
 			console.log("no calculated data!");
@@ -192,6 +193,7 @@ var mdsViewer = (function() {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
 			generateSnapshot(0);
+			histogram();
 		} else {
 			var isEmpty = true;
 			for (var i = 0; i < mCalculatedData.length; i++) {
@@ -741,12 +743,14 @@ var mdsViewer = (function() {
 	function updateCharts() {
 		clearCanvas();
 		
-		$("#canvasContainer_extra").empty();
+		$("#canvasContainer_snapshot").empty();
+		$("#canvasContainer_histogram").empty();
 		
 		if (mMode === "tracking") {
 			generateTracking();			
 		} else {
 			generateSnapshot(0);
+			histogram();
 		}
 		addIndicatorEditor();
 	}
@@ -808,6 +812,7 @@ var mdsViewer = (function() {
 				clearCanvas();
 				if (mMode === 'snapshot') {
 					generateSnapshot(0);
+					histogram();
 				} else {
 					generateTracking();
 				}
@@ -995,7 +1000,9 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.call(xAxisSnapshot);
 			
+		//Y axis labels
 		canvas.append("g")
+			.attr("class", "indicatorLabel")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.attr("id", "yaxis")
@@ -1230,20 +1237,9 @@ var mdsViewer = (function() {
 		
 		mCurrentIndicator = i;
 		
-		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
+		histogram();
+
 		var currentIndicator = getIndicator();
-
-		//data contains an array of values and axis label(s)
-		//[ [values], label]
-		//label can be an array of [x-label, y-label] or just a x-label for histograms
-		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
-		var data = mdsIndicators.getPlotData(currentIndicator)
-		if (data != null) {
-			histogram(data);
-		} else {
-			$("#canvasContainer_extra").empty();
-		}
-
 		if (currentIndicator.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {
@@ -1417,7 +1413,10 @@ var mdsViewer = (function() {
 									.on("mouseout", function() {});
 									
 					mCurrentDateIndex = i;
+					var scroll = $(window).scrollTop();
 					generateExtraCanvas();
+					histogram();
+					$(window).scrollTop(scroll);
 				});
 				
 		// Add x axis label
@@ -1532,12 +1531,11 @@ var mdsViewer = (function() {
 	
 	function generateExtraCanvas() {
 		
-		var canvas = $("#canvasContainer_extra");
-		//Empty the extra canvas
-		canvas.empty();
-		
+		$("#canvasContainer_histogram").empty();
+		$("#canvasContainer_snapshot").empty();
+
 		//Recreate the extra canvas
-		mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
+		mCanvasExtra = d3.select("#canvasContainer_snapshot").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
 			.attr("height", mCanvasHeight)
@@ -1547,12 +1545,14 @@ var mdsViewer = (function() {
 					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 
 		//Add the snapshot graph to the extra canvas
-		if (mMode == "tracking")
+		if (mMode == "tracking") {
 			generateSnapshot(mCurrentDateIndex, true);
+			histogram();
+		}
 
 		//Scroll to the new canvas
-		if (!canvas.inViewport() && mFirstScrollView) {
-			canvas.scrollView();
+		if (!$("#canvasContainer_snapshot").inViewport() && mFirstScrollView) {
+			$("#canvasContainer_snapshot").scrollView();
 			mFirstScrollView = false;
 		}
 		//	$("#canvasContainer_extra").scrollView();
@@ -1661,17 +1661,28 @@ var mdsViewer = (function() {
 	
 
 
-	function histogram(data) {
+	function histogram() {
+
+		//data contains an array of values and axis label(s)
+		//[ [values], label]
+		//label can be an array of [x-label, y-label] or just a x-label for histograms
+		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
+		var data = mdsIndicators.getPlotData(getIndicator(), mCurrentDateIndex);
+
+		if (data === null) {
+			$("#canvasContainer_histogram").empty();
+			return;
+		}
 
 		var values = data[0];
 		var label = data[1];
 
-		var svg = $("#canvasContainer_extra");
+		var svg = $("#canvasContainer_histogram");
 		//Empty the extra canvas
 		svg.empty();
 		
 		//Recreate the extra canvas
-		svg = d3.select("#canvasContainer_extra").append("svg")
+		svg = d3.select("#canvasContainer_histogram").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
 			.attr("height", DEFAULT_CANVAS_HEIGHT)
