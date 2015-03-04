@@ -1743,6 +1743,8 @@ var mdsViewer = (function() {
 			.style("font-family", "Arial")
 			.text("# of Patients");
 
+		var date = mArrayDates[mCurrentDateIndex];
+		formattedDate = MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
 
 		// Add graph title
 		svg.append("text")
@@ -1753,7 +1755,7 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.style("font-family", "sans-serif")
 			.style("font-weight", "bold")
-			.text(getIndicator().desc());
+			.text(getIndicator().desc() + " as of " + formattedDate);
 
 		//Add xaxis
 	    svg.append("g")
