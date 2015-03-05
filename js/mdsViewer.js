@@ -327,7 +327,7 @@ var mdsViewer = (function() {
 		$("#btnDownloadPatients").unbind();
 		$("#btnDownloadPatients").click(function() {
 			var indicator = getIndicator();
-			var cols = indicator.col;
+			var cols = indicator.col.slice();
 			
 			//Remove current date from indicator columns
 			var hasCurrentDate = $.inArray("Current Date", cols);
