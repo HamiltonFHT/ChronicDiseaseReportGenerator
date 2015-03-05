@@ -332,7 +332,7 @@ var mdsViewer = (function() {
 			//Remove current date from indicator columns
 			var hasCurrentDate = $.inArray("Current Date", cols);
 			if (hasCurrentDate >= 0) {
-				var cols = cols.slice(hasCurrentDate, 1 );
+				cols.splice(hasCurrentDate, 1 );
 			}
 			
 			//get the data
@@ -364,7 +364,8 @@ var mdsViewer = (function() {
 				var row = [];
 				row.push(patientList["PatientID"][r]);
 				for (var i in cols) {
-					row.push(patientList[cols[i]][r])
+					// Remove any commas in text such as dates
+					row.push(patientList[cols[i]][r].replace(",", ""));
 				}
 				csvPatientList.push([row.join(", ")]);
 			}
