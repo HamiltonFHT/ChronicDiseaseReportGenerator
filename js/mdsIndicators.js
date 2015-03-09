@@ -768,32 +768,22 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleInfantVaccinations = {
-		desc: function(){return "Infants " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
+		desc: function(){return "Infants " + this.minAge + "years old with all immunizations"; },
 		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
 										" years with immunization schedule up to date"; },
 		col: ["Age", "measles", "diphtheria",
 		      "varicella", "rotavirus", "polio"],
-		minAge: 2,
-		maxAge: 3,
+		age: 2,
 		diphtheria: 4,
-		polio: 4,
-		hib: 4,
-		pneuc: 3,
-		rotavirus: 2,
-		mencc: 1,
 		measles: 1,
-		varicella: 1,
-		modifiable: ["minAge", "maxAge"],
-		defaults: [2, 3],
-		rule: function(ageStr, measles, diphtheria,  
-			           varicella, rotavirus, polio) {
+		modifiable: ["age"],
+		defaults: [2],
+		rule: function(ageStr, measles, diphtheria) {
 			try {
 				var age = getAgeFromMonths(ageStr);
-				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
+				if (typeof age === "number" && age == this.age) {
 						return (Number(measles) >= this.measles &&
-							Number(diphtheria) >= this.diphtheria && 
-							Number(varicella) >= this.varicella && 
-							Number(polio) >= this.polio);
+							Number(diphtheria) >= this.diphtheria);
 				} else {
 					return NaN;
 				}
@@ -815,7 +805,6 @@ var mdsIndicators =  (function(){
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
-		polio: 5,
 		hib: 4,
 		pneuc: 3,
 		rotavirus: 2,
@@ -824,20 +813,12 @@ var mdsIndicators =  (function(){
 		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [7, 13],
-		rule: function(ageStr,	measles, diphtheria, 
-					   varicella, polio, hib, pneuc, mencc) {
+		rule: function(ageStr,	measles, diphtheria) {
 			try {
 				var age = getAgeFromMonths(ageStr);
-				//if younger than 18 than not included
 				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
 					return (Number(measles) >= this.measles &&
-							Number(diphtheria) >= this.diphtheria && 
-							//Number(varicella) >= this.varicella &&
-							//Number(rotavirus) >= this.rotavirus &&
-							Number(polio) >= this.polio); //&&
-							//Number(hib) >= this.hib &&
-							//Number(pneuc) >= this.pneuc &&
-							//Number(mencc) >= this.mencc);
+							Number(diphtheria) >= this.diphtheria)
 	 			} else {
 	 				return NaN;
 				}
