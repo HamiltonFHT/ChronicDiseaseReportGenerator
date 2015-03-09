@@ -439,24 +439,23 @@
 
 	QUnit.test("Infant Immunizations", function (assert) {
 		assert.ok(
-											//"Age", "measles", "diphtheria",
-		      								//"varicella", "rotavirus", "polio"						
-			InfantVaccinations.rule("2", "1", "4", "1", "2", "4") === true,
+											//"Age", "measles", "diphtheria",					
+			InfantVaccinations.rule("2", "1", "4") === true,
 			"Up-to-date age 2 passed!");
 		assert.ok(				
-			InfantVaccinations.rule("3", "1", "4", "1", "2", "4") === true,
+			isNaN(InfantVaccinations.rule("3", "1", "4")),
 			"Up-to-date age 3 passed!");
 		assert.ok(				
-			isNaN(InfantVaccinations.rule("1", "1", "4", "1", "2", "4")),
+			isNaN(InfantVaccinations.rule("1", "1", "4")),
 			"Up-to-date age 1 passed!");
 		assert.ok(				
-			isNaN(InfantVaccinations.rule("4", "1", "4", "1", "2", "4")),
+			isNaN(InfantVaccinations.rule("4", "1", "4")),
 			"Up-to-date age 4 passed!");
 		assert.ok(				
-			InfantVaccinations.rule("2", "1", "3", "1", "2", "4") === false,
+			InfantVaccinations.rule("2", "1", "3") === false,
 			"Out-of-date passed!");
 		assert.ok(				
-			InfantVaccinations.rule("2", "", "", "1", "2", "4") === false,
+			InfantVaccinations.rule("2", "", "") === false,
 			"Out-of-date passed!");
 	});
 
