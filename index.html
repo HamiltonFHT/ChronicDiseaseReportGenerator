@@ -1,86 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
-		
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=-1" />
-	<title>Chronic Disease Report Generator</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	
-	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
-	<link rel="stylesheet" href="css/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/style.css">
-	<!--[if lte IE 8]>
-	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-old-ie-min.css">
-	<![endif]-->
-	<!--[if gt IE 8]><!-->
-	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css">
-	<!--<![endif]-->
-</head>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="css/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="css/print.css" media="print">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-46192213-2', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Chronic Disease Report Generator by HamiltonFHT</title>
+  </head>
 
-<body>
-	<div id="container">
-		<div class="content">
-			<div id="description">
-				<h1>Chronic Disease Report Generator v1.5</h1>
-				<!-- TODO: This needs to be updated -->
-				<p>
-						This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
-	                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
-	                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
-	                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
-	                    Each data point may be clicked to show the corresponding snapshot report.
-	                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
-	                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
-				</p>
-				<br />
-			</div>
-		
-			<div id="actions">
-				<div class="actionImport" id="importFiles">
-					<b>Import Report(s):</b><br>
-					<input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="display:none">
-					<input type="button" value="Choose File(s)" onclick='document.getElementById("fileImport").click()'>
-					<span id="filename"></span>
-				</div>
-				<div id="settings"> </div>
-				<div id="save"> </div>
-			</div>
-		
-			<div id="canvasContainer">
-				<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211);"> </svg>
-			</div>
-		
-	
-			<div id="indicatorEditor"> </div>
-			
-			<div id="canvasContainer_extra" style="position:relative; padding-top:1em; clear:both;"> </div>
-			
-			<div id="hidden" style="position:relative; clear:both;">
-				<a href="" download="" id="outputA" style="display: none;">
-					<img src="" id="outputImg" style="display: none;"/>
-				</a>
-			</div>
-		</div> <!-- content -->
-	</div> <!-- container -->
-</body>
+  <body>
+    <div id="container">
+      <div class="inner">
 
-	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
+        <header>
+          <h1>Chronic Disease Report Generator</h1>
+          <h2>Web dashboard for visualizing OSCAR and PSS data for the HFHT Minimum Dataset Project</h2>
+        </header>
+		
 
-	<!-- jsPDF -->
-	<script type="text/javascript" src="js/jsPDF/jspdf.js"></script>
-	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script>
-	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.split_text_to_size.js"></script>               
-	<!-- <script type="text/javascript" src="js/jsPDF/jspdf.plugin.from_html.js"></script> -->
-	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.addimage.js"></script>
-	<script type="text/javascript" src="js/jsPDF/FileSaver.min.js"></script>
-	<script type="text/javascript" src="js/jsPDF/Blob.js"></script>
-	<script type="text/javascript" src="js/jsPDF/canvas-toBlob.js"></script>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/HamiltonFHT/ChronicDiseaseReportGenerator/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/HamiltonFHT/ChronicDiseaseReportGenerator/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/HamiltonFHT/ChronicDiseaseReportGenerator" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
 
-	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
-	<script type="text/javascript" src="js/moment.js"></script>
-	<script type="text/javascript" src = "js/mdsReader.js"> </script>
-	<script type="text/javascript" src = "js/mdsViewer.js"> </script>
-	<script type="text/javascript" src = "js/mdsIndicators.js"> </script>
+        <hr>
+
+        <section id="main_content">
+          <h1>
+			<a id="chronicdiseasereportgenerator" class="anchor" href="#chronicdiseasereportgenerator" aria-hidden="true"><span class="octicon octicon-link"></span></a>Chronic Disease Report Generator</h1>
+
+			<p>Web dashboard for visualizing data associated with the Minimum Dataset Project.</p>
+			<p>See it <a href="cdrg.html">here</a></p>
+        </section>
+
+        <footer>
+          The Chronic Disease Report Generator is maintained by <a href="https://github.com/HamiltonFHT">HamiltonFHT</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
 </html>

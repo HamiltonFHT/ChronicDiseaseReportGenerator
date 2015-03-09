@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+		
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=-1" />
+	<title>Chronic Disease Report Generator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel=" stylesheet" type="text/css" href="css/joyride-2.1.css">
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<!--[if lte IE 8]>
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-old-ie-min.css">
+	<![endif]-->
+	<!--[if gt IE 8]><!-->
+	    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css">
+	<!--<![endif]-->
+</head>
+
+<body>
+	<div id="container">
+		<div class="content">
+			<div id="description">
+				<header>
+				<h1>Chronic Disease Report Generator v1.6</h1>
+				<!-- TODO: This needs to be updated -->
+				<p>
+						This tool allows you to upload reports containing lab results of patients and generates graphs based on the type of data uploaded.
+	                    When a single file is uploaded, a "Snapshot" report is generated which represents the performance of the practice at that point in time.
+	                    It shows the percentage of patients that meet the target clinical values. Some of the target values may be modified as desired from within the box to the right of the graph.
+	                    When multiple files are uploaded at once, the performance of a particular clinical measure is plotted over time, based on the date the reports were created; this is the "Tracking" mode.
+	                    Each data point may be clicked to show the corresponding snapshot report.
+	                    There are filters which allow you to select and deselect the physicians in your practice, in order to include or exclude them from your visualization.
+	                    Images of the generated graphs can be saved by clicking on the "Save as image" button and a report can be created by clicking on the "Save as PDF" button.
+				</p>
+				</header>
+				
+			</div>
+		
+			<div id="actions">
+				<div class="actionImport" id="importFiles">
+					<div>Import Report(s):</div>
+					<input type="file" id="fileImport" onclick="this.value=null" onchange="mdsReader.readFiles(this.files);" multiple="multiple" style="display:none">
+					<button class="pure-button actionButton" onclick="document.getElementById(&quot;fileImport&quot;).click();">Browse...</button>
+					<span id="filename"></span>
+				</div>
+				<div id="settings"> </div>
+			</div>
+		
+			<div id="canvasContainer">
+				<svg id="canvasSVG" width="940" height="480" style="border: 1px solid rgb(211, 211, 211); background-color:#dddddd"> 
+					<text y="240" transform="translate(470)" >
+					    <tspan x="0" text-anchor="middle" style="fill:#555555">drag and drop files here</tspan>
+					</text>
+				</svg>
+			</div>
+		
+	
+			<div id="indicatorEditor"> </div>
+			
+			<div id="canvasContainer_snapshot" style="position:relative; clear:both;"> </div>
+			<div id="canvasContainer_histogram" style="position:relative; clear:both;"> </div>
+			
+			<div id="hidden" style="position:relative; clear:both;">
+				<a href="" download="" id="outputA" style="display: none;">
+					<img src="" id="outputImg" style="display: none;"/>
+				</a>
+			</div>
+		</div> <!-- content -->
+	</div> <!-- container -->
+
+	<ol id="joyRideTipContent" style="display:none">
+		<li data-id="selectPhysicians" data-button="Next" data-options="tipLocation:top;">
+			<h2>Select Physicians</h2>
+			<p>Choose which physicians (based on EMR id) you want to include in this graph</p>
+		</li>
+		<li data-id="dropdowns" data-button="Next" data-options="tipLocation:top;">
+			<h2>Settings</h2>
+			<p>Choose which set of indicators to plot and the current EMR. This is normally set automatically</p>
+		</li>
+		<li data-id="actionButtons" data-button="Next" data-options="tipLocation:top;">
+			<h2>Save</h2>
+			<p>Save the chart as an image or PDF or download the list of patient IDs for patients not meeting target.</p>
+		</li>
+		<li data-id="canvasSVG" data-button="Next" data-options="tipLocation:top;">
+			<h2>Plotting Area</h2>
+			<p>Indicators will be plotted here</p>
+		</li>
+		<li data-id="indicatorEditor" data-button="Finish" data-options="tipLocation:top;">
+			<h2>Indicator Editor</h2>
+			<p>Modify targets for the indicators to reflect your QI goals</p>
+		</li>
+	</ol>
+
+	<ol id="joyRideChartArea" style="display:none">
+		<li data-class="indicatorLabel" data-button="Next" data-options="tipLocation:top;">
+			<h2>Indicator</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="onTargetBar" data-button="Next" data-options="tipLocation:top;">
+			<h2>Patients Meeting Target</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="dataLabelSnapshot" data-button="Next" data-options="tipLocation:top;">
+			<h2>Patients</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+		<li data-class="averageLine" data-button="Finish" data-options="tipLocation:top;">
+			<h2>LHIN 4 Average</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod</p>
+		</li>
+
+	</ol>
+
+	<script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
+
+	<!-- jsPDF -->
+	<script type="text/javascript" src="js/jsPDF/jspdf.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script>
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.split_text_to_size.js"></script>               
+	<!-- <script type="text/javascript" src="js/jsPDF/jspdf.plugin.from_html.js"></script> -->
+	<script type="text/javascript" src="js/jsPDF/jspdf.plugin.addimage.js"></script>
+	<script type="text/javascript" src="js/jsPDF/FileSaver.min.js"></script>
+	<script type="text/javascript" src="js/jsPDF/Blob.js"></script>
+	<script type="text/javascript" src="js/jsPDF/canvas-toBlob.js"></script>
+
+	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
+	<script src="js/jquery/jquery.joyride-2.1.js"></script>
+
+	<script type="text/javascript" src="js/moment.js"></script>
+	<script type="text/javascript" src = "js/mdsReader.js"> </script>
+	<script type="text/javascript" src = "js/mdsViewer.js"> </script>
+	<script type="text/javascript" src = "js/mdsIndicators.js"> </script>
+
+	<script>
+     function tutorial(){
+     	if($('.joyride-tip-content')) {
+     		$(window).joyride('destroy')
+     	}
+     	$('#joyRideTipContent').joyride({
+        	modal:true,
+        	autoStart : true,
+        	expose: true
+        });
+     }
+     function chartTutorial(){
+     	if($('.joyride-tip-content')) {
+     		$(window).joyride('destroy')
+     	}
+     	$('#joyRideChartArea').joyride({
+        	modal:true,
+        	autoStart : true,
+        	expose: true
+        });
+     }
+    </script>
+</body>
+
+
+
+</html>

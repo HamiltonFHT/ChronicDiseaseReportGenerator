@@ -1,19 +1,22 @@
-body { 
+/*body { 
 	margin-left:1em;
 	height:100%;
 	padding-bottom:5em;
-}
+}*/
 
-#canvasContainer {
+/*#canvasContainer {
 	width: 940px;
-	margin-right: 5px;
-	float:left;
+}*/
+
+.content {
+	max-width: 1206px;
+	margin-left:auto;
+	margin-right:auto;
 }
 
 #description {
-	text-align: justify;
+	text-align: start;
 	display: block;
-	margin-right: 1em;
 	max-width: 1200px;
 }
 
@@ -26,6 +29,10 @@ body {
 .actionButton {
 	margin-right:0.5em;
 	margin-bottom:0.5em;
+	border: 1px solid(0, 0, 0, 0.3);
+	background-color: #4B6D89;
+	border-radius: 4px;
+	color:white;
 }
 
 .sideBar {
@@ -43,6 +50,7 @@ body {
 	margin-left: auto;
 	margin-right: auto;
 	margin-top:0.5em;
+	border: 1px solid rgb(211, 211, 211);
 }
 
 #settings {
@@ -53,11 +61,8 @@ body {
 	padding:0em;
 }
 .physicianListItem {
-	display:inline;
+	display:inline-block;
 	list-style-type: none;
-	margin-top: 0.5em;
-	margin-bottom: 0.5em;
-	margin-left: 1em;
 	cursor:pointer;
 }
 
@@ -101,6 +106,8 @@ body {
 
 .onTargetBar {
 	pointer-events: all;
+	stroke-width: 1.5px;
+	stroke:#fff;
 }
 
 #indicatorEditor {

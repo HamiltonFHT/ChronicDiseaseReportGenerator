@@ -163,10 +163,11 @@ var mdsViewer = (function() {
 		mArrayDates = arrayDates;
 		mTotalPatients = totalPatients;
 		mCurrentIndSetName = mdsIndicators.ruleList[currentRuleSetIndex].name;
-		mCurrentIndicator = 0;
+		//mCurrentIndicator = 0;
 				
 
-		$("#canvasContainer_extra").empty();
+		$("#canvasContainer_snapshot").empty();
+		$("#canvasContainer_histogram").empty();
 
 		if (mCalculatedData == undefined) {
 			console.log("no calculated data!");
@@ -174,7 +175,7 @@ var mdsViewer = (function() {
 		}
 		
 		if ($("#settings").children().length === 0) {
-			addUserInterface();
+			//addUserInterface();   TPS
 		} else if (isNewFile) {
 			addPhysicianList();
 			mCurrentDateIndex = 0;
@@ -184,11 +185,15 @@ var mdsViewer = (function() {
 		clearCanvas();
 		updateCanvasSize();
 		addUserInterface();
-		
+		if ($('#indicatorEditor').is(':empty')) {
+			addIndicatorEditor();
+		}
+
 		if (mMode === "snapshot") {
 			//calculatedData = calculatedData[0];
 			//$("#dropdownIndicators").hide();
 			generateSnapshot(0);
+			histogram();
 		} else {
 			var isEmpty = true;
 			for (var i = 0; i < mCalculatedData.length; i++) {
@@ -210,7 +215,7 @@ var mdsViewer = (function() {
 			}
 		}
 		
-		addIndicatorEditor();
+		
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
 
@@ -255,14 +260,7 @@ var mdsViewer = (function() {
 							});		
 	};
 	
-	/*
-	 * Removes user interface elements other than the chart
-	 */
-	function clearUserInterface() {
-		$("#settings").empty();
-		$("#save").empty();
-	}
-	
+
 	function allEqual(val, obj){
 		for (k in obj) {
 			if (obj[k] != val) {
@@ -302,40 +300,39 @@ var mdsViewer = (function() {
 	function addUserInterface() {
 		// If uploading new files, remove old side panels and recreate the panels with new filters based on the new imported data
 		// physicianSection, measuresSection, settingsSection
-		clearUserInterface();
+		$("#settings").empty();
 	
 		// Adding a panel section for selecting physicians
 		$("#settings").append('<ul id="selectPhysicians"></ul>' +
-							  '<div id="selectRuleSet"></div>' +
-							  '<div id="selectIndicator"></div>' +
-							  '<div id="toggleLabels"></div>');
+							  '<div id="dropdowns"></div>' +
+							  '<div id="actionButtons"></div>');
 		
 		addPhysicianList();
 
 		// Save to PNG
 		var btnSaveImage = '<button class="pure-button actionButton" id="btnSaveImage"><i class="fa fa-file-image-o"></i> Save as image</button>';
-		$("#save").append(btnSaveImage);
+		$("#actionButtons").append(btnSaveImage);
 		$("#btnSaveImage").unbind();
 		$("#btnSaveImage").click(function() { saveFile('image'); });
 		
 
 		var btnSavePDF = '<button class="pure-button actionButton" id="btnSavePDF"><i class="fa fa-file-pdf-o"></i> Save as PDF</button>';
-		$("#save").append(btnSavePDF);
+		$("#actionButtons").append(btnSavePDF);
 		$("#btnSavePDF").unbind();
 		$("#btnSavePDF").click(function() {	saveFile('pdf'); });
 				
 
 		var btnDownloadPatients = '<button class="pure-button actionButton" id="btnDownloadPatients"><i class="fa fa-file-text"></i> Download Patient Info</button>'
-		$("#save").append(btnDownloadPatients);
+		$("#actionButtons").append(btnDownloadPatients);
 		$("#btnDownloadPatients").unbind();
 		$("#btnDownloadPatients").click(function() {
 			var indicator = getIndicator();
-			var cols = indicator.col;
+			var cols = indicator.col.slice();
 			
 			//Remove current date from indicator columns
 			var hasCurrentDate = $.inArray("Current Date", cols);
 			if (hasCurrentDate >= 0) {
-				var cols = cols.slice(hasCurrentDate, 1 );
+				cols.splice(hasCurrentDate, 1 );
 			}
 			
 			//get the data
@@ -367,7 +364,8 @@ var mdsViewer = (function() {
 				var row = [];
 				row.push(patientList["PatientID"][r]);
 				for (var i in cols) {
-					row.push(patientList[cols[i]][r])
+					// Remove any commas in text such as dates
+					row.push(patientList[cols[i]][r].replace(",", ""));
 				}
 				csvPatientList.push([row.join(", ")]);
 			}
@@ -392,7 +390,7 @@ var mdsViewer = (function() {
 
 		// Toggle data labels
 		var btnToggleLabels = '<button class="pure-button actionButton" id="btnToggleLabels"><i class="fa fa-check-square-o"></i> Toggle data labels</button>';
-		$("#save").append(btnToggleLabels);
+		$("#actionButtons").append(btnToggleLabels);
 		$("#btnToggleLabels").unbind();
 		$("#btnToggleLabels").click(function() {
 			toggleDataLabels();
@@ -412,7 +410,7 @@ var mdsViewer = (function() {
 		}
 		dropdownRules.push('</div>');
 		
-		$("#settings").append(dropdownRules.join('\n'));
+		$("#dropdowns").append(dropdownRules.join('\n'));
 		
 		$("#dropdownRules").change(function() {
 			mCurrentIndSetIndex = this.selectedIndex;
@@ -420,7 +418,7 @@ var mdsViewer = (function() {
 			mCurrentIndicator = 0;
 			
 			mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
-			updateDropdownIndicators();
+			addIndicatorEditor();
 		});
 		
 		$("#dropdownRules").val(getCurrentIndSetName());
@@ -435,7 +433,7 @@ var mdsViewer = (function() {
 					'<option value="PSS">PSS</option>' +
 					'<option value="Oscar">Oscar</option>' +
 					'</select>';
-		$("#settings").append(dropdownEMR);
+		$("#dropdowns").append(dropdownEMR);
 
 		// Create change function
 		$("#dropdownEMR").change(function() {
@@ -451,7 +449,7 @@ var mdsViewer = (function() {
 			var rostered = ' <input type="checkbox" id="rostered">' +
 							'Rostered Patients Only' +
 							'</input>';
-			$("#settings").append(rostered);
+			$("#dropdowns").append(rostered);
 			$("#rostered").prop("checked", mRosteredOnly);
 
 			$("#rostered").change(function() {
@@ -596,13 +594,11 @@ var mdsViewer = (function() {
 	}
 	
 	function addIndicatorEditor() {
-		
+
 		function capitalize(s){
 			return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
 		};
-		
-		var currentIndicator = getInternalRuleIndex();
-		
+			
 		//Reset indicator editor bar
 		removeIndicatorEditor();
 
@@ -626,9 +622,9 @@ var mdsViewer = (function() {
 			items.push('<br/><input id="' + item + '" class="indicatorValue" value="' + currentIndicator[item] + '"></div>'); 
 		});
 		
-		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button">Apply Changes</button></div>');
-		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button">Reset</button></div>');
-		items.push('<div class="pure-u-1"><button id="resetallbtn" class="pure-button">Reset All</button></div>');
+		items.push('<div style="padding-top:15px;" class="pure-u-1-2"><button id="applybtn" class="pure-button actionButton">Apply Changes</button></div>');
+		items.push('<div class="pure-u-1-2" style="padding-top:15px;"><button style="float:right" id="resetbtn" class="pure-button actionButton">Reset</button></div>');
+		items.push('<div class="pure-u-1"><button id="resetallbtn" class="pure-button actionButton">Reset All</button></div>');
 		$("#indicatorEditor").append(items.join(''));
 		
 		
@@ -638,18 +634,15 @@ var mdsViewer = (function() {
 				updateIndicator();
 			}
 		});
-				
-		//var $saveChanges = $('<input type="button" id="applybtn" value="Save Changes" />');
-		//$saveChanges.appendTo($("#indicatorParameters"));
 		
-		$("#applybtn").unbind();
-		$("#applybtn").click( function() { updateIndicator(); return false; } );
+		$("#applybtn").unbind("click")
+						.click( function() { updateIndicator();} );
 		
-		$("#resetbtn").unbind();
-		$("#resetbtn").click( function() { resetIndicator(); return false; } );
+		$("#resetbtn").unbind("click")
+						.click( function() { resetIndicator();} );
 		
-		$("#resetallbtn").unbind();
-		$("#resetallbtn").click( function() { resetAllIndicators(); return false; } );
+		$("#resetallbtn").unbind("click")
+							.click( function() { resetAllIndicators();} );
 			
 		$("#indicatorEditor").css("display", "block");
 		
@@ -684,12 +677,8 @@ var mdsViewer = (function() {
 		$("#dropdownIndicators")[0].selectedIndex = mCurrentIndicator;
 		
 		$("#dropdownIndicators").change(function() {
-			clearCanvas();
-			
 			mCurrentIndicator = this.selectedIndex;
-			addIndicatorEditor(getInternalRuleIndex());
-						
- 			updateCharts();
+			updateCharts();
 		});
 	}
 	
@@ -710,7 +699,7 @@ var mdsViewer = (function() {
 		
 		if (params_updated === $('.indicatorValue').length) {
 			
-			addIndicatorElements();
+			recalculateIndicators();
 		}
 	}
 	
@@ -720,7 +709,7 @@ var mdsViewer = (function() {
 		
 		mdsIndicators.resetToDefault(getIndicator());
 		
-		addIndicatorElements();
+		recalculateIndicators();
 	}
 	
 	function resetAllIndicators() {
@@ -732,15 +721,14 @@ var mdsViewer = (function() {
 				mdsIndicators.resetToDefault(indicators[i]);
 			}
 		}
-		addIndicatorElements();
+		recalculateIndicators();
 	}
 
 	//Re-add dropdown with indicators
 	//Recalculate graph, preserving currently selected indicator
 	//Re-add indicator editor
-	function addIndicatorElements(){
-		updateDropdownIndicators();
-		
+	function recalculateIndicators(){
+
 		var currentIndicator = mCurrentIndicator;
 		mdsReader.reCalculate(mCurrentIndSetIndex, mSelectedPhysicians);
 		mCurrentIndicator = currentIndicator;
@@ -748,7 +736,7 @@ var mdsViewer = (function() {
 		addIndicatorEditor();
 	}
 	
-	function removeIndicatorEditor(ruleIndex) {
+	function removeIndicatorEditor() {
 		$("#indicatorEditor").empty();
 		$("#indicatorEditor").css("display", "none");
 	}
@@ -756,12 +744,14 @@ var mdsViewer = (function() {
 	function updateCharts() {
 		clearCanvas();
 		
-		$("#canvasContainer_extra").empty();
+		$("#canvasContainer_snapshot").empty();
+		$("#canvasContainer_histogram").empty();
 		
 		if (mMode === "tracking") {
 			generateTracking();			
 		} else {
 			generateSnapshot(0);
+			histogram();
 		}
 		addIndicatorEditor();
 	}
@@ -823,6 +813,7 @@ var mdsViewer = (function() {
 				clearCanvas();
 				if (mMode === 'snapshot') {
 					generateSnapshot(0);
+					histogram();
 				} else {
 					generateTracking();
 				}
@@ -888,6 +879,11 @@ var mdsViewer = (function() {
 		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
 
 		var data = mCalculatedData[selectedDate];
+
+		if (data.length === 0) {
+			removeIndicatorEditor();
+			return;
+		}
 
 		var mGraphHeight = DEFAULT_BAR_WIDTH * data.length;
 
@@ -1005,7 +1001,9 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.call(xAxisSnapshot);
 			
+		//Y axis labels
 		canvas.append("g")
+			.attr("class", "indicatorLabel")
 			.style("font-family", "Arial")
 			.style("font-size", "14px")
 			.attr("id", "yaxis")
@@ -1240,20 +1238,9 @@ var mdsViewer = (function() {
 		
 		mCurrentIndicator = i;
 		
-		//var currentRule = mdsIndicators.ruleList[mCurrentIndSetIndex].rules[getInternalRuleIndex()];
+		histogram();
+
 		var currentIndicator = getIndicator();
-
-		//data contains an array of values and axis label(s)
-		//[ [values], label]
-		//label can be an array of [x-label, y-label] or just a x-label for histograms
-		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
-		var data = mdsIndicators.getPlotData(currentIndicator)
-		if (data != null) {
-			histogram(data);
-		} else {
-			$("#canvasContainer_extra").empty();
-		}
-
 		if (currentIndicator.hasOwnProperty("modifiable")) {
 			addIndicatorEditor();
 		} else {
@@ -1427,7 +1414,10 @@ var mdsViewer = (function() {
 									.on("mouseout", function() {});
 									
 					mCurrentDateIndex = i;
+					var scroll = $(window).scrollTop();
 					generateExtraCanvas();
+					histogram();
+					$(window).scrollTop(scroll);
 				});
 				
 		// Add x axis label
@@ -1542,10 +1532,11 @@ var mdsViewer = (function() {
 	
 	function generateExtraCanvas() {
 		
-		$("#canvasContainer_extra").empty();
-		
+		$("#canvasContainer_histogram").empty();
+		$("#canvasContainer_snapshot").empty();
+
 		//Recreate the extra canvas
-		mCanvasExtra = d3.select("#canvasContainer_extra").append("svg")
+		mCanvasExtra = d3.select("#canvasContainer_snapshot").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
 			.attr("height", mCanvasHeight)
@@ -1555,12 +1546,14 @@ var mdsViewer = (function() {
 					.attr("transform", "translate(" + mSnapshotPaddingLeft + ", " + DEFAULT_PADDING_TOP_SNAPSHOT + ")");
 
 		//Add the snapshot graph to the extra canvas
-		if (mode == "tracking")
+		if (mMode == "tracking") {
 			generateSnapshot(mCurrentDateIndex, true);
+			histogram();
+		}
 
 		//Scroll to the new canvas
-		if (!canvas.inViewport() && mFirstScrollView) {
-			canvas.scrollView();
+		if (!$("#canvasContainer_snapshot").inViewport() && mFirstScrollView) {
+			$("#canvasContainer_snapshot").scrollView();
 			mFirstScrollView = false;
 		}
 		//	$("#canvasContainer_extra").scrollView();
@@ -1669,15 +1662,28 @@ var mdsViewer = (function() {
 	
 
 
-	function histogram(data) {
+	function histogram() {
+
+		//data contains an array of values and axis label(s)
+		//[ [values], label]
+		//label can be an array of [x-label, y-label] or just a x-label for histograms
+		//values can be 1d for histogram or 2d for a scatter plot [ [x-values], [y-values]]
+		var data = mdsIndicators.getPlotData(getIndicator(), mCurrentDateIndex);
+
+		if (data === null) {
+			$("#canvasContainer_histogram").empty();
+			return;
+		}
 
 		var values = data[0];
 		var label = data[1];
 
-		$("#canvasContainer_extra").empty();
-
+		var svg = $("#canvasContainer_histogram");
+		//Empty the extra canvas
+		svg.empty();
+		
 		//Recreate the extra canvas
-		svg = d3.select("#canvasContainer_extra").append("svg")
+		svg = d3.select("#canvasContainer_histogram").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
 			.attr("height", DEFAULT_CANVAS_HEIGHT)
@@ -1738,6 +1744,8 @@ var mdsViewer = (function() {
 			.style("font-family", "Arial")
 			.text("# of Patients");
 
+		var date = mArrayDates[mCurrentDateIndex];
+		formattedDate = MONTH_NAMES_SHORT[date.getMonth()] + " " + date.getDate() + " " + date.getFullYear();
 
 		// Add graph title
 		svg.append("text")
@@ -1748,7 +1756,7 @@ var mdsViewer = (function() {
 			.style("font-size", "14px")
 			.style("font-family", "sans-serif")
 			.style("font-weight", "bold")
-			.text(getIndicator().desc());
+			.text(getIndicator().desc() + " as of " + formattedDate);
 
 		//Add xaxis
 	    svg.append("g")

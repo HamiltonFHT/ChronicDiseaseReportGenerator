@@ -27,9 +27,9 @@ var mdsIndicators =  (function(){
 	};
 
 	var LHINAverages = {
-		'DiabeticAssessment': 0.43, //percent
-		'DateHbA1C': 0.59, //% HbA1c done in past 6 months
-		'LDL': 0.71, //% measured in past twelve months
+		'DiabeticAssessment': 0.433, //percent
+		'DateHbA1C': 0.591, //% HbA1c done in past 6 months
+		'LDL': 0.706, //% measured in past twelve months
 		'BPUnderControl': 0.66, //% patients with BP < 140/90
 		'SmokingCessation': 0.56, //% receiving advice to quit smoking in past year
 		'Smokers': 0.192, //% Daily smokers (Ontario HSIP Report)
@@ -162,7 +162,7 @@ var mdsIndicators =  (function(){
 		}
 	}
 
-	function getPlotData(indicator) {
+	function getPlotData(indicator, dateIndex) {
 
 		if (indicator.hasOwnProperty('histogram')) {
 			var cols = indicator.histogram[0];
@@ -181,21 +181,21 @@ var mdsIndicators =  (function(){
 		var numParams = cols.length;
 		
 		for (i=0; i<numParams; i++) {
-			if (!data[0].hasOwnProperty(cols[i])) {
+			if (!data[dateIndex].hasOwnProperty(cols[i])) {
 				console.log("File has no column named " + cols[i]);
 				console.log("Can't check rule: " + indicator.desc());
 				return null;
 			}
 		}
 			
-		var numItems = data[0][cols[0]].length;
+		var numItems = data[dateIndex][cols[0]].length;
 			
 		for (var e = 0; e < numItems; e++) {
 			var argList = [];
 			for (var p=0; p<numParams;p++) {
-				argList.push(data[0][cols[p]][e]);
+				argList.push(data[dateIndex][cols[p]][e]);
 			}
-			values.push(rule.apply(indicator, argList));
+			values.push(rule.apply(mdsIndicators, argList));
 		}
 		
 		return [values.filter(function(e) { return !isNaN(e); }), label];
@@ -768,32 +768,22 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleInfantVaccinations = {
-		desc: function(){return "Infants " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
+		desc: function(){return "Infants " + this.minAge + "years old with all immunizations"; },
 		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
 										" years with immunization schedule up to date"; },
 		col: ["Age", "measles", "diphtheria",
 		      "varicella", "rotavirus", "polio"],
-		minAge: 2,
-		maxAge: 3,
+		age: 2,
 		diphtheria: 4,
-		polio: 4,
-		hib: 4,
-		pneuc: 3,
-		rotavirus: 2,
-		mencc: 1,
 		measles: 1,
-		varicella: 1,
-		modifiable: ["minAge", "maxAge"],
-		defaults: [2, 3],
-		rule: function(ageStr, measles, diphtheria,  
-			           varicella, rotavirus, polio) {
+		modifiable: ["age"],
+		defaults: [2],
+		rule: function(ageStr, measles, diphtheria) {
 			try {
 				var age = getAgeFromMonths(ageStr);
-				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
+				if (typeof age === "number" && age == this.age) {
 						return (Number(measles) >= this.measles &&
-							Number(diphtheria) >= this.diphtheria && 
-							Number(varicella) >= this.varicella && 
-							Number(polio) >= this.polio);
+							Number(diphtheria) >= this.diphtheria);
 				} else {
 					return NaN;
 				}
@@ -815,7 +805,6 @@ var mdsIndicators =  (function(){
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
-		polio: 5,
 		hib: 4,
 		pneuc: 3,
 		rotavirus: 2,
@@ -824,20 +813,12 @@ var mdsIndicators =  (function(){
 		varicella: 2,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [7, 13],
-		rule: function(ageStr,	measles, diphtheria, 
-					   varicella, polio, hib, pneuc, mencc) {
+		rule: function(ageStr,	measles, diphtheria) {
 			try {
 				var age = getAgeFromMonths(ageStr);
-				//if younger than 18 than not included
 				if (typeof age === "number" && age >= this.minAge && age <= this.maxAge) {
 					return (Number(measles) >= this.measles &&
-							Number(diphtheria) >= this.diphtheria && 
-							//Number(varicella) >= this.varicella &&
-							//Number(rotavirus) >= this.rotavirus &&
-							Number(polio) >= this.polio); //&&
-							//Number(hib) >= this.hib &&
-							//Number(pneuc) >= this.pneuc &&
-							//Number(mencc) >= this.mencc);
+							Number(diphtheria) >= this.diphtheria)
 	 			} else {
 	 				return NaN;
 				}
