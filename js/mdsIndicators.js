@@ -768,9 +768,9 @@ var mdsIndicators =  (function(){
 	};
 	
 	var ruleInfantVaccinations = {
-		desc: function(){return "Infants " + this.minAge + "years old with all immunizations"; },
-		long_desc: function() { return "Infants between " + this.minAge + " and " + this.maxAge + 
-										" years with immunization schedule up to date"; },
+		desc: function(){return "Infants " + this.age + " years old with all immunizations"; },
+		long_desc: function() { return "Infants " + this.age + " years old with " +
+										this.diphtheria + " doses of diphtheria and " + this.measles + " dose of measles"; },
 		col: ["Age", "measles", "diphtheria",
 		      "varicella", "rotavirus", "polio"],
 		age: 2,
