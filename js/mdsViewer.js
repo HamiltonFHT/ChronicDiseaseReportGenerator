@@ -1,6 +1,6 @@
 /*
 	Chronic Disease Report Generator - Web based reports on quality of care standards
-    Copyright (C) 2014  Brice Wong, Tom Sitter, Kevin Lin - Hamilton Family Health Team
+    Copyright (C) 2015  Brice Wong, Tom Sitter, Kevin Lin - Hamilton Family Health Team
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ var mdsViewer = (function() {
 	
 	var mMode = ""; //either "snapshot" or "tracking"
 	var mDataLabels = true; //either true or false (not currently used)
-	var mShowAverages = true;
+	var mShowAverages = true; //LHIN Averages
+	var mShowHFHTAverages = true;
 	var mShowTargets = true;
 	var mReportTitle = "";
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
@@ -757,7 +758,7 @@ var mdsViewer = (function() {
 	}
 	
 	function getInternalRuleIndex() {
-		if (mCalculatedData[0].length > 0) {
+		if (mCalculatedData[0].length > 0 && mCalculatedData[0].length < mCurrentIndicator) {
 			return mCalculatedData[0][mCurrentIndicator].index;
 		} else {
 			return 0;
@@ -1073,6 +1074,48 @@ var mdsViewer = (function() {
 
 
 		//Display LHIN 4 Average for this indicator (if available)
+		if (mShowHFHTAverages) {
+
+			var yScaleAverages = d3.scale.linear()
+				.domain([0, 100])
+				.range([0, mGraphHeight]);
+
+			var indexes = [];
+			for (var i in data){
+				indexes.push(data[i].index);
+			}
+
+			
+			var indicatorSet = getIndicatorSet();
+
+			var hfhtaverages = [];
+			for (var i in indexes) {
+				if (indicatorSet[indexes[i]].hasOwnProperty("hfhtaverage")) {
+					hfhtaverages.push({"index": +i, 
+										"hfhtavg": +indicatorSet[indexes[i]].hfhtaverage });
+				}
+			}
+		
+			canvas.selectAll("HFHTaverageLine")
+				.data(hfhtaverages)
+				.enter().append("line")
+					.attr("class", "HFHTaverageLine")
+					.attr("x1", function(d) { return xScaleSnapshot(100*d.hfhtavg); })
+					.attr("x2", function(d) { return xScaleSnapshot(100*d.hfhtavg); })
+					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[d.index])+yScaleSnapshot.rangeBand(); })
+					.attr("stroke-width", 2)
+                    .attr("stroke", "silver")
+                    .append("svg:title")
+						.text("HFHT Average");
+
+
+			/* Continued after labels are inserted!! */
+		}
+
+
+
+		//Display LHIN 4 Average for this indicator (if available)
 		if (mShowAverages) {
 
 			var yScaleAverages = d3.scale.linear()
@@ -1193,6 +1236,25 @@ var mdsViewer = (function() {
 					.attr("fill", "rgba(0, 0, 0, 0)")
 					.append("svg:title")
 						.text("LHIN 4 Average");
+
+		}
+
+				//Rectangles are added here so that they lay on top of the labels
+		if (mShowHFHTAverages) {
+						//For tooltip
+			canvas.selectAll("HFHTaverageRect")
+				.data(hfhtaverages)
+				.enter().append("rect")
+					.attr("class", "HFHTaverageRect")
+					.attr("width", xScaleSnapshot(5))
+					.attr("height", yScaleSnapshot.rangeBand())
+					.attr("x", function (d, i) { 
+						return xScaleSnapshot(100*d.hfhtavg - 2.5); })
+					.attr("y", function (d, i) { 
+						return yScaleSnapshot(arrayDesc[d.index]); })
+					.attr("fill", "rgba(0, 0, 0, 0)")
+					.append("svg:title")
+						.text("HFHT Average");
 
 		}
 

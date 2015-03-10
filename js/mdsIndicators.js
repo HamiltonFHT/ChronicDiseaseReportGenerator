@@ -1,6 +1,6 @@
 /*
 	Chronic Disease Report Generator - Web based reports on quality of care standards
-    Copyright (C) 2014  Tom Sitter - Hamilton Family Health Team
+    Copyright (C) 2015  Kevin Lin, Tom Sitter - Hamilton Family Health Team
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 
 var mdsIndicators =  (function(){
 	
+	//Used in indicator editor to convert common variable names into human readable names
 	var lookupVarNameTable = {
 		'minAge': 'Minimum Age',
 		'maxAge': 'Maximum Age',
@@ -26,6 +27,7 @@ var mdsIndicators =  (function(){
 		'age': 'Age'
 	};
 
+	//From literature, plotted on appropriate indicators
 	var LHINAverages = {
 		'DiabeticAssessment': 0.433, //percent
 		'DateHbA1C': 0.591, //% HbA1c done in past 6 months
@@ -38,6 +40,12 @@ var mdsIndicators =  (function(){
 		'FOBT': 0.32,
 	};
 
+	// Needs to be calculated
+	var HFHTAverages = {
+
+	}
+
+	//Need to be defined
 	var HFHTGoal = {
 		'Mamm': 0.5,
 		'Pap': 0.5,
@@ -477,6 +485,12 @@ var IndicatorName = {
 	*** Also, set default values so they can be reset ***
 	modifiable: ["months", "target"],
 	defaults: [6, 0.08],
+
+	*** HFHT Average, LHIN Average, and HFHT Goal can be plotted when included in the indicator ***
+	
+	average: LHINAverages.BPUnderControl,
+	hfhtaverage: HFHTAverages.BPUnderControl,
+	goal: HFHTGoal.BPUnderControl
 
 	*** If you want to be able to plot a histogram, you need to provide 3 pieces of information stored in an array ***
 	*** 	1. The column(s) that holds the data, examples
@@ -1351,6 +1365,11 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 			}
 		}
 	};
+
+
+	/************************************************
+	 **************** INDICATOR SETS ****************
+	 ************************************************/
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonthsBilling,
