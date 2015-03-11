@@ -1,6 +1,6 @@
 /*
 	Chronic Disease Report Generator - Web based reports on quality of care standards
-    Copyright (C) 2014  Tom Sitter - Hamilton Family Health Team
+    Copyright (C) 2015  Kevin Lin, Tom Sitter - Hamilton Family Health Team
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 
 var mdsIndicators =  (function(){
 	
+	//Used in indicator editor to convert common variable names into human readable names
 	var lookupVarNameTable = {
 		'minAge': 'Minimum Age',
 		'maxAge': 'Maximum Age',
@@ -26,6 +27,7 @@ var mdsIndicators =  (function(){
 		'age': 'Age'
 	};
 
+	//From literature, plotted on appropriate indicators
 	var LHINAverages = {
 		'DiabeticAssessment': 0.433, //percent
 		'DateHbA1C': 0.591, //% HbA1c done in past 6 months
@@ -38,6 +40,12 @@ var mdsIndicators =  (function(){
 		'FOBT': 0.32,
 	};
 
+	// Needs to be calculated
+	var HFHTAverages = {
+
+	}
+
+	//Need to be defined
 	var HFHTGoal = {
 		'Mamm': 0.5,
 		'Pap': 0.5,
@@ -70,47 +78,81 @@ var mdsIndicators =  (function(){
 	// File Number for Oscar CYMH
 	var mFileNumber;
 	
+
+	/*************************** HELPER FUNCTIONS ****************************
+	
+	These functions are used by indicators to help work with dates and ages
+	*************************************************************************/
+
+	function convertToDate(dateString) {
+		var dateRegex = /\d{2}[/-]\d{2}[/-]\d{4}/; //matches dd-mm-yyyy and dd/mm/yyyy 
+
+		if (dateString === "") {
+			return null;
+		}
+
+		if (dateString.toString().match(dateRegex)) {
+			var dateParts = dateString.split(/[/-]/);
+			var parsedDate = new Date(dateParts[2], dateParts[1]-1, dateParts[0]);
+	 	} else { 
+	 		var parsedDate = new Date(dateString);
+	 	}
+
+		return parsedDate; 
+	}
+
+
+	/**
+	 * Find the date X months ago
+	 * @param  {Date} 		date     Starting date
+	 * @param  {numeric} 	months 	 Months to go back
+	 * @return {Date}        		 Date it was X months ago
+	 */
 	function removeMonths(date, months) {
   		return new Date(date.setMonth(date.getMonth() - months));
 	};
 
-	// Checks if the measuredDate is within maxMonthsAgo of the currentDate
-	// Return true if it is in-date and false if it is out-of-date
-	function withinDateRange(currentDate, maxMonthsAgo, measuredDate) {
+	/**
+	 * Checks if the measured date is within X months ago from the current date
+	 * 
+	 * @param  {Date | String} 	currentDate  	String (dd-mm-yyyy or dd/mm/yyyy) or Date object of report date
+	 * @param  {numeric} 		monthsAgo 		Number of months from report date the measured date can be
+	 * @param  {Date | String} 	measuredDate 	The date that the measurement was taken
+	 * @return {boolean}              		 	true if within date range, false if out of date
+	 */
+	function withinDateRange(currentDate, monthsAgo, measuredDate) {
 		var dateRegex = /\d{2}[/-]\d{2}[/-]\d{4}/; //matches dd-mm-yyyy and dd/mm/yyyy 
 
+		//If never measured, return false
 		if (measuredDate == "") {
 			return false;
 		}
 
 		//Turn currentDate string into Date object with date currentDate - maxMonthsAgo
-		if (currentDate.toString().match(dateRegex) ){
-	 		var parsedDate = currentDate.split(/[/-]/);
-	 		var targetDate = removeMonths(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]), maxMonthsAgo);
-	 	} else { 
-	 		var targetDate = removeMonths(new Date(currentDate), maxMonthsAgo); 
-	 	}
+	 	var targetDate = removeMonths(convertToDate(currentDate), monthsAgo); 
 
 	 	//Turn measuredDate into a Date object
-	 	if (measuredDate.toString().match(dateRegex)) {
-	 		var parsedDate = measuredDate.split("/");
-	 		var measuredDate = new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]);
-	 	} else { 
-	 		var measuredDate = new Date(measuredDate); 
-	 	}
+	 	var measuredDate = convertToDate(measuredDate)
 
 	 	//Make sure measuredDate was measured more recently than the target date.
 	 	return measuredDate >= targetDate;	
 	};
 
+	/**
+	 * Returns a number indicating the months difference between the current date and the measurement date
+	 * @param  {String | Date} 	currentDate  	Date report was pulled
+	 * @param  {String | Date} 	measuredDate 	Date measurement was taken
+	 * @return {numeric}		monthDiff		Months difference between the two              	
+	 */
 	function monthsDifference(currentDate, measuredDate) {
 
+		//Return false if neither exist
 		if (currentDate == null || measuredDate == null) {
 			return NaN;
 		}
 
-		var cd = new Date(currentDate);
-		var md = new Date(measuredDate);
+		var cd = convertToDate(currentDate);
+		var md = convertToDate(measuredDate);
 		//var timeDiff = cd.getTime() - md.getTime();
 		//var monthDiff = Math.ceil(timeDiff / (1000 * 3600 * 24 * 30));
 
@@ -119,18 +161,17 @@ var mdsIndicators =  (function(){
 		return monthDiff;
 	}
 	
-	// Returns time String of the most recent date from an array of dates
+	/**
+	 * Returns the most recent date from an array of dates, or null if it is empty
+	 * @param  {[String | Date]} dateArray 	Array of string dates
+	 * @return {Date}           			Most recent date, or null
+	 */
 	function mostRecentDate(dateArray) {
 		var parsedDateArray = [];
+
 		for (var i=0; i < dateArray.length; i++) {
-			if (dateArray[i].toString().length === 0) {
-				parsedDateArray.push(null);
-			} else if (dateArray[i].toString().match(/\d{2}\/\d{2}\/\d{4}/)){
-				var parsedDate = dateArray[i].split("/");
-				parsedDateArray.push(new Date(parsedDate[2], parsedDate[1]-1, parsedDate[0]));
-			} else {
-				parsedDateArray.push(new Date(dateArray[i]));
-			}
+			var parsedDate = convertToDate(dateArray[i]);
+			parsedDateArray.push(parsedDate);
 		}
 		
 		if (Math.max.apply(null, parsedDateArray) === 0) {
@@ -140,7 +181,11 @@ var mdsIndicators =  (function(){
 		return Math.max.apply(null,parsedDateArray);
 	}
 
-
+	/**
+	 * Returns an integer age given the age in days, wk, mo, or years
+	 * @param  {String} 	age 	Can be 1-25days, 3-11wk, 3-35mo, or 3+ (years)
+	 * @return {numeric}     		Age in years, whole number only
+	 */
 	function getAgeFromMonths(age){
 		if (age.indexOf('mo') > 0) {
 			return Math.floor(parseInt(age, 10) / 12);
@@ -151,6 +196,11 @@ var mdsIndicators =  (function(){
 		}
 	}
 	
+
+/*************************** End of Helper Functions **************************/
+
+
+
 
 	function resetToDefault(rule) {
 		if (rule.hasOwnProperty("modifiable") && rule.hasOwnProperty("defaults")) {
@@ -216,7 +266,7 @@ var mdsIndicators =  (function(){
 				data.push(+csvObject[col][row]);
 		} else if (type === "date") {
 			for (var row=0; row<csvObject[col].length; row++)
-				data.push(new Date(csvObject[col][row]));
+				data.push(convertToDate(csvObject[col][row]));
 		}
 		return data;
 	}
@@ -236,7 +286,7 @@ var mdsIndicators =  (function(){
 				xdata.push(+csvObject[xcol][row]);
 		} else if (xtype === "date") {
 			for (var row=0; row<csvObject[xcol].length; row++)
-				xdata.push(new Date(csvObject[xcol][row]));
+				xdata.push(convertToDate(csvObject[xcol][row]));
 		}
 
 		var ydata = [];
@@ -245,7 +295,7 @@ var mdsIndicators =  (function(){
 				ydata.push(+csvObject[ycol][row]);
 		} else if (ytype === "date") {
 			for (var row=0; row<csvObject[ycol].length; row++)
-				ydata.push(new Date(csvObject[ycol][row]));
+				ydata.push(convertToDate(csvObject[ycol][row]));
 		}
 
 		return [xdata, ydata];
@@ -279,7 +329,7 @@ var mdsIndicators =  (function(){
 		//Loop through data from each file
 		var results = [];
 		
-		currentRuleList = ruleList[ruleListIndex];
+		var currentRuleList = ruleList[ruleListIndex];
 		
 		//loop through each file
 		for (var i = 0; i < filteredData.length; i++) {
@@ -296,7 +346,7 @@ var mdsIndicators =  (function(){
 		
 		forRule:
 		for (var r = 0; r < ruleList.length; r++) {
-			currentRule = ruleList[r];
+			var currentRule = ruleList[r];
 			var passed = [];
 		
 			for (i=0; i<currentRule.col.length; i++) {
@@ -337,7 +387,8 @@ var mdsIndicators =  (function(){
 			results.push({	
 					index: r,
 					desc: currentRule.desc(),
-					tooltip: currentRule.long_desc(),
+					//Add the longer description as the tooltip if it exists, otherwise use the regular description
+					tooltip: typeof(currentRule.long_desc) === 'function' ? currentRule.long_desc() : currentRule.desc(),
 					passedIndex: passed,
 				  	passed: passed.filter(function(p) { return (p == true); }).length,
 				  	total: numPatients - passed.filter(function(p) { return isNaN(p); }).length
@@ -389,6 +440,94 @@ var mdsIndicators =  (function(){
 		return rule;
 	}
 	
+
+/*
+****************************************
+*************  INDICATORS  *************
+****************************************
+
+*** Example Indicator ***
+
+var IndicatorName = {
+
+	*** Plain text summary of indicator, used as y-axis labels in bar graph ***
+	desc: function(){ return "A1C \u2264 " + this.target + " in past " + this.months + " months"; },
+
+	*** Columns required in data file for the rule to run ***
+	col: ["Current Date", "Date Hb A1C", "Hb A1C"],
+
+	*** The following are used to define the specific values needed to satisfy the indicator ***
+	months: 6,
+	target: 0.08,
+
+	*** Rule that will evaluate the input and return either: 										***
+	***		* true (if passed), 																	***
+	***		* false (if failed), or 																***
+	***		* NaN (if rule does not apply to this patient)											***
+	***	The input to this rule are the columns defined in col: 										***
+	*** There are a number of helper functions (see below) that can assist in checking indicators 	***
+	rule: function(currentDate, measuredDate, value) {
+	 		try {
+	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
+	 		} catch (err) {
+	 			return false;
+	 		}
+	 	}
+
+	*** OPTIONAL ***
+	 
+	*** Long summary, used as tooltip text over bar 					***
+	*** Program will use the regular description if this is not defined ***
+	long_desc: function(){return "% of patients with A1C less than or equal to " + this.target + " measured in the past " + this.months + " months";},
+
+
+	*** If you want any values to be modifiable by the user, list them below ***
+	*** Also, set default values so they can be reset ***
+	modifiable: ["months", "target"],
+	defaults: [6, 0.08],
+
+	*** HFHT Average, LHIN Average, and HFHT Goal can be plotted when included in the indicator ***
+	
+	average: LHINAverages.BPUnderControl,
+	hfhtaverage: HFHTAverages.BPUnderControl,
+	goal: HFHTGoal.BPUnderControl
+
+	*** If you want to be able to plot a histogram, you need to provide 3 pieces of information stored in an array ***
+	*** 	1. The column(s) that holds the data, examples
+	***			* ["Hb A1C"]
+	***			* ["Hb A1C", "Date Hb A1C"]
+	***		2. The function that will convert it into a histogram value. Takes the columns defined above as the inputs
+	***			* This function takes the "Hb A1C" column and returns it as a number. If A1C is > 1 it divides by 100 first
+	***			* function(a1c) { if (Number(a1c) > 1) { return (Number(a1c) / 100); } else { return Number(a1c); } }
+	***		3. The name of the x-axis for the histogram
+	***			* "Hb A1C (%)"
+	histogram: [["Hb A1C"], function(v) { if (Number(v) > 1) { return (Number(v) / 100); } else { return Number(v); } }, "Hb A1C (%)"],
+};
+
+
+*** End of Example Indicator ***
+
+*** Indicators are grouped into indicator lists (e.g. diabetes, hypertension, lung health) ***
+*** These indicator lists are made available to the user in a dropdown menu ***
+
+*** Assemble indicators into sets ***
+var diabetesIndicators = [ruleDMPastNMonthsBilling,
+					 	  ruleA1CPastNMonths, 
+					 	  ruleA1CLessThanEqualToXPastNMonths,
+					 	  ruleLDLPastNMonths];
+
+*** Add sets of indicators to the master list ***
+var ruleList = [{name:"Diabetes", rules:diabetesRules},
+				{name:"Hypertension", rules:hypertensionRules},
+				{name:"Immunizations", rules:immunizationRules},
+				{name:"Lung Health", rules:lungHealthRules},
+				{name:"Smoking Cessation", rules:smokingCessationRules}];
+
+
+*/
+
+
+
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Visit in past " + this.months + " months"; },
 		long_desc: function(){return "% of patients who have had a diabetic visit (diagnostic code 250) in the past " + this.months + " months"; },
@@ -401,26 +540,19 @@ var mdsIndicators =  (function(){
 	 		try {
 	 			if (measuredDate == "") {
 	 				return false;
+	 			} else if (convertToDate(measuredDate) > convertToDate(currentDate)) {
+	 				return NaN;
 	 			}
+
 	 			// Old version output date of last assessment
 	 			// New version outputs number of months since last assessment,
-	 			// have to check which case and handle appropriately
+	 			// have to check which case and handle appropriately 
+	 			targetDate = removeMonths(convertToDate(currentDate), this.months);
 		 		if (isNaN(Number(measuredDate))) {
-		 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-		 				var parsedFields = currentDate.split("/");
-		 				var parsedDate = new Date(parsedFields[2], parsedFields[1]-1, parsedFields[0])
-		 				var targetDate = removeMonths(parsedDate, this.months);
-			 		} else {
-			 			var parsedDate = new Date(currentDate)
-			 			var targetDate = removeMonths(new Date(currentDate), this.months);
-			 		}
+			 		var measuredDate = convertToDate(measuredDate);
+			 		var targetDate = removeMonths(convertToDate(currentDate), this.months);
 
-			 		//All measurements should be older than the current date
-			 		if (new Date(measuredDate) > parsedDate) {
-			 			return NaN;
-			 		}
-
-			 		return (new Date(measuredDate) >= targetDate);
+			 		return (measuredDate >= targetDate);
 			 	} else {
 			 		return (Number(measuredDate) <= this.months);
 			 	}
@@ -446,25 +578,16 @@ var mdsIndicators =  (function(){
 	 		try {
 	 			if (k === "" && q === "") {
 	 				return false;
-	 			}
-	 			// Using diabetic assessment billing codes
-	 			// K030A -- quarterly, Q040 -- annual
-	 			if (currentDate.match(/\d{2}\/\d{2}\/\d{4}/) ){
-	 				var parsedFields = currentDate.split("/");
-	 				var parsedDate = new Date(parsedFields[2], parsedFields[1]-1, parsedFields[0])
-	 				var targetDate = removeMonths(parsedDate, this.months);
-		 		} else {
-		 			var parsedDate = new Date(currentDate)
-		 			var targetDate = removeMonths(new Date(currentDate), this.months);
-		 		}
-
-		 		//All measurements should be older than the current date
-		 		if (new Date(k) > parsedDate || new Date(q) > parsedDate) {
+	 			//All measurements should be older than the current date
+	 			} else if (convertToDate(k) > convertToDate(currentDate) || convertToDate(q) > convertToDate(currentDate)) {
 		 			return NaN;
 		 		}
 
-		 		return (mostRecentDate([k, q]) >= targetDate);
+	 			// Using diabetic assessment billing codes
+	 			// K030A -- quarterly, Q040 -- annual
+ 				var targetDate = removeMonths(convertToDate(currentDate), this.months);
 
+		 		return (mostRecentDate([k, q]) >= targetDate);
 	 		} catch (err) {
 	 			console.log(err.message);
 	 			return NaN;
@@ -475,7 +598,7 @@ var mdsIndicators =  (function(){
 
 	var ruleA1CPastNMonths = {
 		desc: function(){ return "A1C measured in past " + this.months + " months"; },
-		long_desc: function(){ return "% of patients with A1C measured in past " +  this.months + " months"; },
+		//long_desc: function(){ return "% of patients with A1C measured in past " +  this.months + " months"; },
 		months: 6,
 		modifiable: ["months"],
 		defaults: [6],
@@ -576,7 +699,6 @@ var mdsIndicators =  (function(){
 		histogram: [["LDL"], function(v) { return +v; }, "LDL"],
 		rule: function(currentDate, measuredDate, value) {
 			 try {
-	 			//new Date accepts date string in format YYYY-MM-DD
 	 			return withinDateRange(currentDate, this.months, measuredDate) && 
 	 				   (Number(value) <= this.target || value == "<1.00");
 	 		} catch (err) {
@@ -767,6 +889,7 @@ var mdsIndicators =  (function(){
 		}
 	};
 	
+	//Only checks diphtheria and measles
 	var ruleInfantVaccinations = {
 		desc: function(){return "Infants " + this.age + " years old with all immunizations"; },
 		long_desc: function() { return "Infants " + this.age + " years old with " +
@@ -794,10 +917,11 @@ var mdsIndicators =  (function(){
 		}
 	};
 	
-	//Does not account for boosters
+	//Only checks diphtheria and measles
 	var ruleChildVaccinations = {
 		desc: function(){return "Children " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
-		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
+		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with " +
+										this.diphtheria + " doses of diphtheria and " + this.measles + " doses of measles"; },
 		col: ["Age",
 			  "measles", "diphtheria", "varicella",
 			  "polio", "haemophilus b conjugate",
@@ -830,12 +954,10 @@ var mdsIndicators =  (function(){
 		}
 	};
 
-	// Most vaccinations not recorded because EMR was introduced when patients were
-	// in teenage years. This test will instead make sure that the most recent vaccinations
-	// were given at the age they should have recieved their most recent vaccination
+	// Checks for diphtheria booster vaccination when patient was 14-16
 	var ruleTeenagerVaccinations = {
 		desc: function(){return "Adults " + this.minAge + "-" + this.maxAge + " with diphtheria booster"; },
-		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with all immunizations"; },
+		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with diphtheria booster given since age 14"; },
 		col: ["Current Date", "diphtheria date", "Age"],
 			  //"pneumococcal conjugate", "meningococcal conjugate"],
 		minAge: 18,
@@ -888,7 +1010,7 @@ var mdsIndicators =  (function(){
 					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) === null && !withinDateRange(currentDate, this.months, heightDate)) {
 						return false;
 					} else
-					return (new Date(heightDate) >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
+					return (convertToDate(heightDate) >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
 	 			}
 			} catch (err) {
 				console.log(err);
@@ -1243,6 +1365,11 @@ var mdsIndicators =  (function(){
 			}
 		}
 	};
+
+
+	/************************************************
+	 **************** INDICATOR SETS ****************
+	 ************************************************/
 
 	//Assemble rules into sets
 	var diabetesRules = [ruleDMPastNMonthsBilling,
