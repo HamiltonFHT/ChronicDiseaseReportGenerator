@@ -134,6 +134,10 @@ var mdsIndicators =  (function(){
 	 	//Turn measuredDate into a Date object
 	 	var measuredDate = convertToDate(measuredDate)
 
+	 	if (measuredDate > convertToDate(currentDate)) {
+	 		return NaN;
+	 	}
+
 	 	//Make sure measuredDate was measured more recently than the target date.
 	 	return measuredDate >= targetDate;	
 	};

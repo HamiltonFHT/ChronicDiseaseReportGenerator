@@ -1,6 +1,101 @@
 (function() {
 
+	//m gives you access to all of the indicators
 	var m = mdsIndicators;
+
+	/* 
+
+	******************************
+	*** Accessing an indicator ***
+	******************************
+	
+	1)select the appropriate rule list from ruleList (see mdsIndicators for ruleList)
+		e.g. var diabetes = m.ruleList[0]["rules"]
+			-diabetes is the first list of rules in the ruleList variable
+
+	2)Selecting the appropriate indicator from the list
+		e.g. var A1CPastNMonths = diabetes[1]
+			-A1C Past N Months is the second indicator in the list
+
+	Once you have an indicator (e.g. A1CPastNMonths) you will want to test the rule
+	with patients that will pass, fail, or be not applicable (NaN).
+
+	ruleList =
+		0. 		name:"Diabetes", rules: diabetesRules
+		1. 		name:"Hypertension", rules: hypertensionRules
+		2. 		name:"Immunizations", rules: immunizationRules
+		3. 		name:"Lung Health", rules: lungHealthRules
+		4. 		name:"Smoking Cessation", rules: smokingCessationRules
+		5. 		name:"Depression", rules: adultMentalHealthRules
+		6. 		name: "Adult Preventative Care", rules: cancerScreeningRules
+		7. 		name: "Well Baby", rules: wellBabyRules
+		8. 		name:"ADHD", rules: childYouthMentalHealthRules
+		9. 		name:"Diabetes (Full)", rules: diabetesExtendedRules
+
+
+	******************************
+	***  Testing an indicator  ***
+	******************************
+
+	*** Each indicator is tested in a QUnit.test function
+	*
+	*		   "Name of indicator" 
+	QUnit.test("A1C Past N Months", function (assert) {
+
+		*** Each test case of this indicator will be in an "assert.ok()" function
+
+		*** First we want to test an up-to-date patient that should pass 					
+		*** This indicator takes the current (report) date, and the date A1C was measured
+		*** We will give it a two dates that are within 6 months and make sure we get true
+		*** We will also print out a message saying what we are testing (i.e. "Up-to-date Passed!")
+		assert.ok(
+							    "current date", "measured date"
+			A1CPastNMonths.rule("Oct 21, 2014", "July 21, 2014") === true,
+			"Up-to-date Passed!");
+
+		*** Now we will give two dates that are 8 months apart, more than the 6 months
+		*** require to pass. We are making sure that the outcome is equal (===) to false.
+		assert.ok(
+			A1CPastNMonths.rule("Oct 21, 2014", "Feb 21, 2014") === false,
+			"Out-of-date Passed!");
+
+		*** Other things to test are invalid fields, alternative date formats and edge cases
+		*** e.g. exactly 6 months difference
+		assert.ok(
+			A1CPastNMonths.rule("Oct 21, 2014", "Apr 21, 2014") === true,
+			"Up to date, exactly 6 months passed!");
+
+		*** Up-to-date but with alternate date format
+		assert.ok(
+			A1CPastNMonths.rule("2014-10-21", "2014-06-21") === true,
+			"Up to date, YYYY-MM-DD format!");
+		
+		*** Measured date in the future
+		assert.ok(
+			A1CPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014") === false,
+			"Future date passed!");
+
+		*** Lastly, we will check that if no date is given (a1c never measured), we 
+		*** will fail them.
+		assert.ok(
+			A1CPastNMonths.rule("Oct 21, 2014", "") === false,
+			"No date Passed!");
+	
+		*** If all of these tests pass, you can be MORE sure that your indicator works
+		*** Remember to re-run all tests before pushing anything to the main code branch
+
+	});
+
+	***************************
+	***  Running the tests  ***
+	***************************
+
+	Simply open test.html in your web browser. 
+	All of the tests will run and a summary will be given!
+
+
+	 */
+
 
 	/*
 		Diabetes Tests
@@ -45,7 +140,7 @@
 	//DM Past N Months Billing -- Using K030/Q040 billing codes
 	QUnit.test("DM Past N Months", function (assert) {
 		assert.ok(
-							//current date, k030 date, q040 (annual) date
+									//current date, k030 date, q040 (annual) date
 			DMPastNMonthsBilling.rule("Oct 21, 2014", "Sept 21, 2014", "Sept 21, 2013") === true,
 			"Quarterly Up-to-date passed");
 		assert.ok(
@@ -76,11 +171,23 @@
 			A1CPastNMonths.rule("Oct 21, 2014", "July 21, 2014") === true,
 			"Up-to-date Passed!");
 		assert.ok(
+			A1CPastNMonths.rule("2014/10/21", "2014/06/21") === true,
+			"Up-to-date (YYYY/MM/DD format) Passed!");
+		assert.ok(
+			A1CPastNMonths.rule("2014-10-21", "2014-06-21") === true,
+			"Up-to-date (YYYY-MM-DD format) Passed!");
+		assert.ok(
+			A1CPastNMonths.rule("Oct 21, 2014", "Apr 21, 2014") === true,
+			"Up to date, exactly 6 months passed!");
+		assert.ok(
 			A1CPastNMonths.rule("Oct 21, 2014", "Feb 21, 2014") === false,
 			"Out-of-date Passed!");
 		assert.ok(
 			A1CPastNMonths.rule("Oct 21, 2014", "") === false,
 			"No date Passed!");
+		assert.ok(
+			isNaN(A1CPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014")),
+			"Future date passed!");
 	});
 
 
@@ -116,7 +223,7 @@
 	QUnit.test("LDL Past N Months", function (assert) {
 		assert.ok(
 							 	//current date, measured date
-			LDLPastNMonths.rule("Oct 21, 2014", "Nov 21, 2014") === true,
+			LDLPastNMonths.rule("Oct 21, 2014", "Nov 21, 2013") === true,
 			"Up-to-date");
 		assert.ok(
 			LDLPastNMonths.rule("Oct 21, 2014", "Oct 21, 2014") === true,
