@@ -27,9 +27,10 @@ var mdsReader = (function() {
 	var mFilteredData = [];
 	var mParsedData = [];
 	var mCurrentIndSetIndex;
+
+
+	//Set up drag-and-drop of files
 	var holder = document.getElementById('canvasContainer');
-
-
 	holder.ondragover = function () { return false; };
 	holder.ondragend = function () { return false; };
 	holder.ondrop = function (e) {
@@ -47,7 +48,7 @@ var mdsReader = (function() {
 	};
 
 	/*
-	 * Called by index.html when a file is uploaded by the user.
+	 * Called when a file is uploaded by the user.
 	 * Parses files and sorts by date and the calls calculate() to 
 	 * apply indicators and display chart
 	 */
@@ -94,7 +95,7 @@ var mdsReader = (function() {
 							//Check if patient records were found				
 							var empty = true;
 							for (var i=0; i < mParsedData.length; i++) {
-								if (mParsedData[i]["num_elements"] == 0) {
+								if (mParsedData[i]["num_patients"] == 0) {
 								 	mParsedData.splice(i, 1);
 								} else {
 									empty = false;
@@ -123,10 +124,10 @@ var mdsReader = (function() {
 	function parseToObject(f, unparsed) {
 
 		csvObject = {};
-		csvObject['fileName'] = f.name;
+		//csvObject['fileName'] = f.name;
 		csvObject['fileLastModified'] = f.lastModifiedDate;
 	
-		arrData = CSVToArray(unparsed);
+		var arrData = CSVToArray(unparsed);
 		
 		if (arrData[0].length == 0) {
 			arrData.shift();
@@ -157,7 +158,7 @@ var mdsReader = (function() {
 		}
 		
 
-		csvObject["num_elements"] = arrData.length;
+		csvObject["num_patients"] = arrData.length;
 
 		//PSS include a blank column
 		if (csvObject.hasOwnProperty("")) {
@@ -385,6 +386,15 @@ var mdsReader = (function() {
 	 */
 	function convertPreventions(x) {
 
+		//Helper function, used below
+		function doConversion(prvnt, file, row) {
+			mFilteredData[file][prvnt][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] += Number(mFilteredData[file]["Times Done"][row]);
+						if (mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] == 0
+							|| new Date(mFilteredData[file]["Last Done"][row]) > new Date(mFilteredData[file]["measles date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])]))
+							mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] = new Date(mFilteredData[file]["Last Done"][row]);
+		}
+
+
 		// Create a new array of unique patient #s
 		mFilteredData[x]["unique patients"] = [];
 		for (var i = 0; i < mFilteredData[x]["Patient #"].length; i++) {
@@ -486,13 +496,6 @@ var mdsReader = (function() {
 
 	};
 
-	function doConversion(prvnt, file, row) {
-		mFilteredData[file][prvnt][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] += Number(mFilteredData[file]["Times Done"][row]);
-					if (mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] == 0
-						|| new Date(mFilteredData[file]["Last Done"][row]) > new Date(mFilteredData[file]["measles date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])]))
-						mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] = new Date(mFilteredData[file]["Last Done"][row]);
-	}
-
 
 	/*
 	 * Creates a new column to show which patients are ADHD patients on medication
@@ -542,11 +545,12 @@ var mdsReader = (function() {
 		return arrayDates;
 	};
 	
+
 	function getPatientCounts() {
 		var arrayPatientCounts = [];
 		if (mParsedData.length > 0) {
 			for (var i=0; i<mParsedData.length; i++) {
-				arrayPatientCounts.push(mParsedData[i]["num_elements"]);
+				arrayPatientCounts.push(mParsedData[i]["num_patients"]);
 			}
 		}
 		return arrayPatientCounts;
