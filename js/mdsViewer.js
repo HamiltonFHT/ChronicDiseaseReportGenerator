@@ -22,14 +22,14 @@ var mdsViewer = (function() {
 
 	//Member variables to store data and state
 	var mCanvas = d3.select("#canvasContainer").select("#canvasSVG");
-	var mCanvasExtra = null;
+	var mCanvasSnapshot = d3.select("#canvasContainer_snapshot").select("#canvasSVG");;
 	
 	var mMode = ""; //either "snapshot" or "tracking"
 	var mDataLabels = true; //either true or false (not currently used)
 	var mShowAverages = true; //LHIN Averages
-	var mShowHFHTAverages = true;
-	var mShowTargets = true;
-	var mReportTitle = "";
+	var mShowHFHTAverages = true; //HFHT Averages
+	var mShowTargets = true; //HFHT Targets
+	var mReportTitle = ""; //Main chart title - used when saving images or PDFs
 	var mCalculatedData = null; // indicator result data set from mdsIndicators
 	var mSelectedPhysicians = {}; // selected physicians object [{docnumber: true/false}, ...]
 	var mArrayDates = null; //array of dates [date, date, ...]
@@ -208,7 +208,7 @@ var mdsViewer = (function() {
 			
 			if (!isEmpty) {
 				//By default, select first item in dropdown
-				$("#dropdownIndicators").show();
+				addIndicatorEditor();
 								
 				generateTracking();
 			} else {
@@ -427,7 +427,7 @@ var mdsViewer = (function() {
 		/*
 		 * Indicator set dropdown
 		 */
-		updateDropdownIndicators();	
+		//updateDropdownIndicators();	
 
 		// Add dropdown for EMR
 		var dropdownEMR = '<select id="dropdownEMR">' +
@@ -758,7 +758,7 @@ var mdsViewer = (function() {
 	}
 	
 	function getInternalRuleIndex() {
-		if (mCalculatedData[0].length > 0 && mCalculatedData[0].length < mCurrentIndicator) {
+		if (mCalculatedData[0].length > 0 && mCurrentIndicator < mCalculatedData[0].length) {
 			return mCalculatedData[0][mCurrentIndicator].index;
 		} else {
 			return 0;
@@ -874,10 +874,15 @@ var mdsViewer = (function() {
 	};
 	
 
-	
+	/**
+	 * Creates a bar chart for a report file
+	 * @param  {numeric} selectedDate	Index into array of file dates, used to select which file to create the barchart. 0 for one file.
+	 * @param  {boolean} extraCanvas  	true if the bar chart should go in the secondary canvas, false or undefined to go into the main canvas
+	 */
 	function generateSnapshot(selectedDate, extraCanvas){
 
-		canvas = (typeof extraCanvas !== 'undefined' ? mCanvasExtra : mCanvas);
+		var selectedDate = selectedDate || 0;
+		var canvas = (typeof extraCanvas === "undefined" ? mCanvas : mCanvasSnapshot);
 
 		var data = mCalculatedData[selectedDate];
 
@@ -1277,8 +1282,8 @@ var mdsViewer = (function() {
 
 		}
 
-	};
-	
+	}; // End of generateSnapshot
+	 
 	function handleBarClick(i, y) {
 		var thisBar = $(".onTargetBar[y="+y+"]");
 		
@@ -1541,6 +1546,8 @@ var mdsViewer = (function() {
 
 		mCanvas.selectAll('.graphTitle').each(function () { splitText(d3.select(this), 180, true); });
 		
+
+		var m = mCurrentIndicator;
 		// Add labels for data points
 		mCanvas.selectAll(".dataLabelTracking")
 			.data(arrayData)
@@ -1549,33 +1556,33 @@ var mdsViewer = (function() {
 				.attr("x", function(d, i) { return xScaleTracking(arrayDates[i]); })
 				.attr("y", function(d, i) { 
 					// If small value, place label above point
-					if ((arrayData[i][0]) < 10)
-						return yScaleTracking(arrayData[i][0]) - 15;
+					if ((arrayData[i][m]) < 10)
+						return yScaleTracking(arrayData[i][m]) - 15;
 					// Else	
 					else {
 						// For first data point
 						if (i == 0) {
 							// If adjacent point is above, place label below, vice versa
-							if (arrayData[1][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
+							if (arrayData[1][m] >= arrayData[i][m])
+								return yScaleTracking(arrayData[i][m]) + 25;
+							else return yScaleTracking(arrayData[i][m]) - 15;
 						}
 						// For last point, compare with second last point
 						else if (i == arrayData.length - 1) {
-							if (arrayData[arrayData.length - 2][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
+							if (arrayData[arrayData.length - 2][m] >= arrayData[i][m])
+								return yScaleTracking(arrayData[i][m]) + 25;
+							else return yScaleTracking(arrayData[i][m]) - 15;
 						}
 						// Else all points in between, check both sides
 						else {
 							// If both adjacent points are above, place below
-							if (arrayData[i - 1][0] >= arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] >= arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) + 25;
+							if (arrayData[i - 1][m] >= arrayData[i][m] && arrayData[i + 1][m] >= arrayData[i][m])
+								return yScaleTracking(arrayData[i][m]) + 25;
 							// Else if both are below, place above	
-							else if (arrayData[i - 1][0] < arrayData[i][mCurrentIndicator] && arrayData[i + 1][0] < arrayData[i][mCurrentIndicator])
-								return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
+							else if (arrayData[i - 1][m] < arrayData[i][m] && arrayData[i + 1][m] < arrayData[i][m])
+								return yScaleTracking(arrayData[i][m]) - 15;
 							// Else just place above
-							else return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15;
+							else return yScaleTracking(arrayData[i][m]) - 15;
 						}
 					}
 				}) 
@@ -1584,10 +1591,10 @@ var mdsViewer = (function() {
 				.style("font-size", "13px")
 				.style("font-family", "Arial")
 				.text(function(d, i) { 
-					return arrayLabels[i][mCurrentIndicator];
+					return arrayLabels[i][m];
 				});
 				
-		if (mCanvasExtra != null) {
+		if (mCanvasSnapshot != null) {
 			generateExtraCanvas();
 		}
 	};
@@ -1598,7 +1605,7 @@ var mdsViewer = (function() {
 		$("#canvasContainer_snapshot").empty();
 
 		//Recreate the extra canvas
-		mCanvasExtra = d3.select("#canvasContainer_snapshot").append("svg")
+		mCanvasSnapshot = d3.select("#canvasContainer_snapshot").append("svg")
 			.attr("id", "canvasSVGExtra")
 			.attr("width", mCanvasWidth)
 			.attr("height", mCanvasHeight)
@@ -1691,7 +1698,7 @@ var mdsViewer = (function() {
 							arrayLabels[i].push("0% (0/0)");
 							continue;
 						}
-						var percent = Math.round(mCalculatedData[i][j]["passed"] / mCalculatedData[i][j]["total"] * 100);
+						var percent = mCalculatedData[i][j]["passed"] / mCalculatedData[i][j]["total"] * 100;
 						arrayData[i].push(percent);
 						
 						var label = Math.round(percent) + "% (" + mCalculatedData[i][j]["passed"] + "/" + mCalculatedData[i][j]["total"]+ ")";
@@ -1704,18 +1711,55 @@ var mdsViewer = (function() {
 					return;
 				}
 								
+				var m = mCurrentIndicator;
 				mCanvas.selectAll(".dataLabelTracking")
 					.data(arrayData)
 					.enter().append("text")
 						.attr("class", "dataLabelTracking")
 						.attr("x", function(d, i) { return xScaleTracking(mArrayDates[i]); })
-						.attr("y", function(d, i) { return yScaleTracking(arrayData[i][mCurrentIndicator]) - 15; }) // 15 pixels above data point
+						.attr("y", function(d, i) { 
+							//Algorithm to decide whether to place the labels above or below the point
+							//Essentially, if they point is less than the previous one, place the label below
+							//Otherwise place it above (unless the point is very small -- ie not enough room below for label)
+
+
+							// If small value, place label above point
+							if ((arrayData[i][m]) < 10)
+								return yScaleTracking(arrayData[i][m]) - 15;
+							// Else	
+							else {
+								// For first data point
+								if (i == 0) {
+									// If adjacent point is above, place label below, vice versa
+									if (arrayData[1][m] >= arrayData[i][m])
+										return yScaleTracking(arrayData[i][m]) + 25;
+									else return yScaleTracking(arrayData[i][m]) - 15;
+								}
+								// For last point, compare with second last point
+								else if (i == arrayData.length - 1) {
+									if (arrayData[arrayData.length - 2][m] >= arrayData[i][m])
+										return yScaleTracking(arrayData[i][m]) + 25;
+									else return yScaleTracking(arrayData[i][m]) - 15;
+								}
+								// Else all points in between, check both sides
+								else {
+									// If both adjacent points are above, place below
+									if (arrayData[i - 1][m] >= arrayData[i][m] && arrayData[i + 1][m] >= arrayData[i][m])
+										return yScaleTracking(arrayData[i][m]) + 25;
+									// Else if both are below, place above	
+									else if (arrayData[i - 1][m] < arrayData[i][m] && arrayData[i + 1][m] < arrayData[i][m])
+										return yScaleTracking(arrayData[i][m]) - 15;
+									// Else just place above
+									else return yScaleTracking(arrayData[i][m]) - 15;
+								}
+							}
+						}) 
 						.attr("text-anchor", "middle")
 						.style("fill", "black")
 						.style("font-size", "13px")
 						.style("font-family", "Arial")
 						.text(function(d, i) { 
-							return arrayLabels[i][mCurrentIndicator];
+							return arrayLabels[i][m];
 						});
 			}
 		}
