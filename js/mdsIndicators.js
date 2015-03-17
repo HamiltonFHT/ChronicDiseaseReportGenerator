@@ -898,8 +898,7 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 		desc: function(){return "Infants " + this.age + " years old with all immunizations"; },
 		long_desc: function() { return "Infants " + this.age + " years old with " +
 										this.diphtheria + " doses of diphtheria and " + this.measles + " dose of measles"; },
-		col: ["Age", "measles", "diphtheria",
-		      "varicella", "rotavirus", "polio"],
+		col: ["Age", "measles", "diphtheria"],
 		age: 2,
 		diphtheria: 4,
 		measles: 1,
@@ -926,10 +925,7 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 		desc: function(){return "Children " + this.minAge + "-" + this.maxAge + " with all immunizations"; },
 		long_desc: function() { return "Children between " + this.minAge + " and " + this.maxAge + " with " +
 										this.diphtheria + " doses of diphtheria and " + this.measles + " doses of measles"; },
-		col: ["Age",
-			  "measles", "diphtheria", "varicella",
-			  "polio", "haemophilus b conjugate",
-			  "pneumococcal conjugate", "meningococcal conjugate"],
+		col: ["Age", "measles", "diphtheria"],
 		minAge: 7,
 		maxAge: 13,
 		diphtheria: 5,
@@ -962,13 +958,12 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	var ruleTeenagerVaccinations = {
 		desc: function(){return "Adults " + this.minAge + "-" + this.maxAge + " with diphtheria booster"; },
 		long_desc: function() { return "Adults between " + this.minAge + " and " + this.maxAge + " with diphtheria booster given since age 14"; },
-		col: ["Current Date", "diphtheria date", "Age"],
-			  //"pneumococcal conjugate", "meningococcal conjugate"],
+		col: ["Current Date", "Age", "diphtheria date"],
 		minAge: 18,
 		maxAge: 25,
 		modifiable: ["minAge", "maxAge"],
 		defaults: [18, 25],
-		rule: function(currentDate, dipDate, ageStr) {
+		rule: function(currentDate, ageStr, dipDate) {
 			try {
 				//if younger than 18 then not included
 				var age = getAgeFromMonths(ageStr);
@@ -1002,19 +997,17 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 		maxAge: 18,
 		modifiable: ["months", "minAge", "maxAge"],
 		defaults: [12, 2, 18],
-		col: ["Age", "height date", "weight date", "Current Date",
-			  "measles date", "diphtheria date", "varicella date", "rotavirus date", "polio date",
-			  "pneumococcal conjugate date", "meningococcal conjugate date", "haemophilus b conjugate date"],
-		rule: function(age, heightDate, weightDate, currentDate,
-						measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib) {
+		col: ["Age", "Current Date", "height date", "weight date", 
+			  "measles date", "diphtheria date"],
+		rule: function(age, currentDate, heightDate, weightDate, measles, diphtheria) {
 			try {
 				if (heightDate != weightDate || heightDate == "" || Number(age) < this.minAge || Number(age) > this.maxAge) {
 					return NaN;
 				} else {
-					if (mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]) === null && !withinDateRange(currentDate, this.months, heightDate)) {
+					if (mostRecentDate([measles, diphtheria]) === null && !withinDateRange(currentDate, this.months, heightDate)) {
 						return false;
 					} else
-					return (convertToDate(heightDate) >= mostRecentDate([measles, diphtheria, varicella, rotavirus, polio, pneuc, mencc, hib]));
+					return (convertToDate(heightDate) >= mostRecentDate([measles, diphtheria]));
 	 			}
 			} catch (err) {
 				console.log(err);

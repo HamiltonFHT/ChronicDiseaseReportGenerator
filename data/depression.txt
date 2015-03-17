@@ -1,6 +1,7 @@
 
-Patient #,Doctor Number,Age,Current Date,Privacy,PHQ9 Occurences,PHQ9 Dates,PHQ9 Scores,
-101,1,50,"Jul 24, 2014",,1,"Jul 24, 2014",16,
-261,1,74,"Jul 24, 2014",,1,"Jul 24, 2014",,
-315,1,28,"Jul 24, 2014",,3,"Jul 24, 2014",22014,
-319,1,32,"Jul 24, 2014",,3,"Jul 24, 2014",70,
+Patient #,Doctor Number,Age,PHQ9 Occurrences,PHQ9 Dates,Privacy,Current Date,Last Seen Date,Rostered,
+101,1,51,2,"Aug 5, 2014",,"Mar 17, 2015","Aug 5, 2014",false,
+240,1,23,1,"Sep 9, 2014",,"Mar 17, 2015","Jan 1, 2007",true,
+261,1,74,1,"Jul 24, 2014",,"Mar 17, 2015","Jan 1, 2007",false,
+315,1,29,3,"Jul 24, 2014",,"Mar 17, 2015","Jan 1, 2007",false,
+319,1,32,3,"Jul 24, 2014",,"Mar 17, 2015","Aug 19, 2014",true,
