@@ -443,6 +443,9 @@ var mdsViewer = (function() {
 		});
 
 
+		//Set the selected EMR in the dropdown based on which is selected
+		$("#dropdownEMR").val(mdsIndicators.getEMR());
+
 		//Add a checkbox to allow user to filter only rostered patients if that column exists.
 		//mdsReader has public variable that records whether this column exists
 		//If checked, tell mdsIndicators that the user only wants rostered patients
