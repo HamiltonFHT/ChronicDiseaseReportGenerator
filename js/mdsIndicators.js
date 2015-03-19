@@ -74,6 +74,15 @@ var mdsIndicators =  (function(){
 		mEMR[emr] = true;
 	}
 
+	function getEMR() {
+		for (var key in mEMR) {
+			if (mEMR.hasOwnProperty(key) && mEMR[key] === true) {
+				return key;
+			}
+		}
+
+		return null;
+	}
 
 	// File Number for Oscar CYMH
 	var mFileNumber;
@@ -372,7 +381,8 @@ var mdsIndicators =  (function(){
 				//If the "Rostered" column exists and user wants rostered patients only
 				//then filter them out here and reduce the total number of patients.
 				if (mdsViewer.hasRosteredField() && mdsViewer.rosteredOnly()) {
-					if (csvObject["Rostered"][p].toUpperCase() == "FALSE") {
+					if (csvObject["Rostered"][p].toUpperCase() == "FALSE" || 
+						(isOSCAR() && csvObject["Rostered"][p].toUpperCase() != "RO")) {
 						numNonRostered++;
 						continue;
 					}
@@ -1442,7 +1452,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 		getCurrentRuleSet: getCurrentRuleSet,
 		lookupVarNameTable: lookupVarNameTable,
 		getPlotData: getPlotData,
-		setEMR: setEMR
+		setEMR: setEMR,
+		getEMR: getEMR
 	};
 	
 })();
