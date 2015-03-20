@@ -1786,7 +1786,7 @@ var mdsViewer = (function() {
 		}
 
 		var values = data[0];
-		var label = data[1];
+		var label = data[1].slice(0,data[1].length-1);
 
 		var svg = $("#canvasContainer_histogram");
 		//Empty the extra canvas

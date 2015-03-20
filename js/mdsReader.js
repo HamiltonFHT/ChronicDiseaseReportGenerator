@@ -388,32 +388,27 @@ var mdsReader = (function() {
 
 		//Helper function, used below
 		function doConversion(prvnt, file, row) {
-			mFilteredData[file][prvnt][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] += Number(mFilteredData[file]["Times Done"][row]);
-						if (mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] == 0
-							|| new Date(mFilteredData[file]["Last Done"][row]) > new Date(mFilteredData[file]["measles date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])]))
-							mFilteredData[file][prvnt + " date"][mFilteredData[file]["unique patients"].indexOf(mFilteredData[file]["Patient #"][row])] = new Date(mFilteredData[file]["Last Done"][row]);
+			uniquePatients[prvnt][uniquePatients["Patient #"].indexOf(mFilteredData[file]["Patient #"][row])] += Number(mFilteredData[file]["Times Done"][row]);
+			if (uniquePatients[prvnt + " date"][uniquePatients["Patient #"].indexOf(mFilteredData[file]["Patient #"][row])] == 0
+				|| new Date(mFilteredData[file]["Last Done"][row]) > new Date(uniquePatients["measles date"][uniquePatients["Patient #"].indexOf(mFilteredData[file]["Patient #"][row])]))
+				uniquePatients[prvnt + " date"][uniquePatients["Patient #"].indexOf(mFilteredData[file]["Patient #"][row])] = new Date(mFilteredData[file]["Last Done"][row]);
 		}
 
+		// Create a temporary object to contain all of the final data to replace mFilteredData[x]
+		var uniquePatients = {};
 
 		// Create a new array of unique patient #s
-		mFilteredData[x]["unique patients"] = [];
+		uniquePatients["Patient #"] = [];
 		for (var i = 0; i < mFilteredData[x]["Patient #"].length; i++) {
-        	if ((jQuery.inArray(mFilteredData[x]["Patient #"][i], mFilteredData[x]["unique patients"])) == -1) {
-           		mFilteredData[x]["unique patients"].push(mFilteredData[x]["Patient #"][i]);
+        	if ((jQuery.inArray(mFilteredData[x]["Patient #"][i], uniquePatients["Patient #"])) == -1) {
+           		uniquePatients["Patient #"].push(mFilteredData[x]["Patient #"][i]);
         	}
    		}
 
-   		// Delete Ages for repeated patients
-   		var tempAge = [];
-   		for (var i=0; i<mFilteredData[x]["unique patients"].length; i++) {
-   			tempAge.push(mFilteredData[x]["Age"][mFilteredData[x]["Patient #"].indexOf(mFilteredData[x]["unique patients"][i])]);
-   		}
-   		mFilteredData[x]["Age"] = tempAge;
-
-		// Patient #,Doctor Number,Age,height date,weight date,measles,diphtheria,varicella,rotavirus,polio,haemophilus b conjugate,pneumococcal conjugate,meningococcal conjugate,Current Date
+		// Patient #,Doctor Number,Age,height date,weight date,measles,diphtheria,varicella,rotavirus,polio,haemophilus b conjugate,pneumococcal conjugate,meningococcal conjugate,Current Date, Rostered
 		// Add a "height date" and a "weight date" object to mFilteredData
-		mFilteredData[x]["height date"] = [];
-		mFilteredData[x]["weight date"] = [];
+		uniquePatients["height date"] = [];
+		uniquePatients["weight date"] = [];
 
 		// Split dateObserved column into height date and weight date
 		var measurements = mFilteredData[x]["measurements"];
@@ -426,32 +421,32 @@ var mdsReader = (function() {
 				for (var j=0; j<splitMeasurements.length; j++) {
 					switch (splitMeasurements[j]) {
 						case "HT":
-							mFilteredData[x]["height date"].push(splitDateObserved[j]);
+							uniquePatients["height date"].push(splitDateObserved[j]);
 							break;
 						case "WT":
-							mFilteredData[x]["weight date"].push(splitDateObserved[j]);
+							uniquePatients["weight date"].push(splitDateObserved[j]);
 							break;
 					}
 				}
 			alreadyDone.push(mFilteredData[x]["Patient #"][i]);
 			
-			if (!mFilteredData[x]["height date"][alreadyDone.length-1]) mFilteredData[x]["height date"][alreadyDone.length-1] = "";
-			if (!mFilteredData[x]["weight date"][alreadyDone.length-1]) mFilteredData[x]["weight date"][alreadyDone.length-1] = "";
+			if (!uniquePatients["height date"][alreadyDone.length-1]) uniquePatients["height date"][alreadyDone.length-1] = "";
+			if (!uniquePatients["weight date"][alreadyDone.length-1]) uniquePatients["weight date"][alreadyDone.length-1] = "";
 			} else if (measurements[i] == "" && alreadyDone.indexOf(mFilteredData[x]["Patient #"][i]) == -1) {
 				alreadyDone.push(mFilteredData[x]["Patient #"][i]);
-				if (!mFilteredData[x]["height date"][alreadyDone.length-1]) mFilteredData[x]["height date"][alreadyDone.length-1] = "";
-				if (!mFilteredData[x]["weight date"][alreadyDone.length-1]) mFilteredData[x]["weight date"][alreadyDone.length-1] = "";
+				if (!uniquePatients["height date"][alreadyDone.length-1]) uniquePatients["height date"][alreadyDone.length-1] = "";
+				if (!uniquePatients["weight date"][alreadyDone.length-1]) uniquePatients["weight date"][alreadyDone.length-1] = "";
 			}
 		}
 
-		// Create an array of new columns to add and initialize them
+		// Create an array of new preventions to add and initialize them to 0
 		var preventionTypes = mFilteredData[x]["prevention_type"];
 		var newColumns = ["measles", "measles date", "diphtheria", "diphtheria date", "varicella", "varicella date",
 						  "rotavirus", "rotavirus date", "polio", "polio date", "haemophilus b conjugate", "haemophilus b conjugate date",
 						  "pneumococcal conjugate", "pneumococcal conjugate date", "meningococcal conjugate", "meningococcal conjugate date"];
 
 		for (var i=0; i<newColumns.length; i++) {
-			mFilteredData[x][newColumns[i]] = repeat(0,mFilteredData[x]["unique patients"].length);
+			uniquePatients[newColumns[i]] = repeat(0,uniquePatients["Patient #"].length);
 		}
 
 		// Set the number of times done to the appropriate columns
@@ -492,7 +487,20 @@ var mdsReader = (function() {
 			}
 		}
 
-		mFilteredData[x]["Patient #"] = mFilteredData[x]["unique patients"];
+		// Build the rest of uniquePatients; Age, Doctor Number, Rostered
+		var remainingData = ["Age","Doctor Number","Rostered"]
+		for (var i=0; i<remainingData.length; i++) {
+			uniquePatients[remainingData[i]] = [];
+			for (var j=0; j<uniquePatients["Patient #"].length; j++) {
+				uniquePatients[remainingData[i]].push(mFilteredData[x][remainingData[i]][mFilteredData[x]["Patient #"].indexOf(uniquePatients["Patient #"][j])]);
+			}
+		}
+
+		// Add in Current Date to uniquePatients
+		uniquePatients["Current Date"] = repeat(mFilteredData[x]["Current Date"][0],uniquePatients["Patient #"].length);
+
+		// Replace mFilteredData[x] with uniquePatients
+		mFilteredData[x] = uniquePatients;
 
 	};
 
