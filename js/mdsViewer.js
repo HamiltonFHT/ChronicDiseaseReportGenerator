@@ -401,7 +401,7 @@ var mdsViewer = (function() {
 
 
 		/*
-		 * Rule set dropdown
+		 * Indicator set dropdown (e.g. diabetes, hypertension, immus, ...)
 		 */
 		var dropdownRules = ['<select id="dropdownRules" class="settingsDropdown">'];
 		
@@ -409,7 +409,7 @@ var mdsViewer = (function() {
 		for (var i=0; i<mdsIndicators.ruleList.length;i++) {
 			dropdownRules.push('<option>' + mdsIndicators.ruleList[i].name + '</option>');
 		}
-		dropdownRules.push('</div>');
+		dropdownRules.push('</select>');
 		
 		$("#dropdowns").append(dropdownRules.join('\n'));
 		
@@ -425,15 +425,12 @@ var mdsViewer = (function() {
 		$("#dropdownRules").val(getCurrentIndSetName());
 		
 		/*
-		 * Indicator set dropdown
+		 * EMR choice dropdown (PSS or Oscar)
 		 */
-		//updateDropdownIndicators();	
-
-		// Add dropdown for EMR
 		var dropdownEMR = '<select id="dropdownEMR">' +
-					'<option value="PSS">PSS</option>' +
-					'<option value="Oscar">Oscar</option>' +
-					'</select>';
+							'<option value="PSS">PSS</option>' +
+							'<option value="Oscar">Oscar</option>' +
+							'</select>';
 		$("#dropdowns").append(dropdownEMR);
 
 		// Create change function
@@ -445,6 +442,10 @@ var mdsViewer = (function() {
 
 		//Set the selected EMR in the dropdown based on which is selected
 		$("#dropdownEMR").val(mdsIndicators.getEMR());
+
+		/*
+			Rostered checkbox. Only visible if a Rostered field is in the report
+		*/
 
 		//Add a checkbox to allow user to filter only rostered patients if that column exists.
 		//mdsReader has public variable that records whether this column exists
