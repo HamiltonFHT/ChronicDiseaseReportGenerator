@@ -541,6 +541,20 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 */
 
 
+	var ruleTemplate = {
+		desc: function(){ return "Indicator axis label"; },
+		long_desc: function() { return "Indicator hover text message"; },
+		col: [""],
+		rule: function(){
+			try {
+				
+			} catch(err) {
+				console.log(err.message);
+	 			return NaN;
+			}
+		}
+	}
+
 
 	var ruleDMPastNMonths = {
 		desc: function(){return "Diabetic Visit in past " + this.months + " months"; },
@@ -571,7 +585,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 			 		return (Number(measuredDate) <= this.months);
 			 	}
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -623,7 +638,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -641,7 +657,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return (withinDateRange(currentDate, this.months, measuredDate) && Number(value) <= this.target);
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -658,7 +675,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -678,7 +696,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 			return (withinDateRange(currentDate, this.months, measuredDate) &&
 	 				   (Number(diasValue) < this.diasTarget && Number(sysValue) < this.sysTarget));
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -696,8 +715,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 			 try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
-	 			// Field is likely blank
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 		}
 	};
@@ -716,8 +735,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 			return withinDateRange(currentDate, this.months, measuredDate) && 
 	 				   (Number(value) <= this.target || value == "<1.00");
 	 		} catch (err) {
-	 			// Field is likely blank
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 		}
 	};
@@ -733,8 +752,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate) && Number(value) != NaN;
 	 		} catch (err) {
-	 			console.log("Error: " + err);
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -753,8 +772,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate) && (Number(value) <= this.target || value == "<2.0");
 	 		} catch (err) {
-	 			console.log("Error: " + err);
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -791,7 +810,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 		try {
 	 			return withinDateRange(currentDate, this.months, measuredDate);
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -809,7 +829,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 			return withinDateRange(currentDate, this.months, measuredDate) && 
 	 					(Number(value) > this.target || value == ">=90" || value == ">120");
 	 		} catch (err) {
-	 			return false;
+	 			console.log(err.message);
+	 			return NaN;
 	 		}
 	 	}
 	};
@@ -823,8 +844,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 			try {
 				return (factors.toLowerCase().indexOf("current smoker") != -1);
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -848,8 +869,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return withinDateRange(currentDate, this.months, measuredDate);
 	 			}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -873,8 +894,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return withinDateRange(currentDate, this.months, lastSeenDate);
 	 			}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -897,8 +918,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return (Number(sysValue) < this.sysTarget && Number(diasValue) < this.diasTarget);
 	 			}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -924,8 +945,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return NaN;
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -958,8 +979,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 				}
 				
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -993,8 +1014,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 	 				return NaN;
 	 			}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1020,8 +1041,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return (convertToDate(heightDate) >= mostRecentDate([measles, diphtheria]));
 	 			}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1040,8 +1061,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return (A002 != 0 || rourke != 0);
 				} else { return NaN; }
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};	
@@ -1063,8 +1084,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 				}
 				return factors.toLowerCase().indexOf('smok') != -1;
 			} catch (err) {
-				console.log(err);
-				return false;
+				cconsole.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1094,8 +1115,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return withinDateRange(currentDate, this.months, formDate);	
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1121,8 +1142,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return Number(pneuc) > 0;
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1145,8 +1166,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return Number(pneuc) > 0;
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1172,8 +1193,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return Number(pneuc) > 0;
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1201,8 +1222,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return withinDateRange(currentDate, this.months, screenDate);
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
@@ -1225,8 +1246,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 					return true;
 				}
 			} catch (err) {
-				console.log(err);
-				return false;
+				console.log(err.message);
+	 			return NaN;
 			}
 		}
 	};
