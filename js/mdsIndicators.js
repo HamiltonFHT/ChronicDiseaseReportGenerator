@@ -540,7 +540,8 @@ var ruleList = [{name:"Diabetes", rules:diabetesRules},
 
 */
 
-
+	// Copy this template when creating new indicators
+	// See comments above for explanation of each field and additional optional fields
 	var ruleTemplate = {
 		desc: function(){ return "Indicator axis label"; },
 		long_desc: function() { return "Indicator hover text message"; },

@@ -1082,7 +1082,7 @@ var mdsViewer = (function() {
 					.text(function(d, i) { return arrayTooltip[i]; });
 
 
-		//Display LHIN 4 Average for this indicator (if available)
+		//Display HFHT Average for this indicator (if available)
 		if (mShowHFHTAverages) {
 
 			var yScaleAverages = d3.scale.linear()
@@ -1114,9 +1114,7 @@ var mdsViewer = (function() {
 					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[d.index])+yScaleSnapshot.rangeBand(); })
 					.attr("stroke-width", 2)
-                    .attr("stroke", "silver")
-                    .append("svg:title")
-						.text("HFHT Average");
+                    .attr("stroke", "silver");
 
 
 			/* Continued after labels are inserted!! */
@@ -1156,9 +1154,7 @@ var mdsViewer = (function() {
 					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[d.index])+yScaleSnapshot.rangeBand(); })
 					.attr("stroke-width", 2)
-                    .attr("stroke", "gold")
-                    .append("svg:title")
-						.text("LHIN 4 Average");
+                    .attr("stroke", "gold");
 
 
 			/* Continued after labels are inserted!! */
@@ -1197,9 +1193,7 @@ var mdsViewer = (function() {
 					.attr("y1", function (d, i) { return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("y2", function (d, i) { return yScaleSnapshot(arrayDesc[d.index])+yScaleSnapshot.rangeBand(); })
 					.attr("stroke-width", 2)
-                    .attr("stroke", "#CD7F32")
-                    .append("svg:title")
-						.text("HFHT Target");
+                    .attr("stroke", "#CD7F32");
 
 			/* Continued after labels are inserted!! */
 		}
@@ -1244,7 +1238,7 @@ var mdsViewer = (function() {
 						return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("fill", "rgba(0, 0, 0, 0)")
 					.append("svg:title")
-						.text("LHIN 4 Average");
+						.text(function(d) { return "LHIN 4 Average (" + (d.avg*100).toFixed(1) + "%)" });
 
 		}
 
@@ -1263,7 +1257,7 @@ var mdsViewer = (function() {
 						return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("fill", "rgba(0, 0, 0, 0)")
 					.append("svg:title")
-						.text("HFHT Average");
+						.text(function(d) { return "HFHT Average (" + (d.hfhtavg*100).toFixed(1) + "%)" });
 
 		}
 
@@ -1282,7 +1276,7 @@ var mdsViewer = (function() {
 						return yScaleSnapshot(arrayDesc[d.index]); })
 					.attr("fill", "rgba(0, 0, 0, 0)")
 					.append("svg:title")
-						.text("HFHT Targets");
+						.text(function(d) { return "HFHT Target (" + (d.goal*100).toFixed(1) + "%)" });
 
 		}
 
