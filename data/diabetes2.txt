@@ -1,1 +1,0 @@
-Patient #,Doctor Number,DM Months,Hb A1C,Date Hb A1C,LDL,Date LDL,Current Date
