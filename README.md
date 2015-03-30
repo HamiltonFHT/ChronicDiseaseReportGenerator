@@ -1,11 +1,12 @@
-ChronicDiseaseReportGenerator
+#ChronicDiseaseReportGenerator
 =============================
 
 Web dashboard for visualizing data associated with the Minimum Dataset Project.
 
+Visit the report generator at http://hamiltonfht.github.io/ChronicDiseaseReportGenerator/
 
-Contents
-
+##Contents
+```
 css/  					contains style sheets
 data/ 					contains test MDS data
 images/ 				static images for homepage
@@ -19,3 +20,4 @@ js/
 test/					Unit tests for clinical indicators
 index.html 				Home page
 cdrg.html 				Report Generator page
+```
